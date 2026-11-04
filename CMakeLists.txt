@@ -32,6 +32,7 @@ add_subdirectory(src/ps5/audio)
 add_subdirectory(src/ps5/display)
 add_subdirectory(src/ps5/video)
 add_subdirectory(src/ps5/cpu)
+add_subdirectory(src/ps5/evohost)
 add_subdirectory(src/chrome-ui)
 
 # Host-only build tool: the ad-block list -> rule-list converter.

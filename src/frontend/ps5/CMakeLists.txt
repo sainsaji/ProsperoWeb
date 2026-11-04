@@ -66,6 +66,7 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 
 set(_frontend_sources
   main.cpp
+  evo_host.cpp
   ps5_addons.cpp
   ps5_app.cpp
   ps5_audio_server.cpp
@@ -109,7 +110,7 @@ target_include_directories(prosperoweb_frontend_ps5_objs SYSTEM PRIVATE
 # prosperoweb::core / ::shell provide the public headers the frontend consumes.
 target_link_libraries(prosperoweb_frontend_ps5_objs PRIVATE prosperoweb::core prosperoweb::shell
   prosperoweb::spawn_util prosperoweb::spawn_broker prosperoweb::audio_server  # prosperoweb/spawn/spawn.h (the broker role entry)
-  prosperoweb::display prosperoweb::video_server prosperoweb::cpu)
+  prosperoweb::display prosperoweb::video_server prosperoweb::cpu prosperoweb::evohost)
 
 # The final executable. It cannot link until the WebKit archives exist, so it
 # is excluded from the default build: cmake --build <dir> --target prosperoweb.
@@ -123,6 +124,7 @@ target_link_libraries(prosperoweb PRIVATE
   prosperoweb::display
   prosperoweb::video_server
   prosperoweb::cpu
+  prosperoweb::evohost
   ${PS5WEBKIT_LINK_LIBRARIES}
   ${SDL2_LIBRARIES}
   # ps5_ime.cpp, ps5_touchpad.cpp (also on SDL2's own link line)
@@ -179,7 +181,8 @@ if(PROSPEROWEB_NATIVE_TITLE_TARGET)
     "${PROSPEROWEB_THIRD_PARTY_DIR}")
   target_link_libraries(prosperoweb_frontend_ps5_native_objs PRIVATE prosperoweb::core
     prosperoweb::shell prosperoweb::spawn_util prosperoweb::spawn_broker
-    prosperoweb::audio_server prosperoweb::display prosperoweb::video_server prosperoweb::cpu)
+    prosperoweb::audio_server prosperoweb::display prosperoweb::video_server prosperoweb::cpu
+    prosperoweb::evohost)
 
   # What the payload crt and libc.a gave the payload (native/*.c).
   add_library(prosperoweb_native_runtime OBJECT
@@ -234,6 +237,7 @@ if(PROSPEROWEB_NATIVE_TITLE_TARGET)
     prosperoweb::display
     prosperoweb::video_server
     prosperoweb::cpu
+    prosperoweb::evohost
     ${PS5WEBKIT_LINK_LIBRARIES}
     ${SDL2_LIBRARIES}
     SceImeDialog SceUserService ScePad

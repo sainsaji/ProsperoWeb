@@ -10,9 +10,11 @@ add_executable(prosperoweb_ps5_tests
   test_hwdec_probe.cpp
   test_cpu_mask.cpp
   test_cpuset_assign.cpp
+  test_evo_host.cpp
 )
 target_link_libraries(prosperoweb_ps5_tests PRIVATE prosperoweb::spawn_util
-  prosperoweb::spawn_broker prosperoweb::audio_server prosperoweb::display prosperoweb::video_server prosperoweb::cpu prosperoweb_warnings)
+  prosperoweb::spawn_broker prosperoweb::audio_server prosperoweb::display prosperoweb::video_server prosperoweb::cpu
+  prosperoweb::evohost prosperoweb_warnings)
 target_include_directories(prosperoweb_ps5_tests SYSTEM PRIVATE "${PROSPEROWEB_THIRD_PARTY_DIR}")
 
 add_test(NAME ps5.spawn_util
@@ -40,3 +42,5 @@ add_test(NAME ps5.cpu_mask
          COMMAND prosperoweb_ps5_tests --test-suite=cpu_mask --no-version)
 add_test(NAME ps5.cpuset_assign
          COMMAND prosperoweb_ps5_tests --test-suite=cpuset_assign --no-version)
+add_test(NAME ps5.evo_host
+         COMMAND prosperoweb_ps5_tests --test-suite=evo_wire,evo_frames --no-version)

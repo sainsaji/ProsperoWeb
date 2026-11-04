@@ -8,6 +8,8 @@
 //   "NetworkProcess" -> ps5_webkit_network_process_main (WebKit static lib)
 //   "spawn-broker"   -> ps5_spawn_broker_main          (src/ps5/spawn), the
 //                       plain payload websrv starts to spawn the two above
+//   "evo-host"       -> EvoHost (evo_host.h): the engine of EVO Player's
+//                       Browser section, no window; also chosen by --evo-host
 //   anything else    -> the UI process (Ps5App)
 //
 // --env=NAME=VALUE arguments are exported first: elfldr, which starts the
@@ -32,6 +34,7 @@
 #include "prosperoweb/core/legacy_profile.h"
 #include "prosperoweb/spawn/spawn.h"
 #include "ps5webkit/entry.h"
+#include "evo_host.h"
 #include "ps5_app.h"
 #include "ps5_cpu_affinity.h"
 #include "ps5_cpu_monitor.h"
@@ -67,16 +70,22 @@ const char* basename_of(const char* path) {
 }
 
 constexpr const char* kBrokerRole = "spawn-broker";
+constexpr const char* kEvoHostRole = "evo-host";
 
-// Resolves the process role from argv[0], then --role=, then PROSPEROWEB_ROLE.
+// Resolves the process role from argv[0], then --evo-host or --role=, then
+// PROSPEROWEB_ROLE.
 std::string resolve_role(int argc, char** argv) {
   if (argc > 0 && argv[0]) {
     std::string role = basename_of(argv[0]);
-    if (role == "WebProcess" || role == "NetworkProcess" || role == kBrokerRole) {
+    if (role == "WebProcess" || role == "NetworkProcess" || role == kBrokerRole ||
+        role == kEvoHostRole) {
       return role;
     }
   }
   for (int i = 0; i < argc; i++) {
+    if (argv[i] && std::strcmp(argv[i], "--evo-host") == 0) {
+      return kEvoHostRole;
+    }
     if (argv[i] && std::strncmp(argv[i], "--role=", 7) == 0 && argv[i][7]) {
       return argv[i] + 7;
     }
@@ -426,11 +435,13 @@ int main(int argc, char** argv) {
   std::string role = resolve_role(argc, argv);
   const bool child = role == "WebProcess" || role == "NetworkProcess";
   const bool broker = role == kBrokerRole;
+  const bool evo_host = role == kEvoHostRole;
   const std::string log_path = std::string(kPs5DataDir) + "/log.txt";
 
   // websrv starts the broker with stdout/stderr on a pipe it has already
   // closed: logging must not die of SIGPIPE before the broker redirects them.
-  if (broker) {
+  // The EVO host writes to EVO's channel, which closes whenever EVO does.
+  if (broker || evo_host) {
     std::signal(SIGPIPE, SIG_IGN);
   }
 
@@ -495,6 +506,12 @@ int main(int argc, char** argv) {
   }
 
   start_cpu_monitor();
+  if (evo_host) {
+    EvoHost host;
+    const int rc = host.run();
+    log_printf("main: evo-host returned %d", rc);
+    return rc;
+  }
   Ps5App app;
   return app.run();
 #endif
