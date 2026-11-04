@@ -256,6 +256,9 @@ jobs:
       - name: Package
         env:
           DATA_ZIP: ${{ steps.names.outputs.data-zip }}
+          # Fork: EasyList moves on daily and addons.lock pins one day's copy;
+          # take today's instead of failing the whole build on a filter list.
+          ADDONS_ALLOW_UNPINNED: "1"
         run: |
           scripts/ci/timed.sh "Package" scripts/ps5/package.sh
           mkdir -p "${ARTIFACTS}"
