@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <chrono>
+#include <cstdio>
 #include <cstring>
 
 #include <fcntl.h>
@@ -35,6 +36,9 @@ constexpr int kTickHiddenMs = 200;
 // Short, because EVO waits (1.5 s) at its soft close for the broker to go,
 // and the broker goes only once this process has.
 constexpr int kExitGraceMs = 200;
+// How often the damage report is logged, and how many rects it names.
+constexpr int kDamageLogMs = 5000;
+constexpr std::size_t kDamageTopRects = 4;
 
 }  // namespace
 
@@ -432,6 +436,7 @@ void EvoHost::paint_and_publish() {
     dirty.add(display::Rect{0, 0, width_, height_});
   }
   dirty.clip(display::Rect{0, 0, width_, height_});
+  note_damage_rects(dirty);
   for (const display::Rect& r : dirty.rects()) {
     view_->web().paint(reinterpret_cast<unsigned char*>(cache_.data()), width_, height_, r);
   }
@@ -450,6 +455,49 @@ void EvoHost::paint_and_publish() {
   } else {
     frames_.released(static_cast<std::uint32_t>(b));  // EVO never got it
   }
+}
+
+void EvoHost::note_damage_rects(const display::Region& dirty) {
+  if (!dirty.empty()) {
+    damage_frames_++;
+    for (const display::Rect& r : dirty.rects()) {
+      damage_seen_[{r.x, r.y, r.w, r.h}]++;
+    }
+  }
+  const auto now = std::chrono::steady_clock::now();
+  if (now - damage_since_ < std::chrono::milliseconds(kDamageLogMs)) {
+    return;
+  }
+  damage_since_ = now;
+  const display::AreaStat nd = view_->web().take_needs_display_stats();
+  const std::uint64_t packets = packets_in_ - damage_packets_at_;
+  damage_packets_at_ = packets_in_;
+  if (nd.count == 0 && damage_frames_ == 0) {
+    damage_seen_.clear();
+    return;  // an idle page says nothing
+  }
+  std::vector<std::pair<std::uint32_t, std::array<int, 4>>> top;
+  top.reserve(damage_seen_.size());
+  for (const auto& [rect, n] : damage_seen_) {
+    top.emplace_back(n, rect);
+  }
+  const std::size_t keep = std::min(top.size(), kDamageTopRects);
+  std::partial_sort(top.begin(), top.begin() + static_cast<std::ptrdiff_t>(keep), top.end(),
+                    [](const auto& a, const auto& b) { return a.first > b.first; });
+  std::string rects;
+  for (std::size_t i = 0; i < keep; ++i) {
+    const auto& r = top[i].second;
+    char one[64];
+    std::snprintf(one, sizeof one, " %ux[%d,%d %dx%d]", top[i].first, r[0], r[1], r[2], r[3]);
+    rects += one;
+  }
+  log_printf("evo-host: damage %ds: needsDisplay %u (avg %.1f kpx), painted frames %llu, "
+             "EVO packets %llu, %zu distinct rects, top:%s",
+             kDamageLogMs / 1000, nd.count, nd.avg_kpx(),
+             static_cast<unsigned long long>(damage_frames_),
+             static_cast<unsigned long long>(packets), damage_seen_.size(), rects.c_str());
+  damage_seen_.clear();
+  damage_frames_ = 0;
 }
 
 void EvoHost::spawn_progress(const char* event, void* data) {

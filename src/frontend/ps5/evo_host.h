@@ -19,8 +19,11 @@
 // the broker kills the children and exits.
 #pragma once
 
+#include <array>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
+#include <map>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -119,6 +122,15 @@ class EvoHost final : public shell::EngineViewClient {
   bool running_ = false;
   std::uint64_t frames_sent_ = 0;
   std::uint64_t packets_in_ = 0;
+
+  // Damage report (EVO #237: a page that repaints while idle). Every
+  // kDamageLogMs the host logs WebKit's setViewNeedsDisplay count and area,
+  // the packets EVO sent, and the rects that came back most often.
+  void note_damage_rects(const display::Region& dirty);
+  std::map<std::array<int, 4>, std::uint32_t> damage_seen_;
+  std::uint64_t damage_frames_ = 0;
+  std::uint64_t damage_packets_at_ = 0;
+  std::chrono::steady_clock::time_point damage_since_ = std::chrono::steady_clock::now();
 };
 
 }  // namespace prosperoweb::frontend
