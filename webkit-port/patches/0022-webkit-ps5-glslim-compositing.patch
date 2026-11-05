@@ -81,6 +81,21 @@ index 6b748ca..2082cb8 100644
  }
  
  GCGLContext GLContext::platformContext() const
+diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
+index ffda579..5f497f3 100644
+--- a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
++++ b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
+@@ -57,7 +57,9 @@ public:
+ 
+     void releaseAllTextures();
+ 
+-#if USE(GRAPHICS_LAYER_WC)
++#if USE(GRAPHICS_LAYER_WC) || defined(PS5_HOMEBREW)
++    // PS5: called by the compositor thread (AcceleratedSurfacePlayStation),
++    // which owns the only GL context the process may use.
+     void releaseUnusedTexturesNow() { releaseUnusedTexturesTimerFired(); }
+ #endif
+ 
 diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
 index 3007f8a..57020ee 100644
 --- a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
