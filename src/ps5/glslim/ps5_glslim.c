@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
+#include <pthread_np.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -18,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/ucontext.h>
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
@@ -154,10 +156,50 @@ void ps5_glslim_bye(const char* why) {
   raw("\n");
 }
 
-static void on_signal(int sig) {
+// The image's own range (lld defines both): stack words inside it are return
+// addresses, printed as link-time offsets for llvm-symbolizer.
+extern char __ehdr_start[];
+extern char etext[];
+
+// Where a fatal signal came from: rip and the code addresses on the stack,
+// as offsets into this ELF. Scans at most 8 KB above rsp (the faulting thread
+// is deep in its stack, so this stays inside it).
+static void dump_stack(const ucontext_t* uc) {
+  const uintptr_t lo = (uintptr_t)__ehdr_start, hi = (uintptr_t)etext;
+  raw_hex("glslim: image ", lo);
+  raw_hex(" text end +", hi - lo);
+  raw_hex(" tid ", (unsigned long long)pthread_getthreadid_np());
+  if (!uc) {
+    raw("\n");
+    return;
+  }
+  const uintptr_t rip = (uintptr_t)uc->uc_mcontext.mc_rip, rsp = (uintptr_t)uc->uc_mcontext.mc_rsp;
+  raw_hex(" rip ", rip);
+  if (rip >= lo && rip < hi) {
+    raw_hex(" = +", rip - lo);
+  }
+  raw_hex(" rsp ", rsp);
+  raw("\nglslim: stack");
+  const uintptr_t* p = (const uintptr_t*)(rsp & ~(uintptr_t)7);
+  int found = 0;
+  for (int i = 0; i < 1024 && found < 48; ++i) {
+    const uintptr_t v = p[i];
+    if (v > lo && v < hi) {
+      raw_hex(" +", v - lo);
+      found++;
+    }
+  }
+  raw("\n");
+}
+
+static void on_signal(int sig, siginfo_t* info, void* context) {
+  (void)info;
   raw_hex("glslim: signal ", (unsigned)sig);
   raw("\n");
   ps5_glslim_bye(sig == SIGTERM ? "SIGTERM" : "fatal signal");
+  if (sig != SIGTERM) {
+    dump_stack((const ucontext_t*)context);
+  }
   _exit(sig == SIGTERM ? 0 : 128 + sig);
 }
 
@@ -169,8 +211,8 @@ static void install_guards(void) {
   static const int sigs[] = {SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT, SIGTRAP, SIGSYS, SIGTERM, SIGINT, SIGHUP};
   struct sigaction sa;
   memset(&sa, 0, sizeof sa);
-  sa.sa_handler = on_signal;
-  sa.sa_flags = SA_RESETHAND;  // a second fault in the handler kills us
+  sa.sa_sigaction = on_signal;
+  sa.sa_flags = SA_RESETHAND | SA_SIGINFO;  // a second fault in the handler kills us
   sigemptyset(&sa.sa_mask);
   for (unsigned i = 0; i < sizeof sigs / sizeof sigs[0]; ++i) {
     sigaction(sigs[i], &sa, NULL);
