@@ -108,6 +108,19 @@ class EvoHost final : public shell::EngineViewClient {
   bool painted_once_ = false;  // WebKit has drawn something real
   bool visible_ = true;
 
+  // Idle throttle (EVO #237): a page with endless animations repaints the
+  // whole view on the CPU every rendering update. With no input, no load
+  // and no fullscreen for kIdleAfterMs, the host publishes at most one frame
+  // per kIdleFrameMs; the damage waits in WebKit's dirty region meanwhile.
+  bool throttled(std::chrono::steady_clock::time_point now) const;
+  void note_activity() { last_activity_ = std::chrono::steady_clock::now(); }
+  std::chrono::steady_clock::time_point last_activity_ = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point last_publish_{};
+  bool loading_ = false;
+  bool fullscreen_ = false;
+  bool was_throttled_ = false;
+  std::uint64_t throttled_skips_ = 0;
+
   // Packets from EVO, queued by the reader thread for the main thread.
   std::mutex in_mu_;
   std::deque<std::vector<std::uint8_t>> inbox_;

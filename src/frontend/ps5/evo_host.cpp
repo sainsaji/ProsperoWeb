@@ -39,6 +39,10 @@ constexpr int kExitGraceMs = 200;
 // How often the damage report is logged, and how many rects it names.
 constexpr int kDamageLogMs = 5000;
 constexpr std::size_t kDamageTopRects = 4;
+// Idle throttle: after this long with no input, load or fullscreen, publish
+// at most one frame per kIdleFrameMs (10/s).
+constexpr int kIdleAfterMs = 2000;
+constexpr int kIdleFrameMs = 100;
 
 }  // namespace
 
@@ -320,6 +324,9 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
     log_printf("evo-host: ignored a malformed packet of %zu bytes", pkt.size());
     return;
   }
+  if (p.type != EVOB_RELEASE) {
+    note_activity();  // input, navigation, resize: full frame rate again
+  }
   switch (p.type) {
     case EVOB_RELEASE: {
       evob_release r{};
@@ -422,8 +429,31 @@ void EvoHost::resize(int width, int height) {
   send_hello(false);
 }
 
+bool EvoHost::throttled(std::chrono::steady_clock::time_point now) const {
+  if (loading_ || fullscreen_ || force_full_) {
+    return false;
+  }
+  return now - last_activity_ >= std::chrono::milliseconds(kIdleAfterMs);
+}
+
 void EvoHost::paint_and_publish() {
+  const auto now = std::chrono::steady_clock::now();
+  const bool idle = throttled(now);
+  if (idle != was_throttled_) {
+    was_throttled_ = idle;
+    log_printf("evo-host: %s", idle ? "idle, publishing at most 10 frames/s"
+                                    : "active, full frame rate");
+  }
+  if (idle && now - last_publish_ < std::chrono::milliseconds(kIdleFrameMs)) {
+    if (!view_->web().dirty_empty()) {
+      throttled_skips_++;
+    }
+    return;  // the damage stays in WebKit's dirty region for the next frame
+  }
   display::Region dirty = view_->web().take_dirty();
+  if (!dirty.empty() || force_full_) {
+    last_publish_ = now;
+  }
   if (!dirty.empty()) {
     painted_once_ = true;
   }
@@ -492,12 +522,15 @@ void EvoHost::note_damage_rects(const display::Region& dirty) {
     rects += one;
   }
   log_printf("evo-host: damage %ds: needsDisplay %u (avg %.1f kpx), painted frames %llu, "
-             "EVO packets %llu, %zu distinct rects, top:%s",
+             "EVO packets %llu, idle skips %llu, %zu distinct rects, top:%s",
              kDamageLogMs / 1000, nd.count, nd.avg_kpx(),
              static_cast<unsigned long long>(damage_frames_),
-             static_cast<unsigned long long>(packets), damage_seen_.size(), rects.c_str());
+             static_cast<unsigned long long>(packets),
+             static_cast<unsigned long long>(throttled_skips_), damage_seen_.size(),
+             rects.c_str());
   damage_seen_.clear();
   damage_frames_ = 0;
+  throttled_skips_ = 0;
 }
 
 void EvoHost::spawn_progress(const char* event, void* data) {
@@ -517,11 +550,21 @@ void EvoHost::url_changed(const std::string& url) { send_event(EVOB_EV_URL, 0, u
 
 void EvoHost::title_changed(const std::string& title) { send_event(EVOB_EV_TITLE, 0, title); }
 
-void EvoHost::load_started() { send_event(EVOB_EV_LOAD_STARTED, 0); }
+void EvoHost::load_started() {
+  loading_ = true;
+  note_activity();
+  send_event(EVOB_EV_LOAD_STARTED, 0);
+}
 
-void EvoHost::load_finished() { send_event(EVOB_EV_LOAD_FINISHED, 0); }
+void EvoHost::load_finished() {
+  loading_ = false;
+  note_activity();  // the page settles at full rate, then goes idle
+  send_event(EVOB_EV_LOAD_FINISHED, 0);
+}
 
 void EvoHost::load_failed(const std::string& url, const std::string& error_text) {
+  loading_ = false;
+  note_activity();
   send_event(EVOB_EV_LOAD_FAILED, 0, url + "\n" + error_text);
 }
 
@@ -529,9 +572,16 @@ void EvoHost::nav_state_changed(bool can_go_back, bool can_go_forward) {
   send_event(EVOB_EV_NAV_STATE, (can_go_back ? 1u : 0u) | (can_go_forward ? 2u : 0u));
 }
 
-void EvoHost::fullscreen_entered() { send_event(EVOB_EV_FULLSCREEN, 1); }
+void EvoHost::fullscreen_entered() {
+  fullscreen_ = true;  // page video: never throttled
+  send_event(EVOB_EV_FULLSCREEN, 1);
+}
 
-void EvoHost::fullscreen_exited() { send_event(EVOB_EV_FULLSCREEN, 0); }
+void EvoHost::fullscreen_exited() {
+  fullscreen_ = false;
+  note_activity();
+  send_event(EVOB_EV_FULLSCREEN, 0);
+}
 
 void EvoHost::script_message(const std::string& json) { send_event(EVOB_EV_SCRIPT, 0, json); }
 

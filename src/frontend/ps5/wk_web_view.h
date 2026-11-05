@@ -145,6 +145,8 @@ class WkWebView {
   // Returns and clears the pending damage: every needs_display rect since
   // the last call, coalesced into a few rects (display::Region).
   display::Region take_dirty();
+  // True when no damage is pending (take_dirty would return an empty region).
+  bool dirty_empty() const { return dirty_.empty(); }
 
   // Returns and clears the setViewNeedsDisplay count and area since the last
   // call (the frame-pipeline statistics).
