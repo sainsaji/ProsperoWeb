@@ -64,11 +64,12 @@ fi
 
 shopt -s nullglob
 patches=("${PATCH_DIR}"/*.patch)
-for p in "${patches[@]}"; do
-    git -C "${WEBKIT_DIR}" apply --check "${p}"
-done
+# In order, each checked against the tree the earlier ones left: a later patch
+# may build on an earlier one's lines (0022 on 0013). A failure leaves no
+# stamp, so the next run asks for WEBKIT_RESET=1.
 for p in "${patches[@]}"; do
     log "applying $(basename "${p}")"
+    git -C "${WEBKIT_DIR}" apply --check "${p}"
     git -C "${WEBKIT_DIR}" apply "${p}"
 done
 echo "${want}" > "${STAMP}"
