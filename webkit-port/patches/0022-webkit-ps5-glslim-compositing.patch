@@ -316,10 +316,10 @@ index 4291652..aac7d29 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..cba54d0 100644
+index 28ef84d..09b63cc 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,145 @@
+@@ -55,11 +55,146 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -388,12 +388,13 @@ index 28ef84d..cba54d0 100644
 +        frameDone();
 +        return;
 +    }
-+    // GL rows are RGBA; the bitmap is Skia's N32 (BGRA in memory). The
-+    // compositor drew with flipY, so row 0 is the top of the page
-+    // (PROSPEROWEB_GPU_FLIP=1 reverses that if a build gets it wrong).
++    // GL rows are RGBA; the bitmap is Skia's N32 (BGRA in memory). GL's row 0
++    // is the bottom of the page here (the page came out upside down on the
++    // console without the flip), so rows are reversed;
++    // PROSPEROWEB_GPU_FLIP=0 turns that off.
 +    static const bool flip = [] {
 +        const char* value = getenv("PROSPEROWEB_GPU_FLIP");
-+        return value && *value == '1';
++        return !(value && *value == '0');
 +    }();
 +    auto destination = bitmap->mutableSpan();
 +    const unsigned destinationStride = bitmap->bytesPerRow();
@@ -465,7 +466,7 @@ index 28ef84d..cba54d0 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +474,10 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +475,10 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -476,7 +477,7 @@ index 28ef84d..cba54d0 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +492,10 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +493,10 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -487,7 +488,7 @@ index 28ef84d..cba54d0 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +508,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +509,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -502,7 +503,7 @@ index 28ef84d..cba54d0 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +534,12 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +535,12 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -515,7 +516,7 @@ index 28ef84d..cba54d0 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +548,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +549,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -523,7 +524,7 @@ index 28ef84d..cba54d0 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +567,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +568,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {

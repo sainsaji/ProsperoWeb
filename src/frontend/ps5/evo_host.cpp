@@ -441,6 +441,16 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
 
 void EvoHost::resize(int width, int height, int scale) {
   scale = std::clamp(scale, 1, kMaxScale);
+  // GPU compositing (/data/prosperoweb/gpu) runs in Sony's 48 MB GLES grant:
+  // a 2x page (3584x1888 target plus its tiles) does not fit and its layers
+  // come out blank, so the page is composited at 1x and EVO scales it up.
+  static const bool gpu = [] {
+    struct stat flag;
+    return stat("/data/prosperoweb/gpu", &flag) == 0;
+  }();
+  if (gpu) {
+    scale = 1;
+  }
   // The view must fit the buffers: drop to scale 1 for a page too big for 2x.
   if (width * scale > cap_w_ || height * scale > cap_h_) {
     scale = 1;
