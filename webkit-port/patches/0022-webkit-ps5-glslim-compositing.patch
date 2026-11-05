@@ -8,7 +8,10 @@ current) and ends frames with the shell's frame end. TextureMapper's programs
 come from the console's own precompiled binaries (no GLSL compiler). The
 compositor draws into an FBO; each frame is read back and sent to the UI
 process as an ordinary Update, which it acknowledges with DisplayDidRefresh,
-so the UI process and WKPagePaint are unchanged.
+so the UI process and WKPagePaint are unchanged. The main thread never
+touches GL (GLSlim aborts when a second context is made current on another
+thread): BitmapTexturePool's timer no longer borrows the sharing context,
+and the compositor thread releases unused pool textures itself.
 
 diff --git a/Source/WebCore/platform/graphics/egl/GLContext.cpp b/Source/WebCore/platform/graphics/egl/GLContext.cpp
 index 6b748ca..2082cb8 100644
@@ -78,6 +81,25 @@ index 6b748ca..2082cb8 100644
  }
  
  GCGLContext GLContext::platformContext() const
+diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
+index 3007f8a..57020ee 100644
+--- a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
++++ b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
+@@ -184,7 +184,13 @@ void BitmapTexturePool::releaseUnusedTexturesTimerFired()
+ 
+     if (GLContextWrapper::currentContext())
+         releaseTexturesIfNeeded();
+-#if !PLATFORM(WIN)
++#if defined(PS5_HOMEBREW)
++    // Sony's GLES library aborts when a second context is made current on
++    // another thread while the compositor's is in use, so the main thread
++    // never touches GL: the compositor thread releases the unused textures
++    // itself (AcceleratedSurface::ps5ReadBackAndSend calls
++    // releaseUnusedTexturesNow with its context current).
++#elif !PLATFORM(WIN)
+     else if (auto* context = PlatformDisplay::sharedDisplay().sharingGLContext()) {
+         GLContext::ScopedGLContextCurrent scopedCurrent(*context);
+         releaseTexturesIfNeeded();
 diff --git a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h
 index f4510ce..fa1d740 100644
 --- a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h
@@ -279,16 +301,17 @@ index 4291652..aac7d29 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..766b8c2 100644
+index 28ef84d..cba54d0 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,135 @@
+@@ -55,11 +55,145 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
 +#if defined(PS5_HOMEBREW)
 +#include "DrawingAreaCoordinatedGraphics.h"
 +#include "UpdateInfo.h"
++#include <WebCore/BitmapTexturePool.h>
 +#include <cstdlib>
 +#include <wtf/MonotonicTime.h>
 +extern "C" void ps5_glslim_log(const char*, ...) __attribute__((weak));
@@ -335,6 +358,15 @@ index 28ef84d..766b8c2 100644
 +    glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
 +    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_ps5Pixels.mutableSpan().data());
 +    const MonotonicTime readDone = MonotonicTime::now();
++
++    // The texture pool's own timer cannot release on the main thread here
++    // (BitmapTexturePool.cpp, PS5_HOMEBREW): do it on this thread, with the
++    // compositor's context current, at most every 500 ms.
++    static MonotonicTime lastPoolRelease;
++    if (readDone - lastPoolRelease >= 500_ms) {
++        lastPoolRelease = readDone;
++        BitmapTexturePool::singleton().releaseUnusedTexturesNow();
++    }
 +
 +    auto bitmap = ShareableBitmap::create({ size });
 +    if (!bitmap) {
@@ -418,7 +450,7 @@ index 28ef84d..766b8c2 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +464,10 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +474,10 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -429,7 +461,7 @@ index 28ef84d..766b8c2 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +482,10 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +492,10 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -440,7 +472,7 @@ index 28ef84d..766b8c2 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +498,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +508,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -455,7 +487,7 @@ index 28ef84d..766b8c2 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +524,12 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +534,12 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -468,7 +500,7 @@ index 28ef84d..766b8c2 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +538,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +548,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -476,7 +508,7 @@ index 28ef84d..766b8c2 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +557,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +567,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
