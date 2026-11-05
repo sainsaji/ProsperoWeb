@@ -187,12 +187,31 @@ static void dump_stack(const void* context) {
       raw_hex(" ", c[i]);
     }
   }
+  raw_hex("\nglslim: dump_stack at ", (uintptr_t)&dump_stack);
+  // The console's context (measured 2026-11-05): 64-bit words from the
+  // context pointer, rip at [28], cs (0x43) at [29], rflags [30], rsp [31].
+  const uintptr_t* start = p;
+  int words = 2048;
+  if (context) {
+    const uintptr_t* c = (const uintptr_t*)(((uintptr_t)context) & ~(uintptr_t)7);
+    if (c[29] == 0x43 && c[31] > (uintptr_t)p && c[31] - (uintptr_t)p < 65536) {
+      raw_hex(" rip ", c[28]);
+      raw_hex(" rsp ", c[31]);
+      start = (const uintptr_t*)(c[31] & ~(uintptr_t)7);
+      words = 1024;
+    }
+  }
+  // Code addresses from rsp up: system modules live at 0x8_0000_0000 and
+  // up (libkernel, GLSlim), the image at `lo`.
   raw("\nglslim: stack");
   int found = 0;
-  for (int i = 0; i < 2048 && found < 64; ++i) {
-    const uintptr_t v = p[i];
+  for (int i = 0; i < words && found < 96; ++i) {
+    const uintptr_t v = start[i];
     if (v > lo && v < hi) {
       raw_hex(" +", v - lo);
+      found++;
+    } else if (v >= 0x800000000ull && v < 0x810000000ull) {
+      raw_hex(" ", v);
       found++;
     }
   }
