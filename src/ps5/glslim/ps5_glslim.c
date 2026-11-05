@@ -7,6 +7,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include <elf.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
@@ -156,16 +157,28 @@ void ps5_glslim_bye(const char* why) {
   raw("\n");
 }
 
-// The image's own range (lld defines both): stack words inside it are return
-// addresses, printed as link-time offsets for llvm-symbolizer.
+// The image's own header (lld defines __ehdr_start): its executable PT_LOAD
+// bounds the code. Stack words inside it are return addresses, printed as
+// link-time offsets for llvm-symbolizer.
 extern char __ehdr_start[];
-extern char etext[];
+
+static uintptr_t image_text_end(uintptr_t base) {
+  const Elf64_Ehdr* eh = (const Elf64_Ehdr*)base;
+  const Elf64_Phdr* ph = (const Elf64_Phdr*)(base + eh->e_phoff);
+  uintptr_t end = base;
+  for (unsigned i = 0; i < eh->e_phnum; ++i) {
+    if (ph[i].p_type == PT_LOAD && (ph[i].p_flags & PF_X) && base + ph[i].p_vaddr + ph[i].p_memsz > end) {
+      end = base + ph[i].p_vaddr + ph[i].p_memsz;
+    }
+  }
+  return end;
+}
 
 // Where a fatal signal came from: rip and the code addresses on the stack,
 // as offsets into this ELF. Scans at most 8 KB above rsp (the faulting thread
 // is deep in its stack, so this stays inside it).
 static void dump_stack(const ucontext_t* uc) {
-  const uintptr_t lo = (uintptr_t)__ehdr_start, hi = (uintptr_t)etext;
+  const uintptr_t lo = (uintptr_t)__ehdr_start, hi = image_text_end(lo);
   raw_hex("glslim: image ", lo);
   raw_hex(" text end +", hi - lo);
   raw_hex(" tid ", (unsigned long long)pthread_getthreadid_np());
