@@ -7,7 +7,6 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
-#include <elf.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
@@ -157,30 +156,20 @@ void ps5_glslim_bye(const char* why) {
   raw("\n");
 }
 
-// The image's own header (lld defines __ehdr_start): its executable PT_LOAD
-// bounds the code. Stack words inside it are return addresses, printed as
-// link-time offsets for llvm-symbolizer.
+// The image's load address (lld defines __ehdr_start at link address 0).
+// elfldr maps only the PT_LOAD segments, so the ELF header itself is NOT
+// readable there: never dereference it (doing so raised SIGBUS). Stack words
+// within 256 MB of it are printed as link-time offsets; text vs data is
+// sorted out offline with llvm-symbolizer.
 extern char __ehdr_start[];
+#define IMAGE_SPAN 0x10000000u
 
-static uintptr_t image_text_end(uintptr_t base) {
-  const Elf64_Ehdr* eh = (const Elf64_Ehdr*)base;
-  const Elf64_Phdr* ph = (const Elf64_Phdr*)(base + eh->e_phoff);
-  uintptr_t end = base;
-  for (unsigned i = 0; i < eh->e_phnum; ++i) {
-    if (ph[i].p_type == PT_LOAD && (ph[i].p_flags & PF_X) && base + ph[i].p_vaddr + ph[i].p_memsz > end) {
-      end = base + ph[i].p_vaddr + ph[i].p_memsz;
-    }
-  }
-  return end;
-}
-
-// Where a fatal signal came from: rip and the code addresses on the stack,
+// Where a fatal signal came from: rip and the image addresses on the stack,
 // as offsets into this ELF. Scans at most 8 KB above rsp (the faulting thread
-// is deep in its stack, so this stays inside it).
+// is deep in its stack, so this stays inside it). Reads nothing but the stack.
 static void dump_stack(const ucontext_t* uc) {
-  const uintptr_t lo = (uintptr_t)__ehdr_start, hi = image_text_end(lo);
+  const uintptr_t lo = (uintptr_t)__ehdr_start, hi = lo + IMAGE_SPAN;
   raw_hex("glslim: image ", lo);
-  raw_hex(" text end +", hi - lo);
   raw_hex(" tid ", (unsigned long long)pthread_getthreadid_np());
   if (!uc) {
     raw("\n");
@@ -192,8 +181,14 @@ static void dump_stack(const ucontext_t* uc) {
     raw_hex(" = +", rip - lo);
   }
   raw_hex(" rsp ", rsp);
-  raw("\nglslim: stack");
   const uintptr_t* p = (const uintptr_t*)(rsp & ~(uintptr_t)7);
+  // Raw words first: return addresses into system modules (libkernel's
+  // abort, GLSlim) are outside the image.
+  raw("\nglslim: raw");
+  for (int i = 0; i < 64; ++i) {
+    raw_hex(" ", p[i]);
+  }
+  raw("\nglslim: stack");
   int found = 0;
   for (int i = 0; i < 1024 && found < 48; ++i) {
     const uintptr_t v = p[i];
