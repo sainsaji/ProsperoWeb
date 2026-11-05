@@ -43,18 +43,16 @@ constexpr std::size_t kDamageTopRects = 4;
 // at most one frame per kIdleFrameMs (10/s).
 constexpr int kIdleAfterMs = 2000;
 constexpr int kIdleFrameMs = 100;
-// Idle: pause the page's endless (iterations: Infinity) running animations
-// whose element covers at least a tenth of the viewport (background art,
-// glows), the ones that make WebKit repaint most of the page on the CPU.
-// A spinner or a small icon keeps going. Resumed on any activity.
+// Idle: pause every running animation of the page (CSS transitions aside).
+// Size is no guide: without compositing, a small icon bobbing over blurred
+// background art makes WebKit redo the blur, a full core on
+// prosperostore.net. A spinner freezes too, until the next input. Resumed on
+// any activity.
 constexpr const char* kPauseIdleAnimations =
     "(function(){try{if(!document.getAnimations)return;"
-    "var vp=innerWidth*innerHeight,p=window.__evoPaused||(window.__evoPaused=[]);"
+    "var p=window.__evoPaused||(window.__evoPaused=[]);"
     "document.getAnimations().forEach(function(a){"
-    "var e=a.effect,t=e&&e.getTiming?e.getTiming():null;"
-    "if(!t||t.iterations!==Infinity||a.playState!=='running')return;"
-    "var el=e.target;if(!el||!el.getBoundingClientRect)return;"
-    "var r=el.getBoundingClientRect();if(r.width*r.height<vp*0.1)return;"
+    "if(a.playState!=='running'||(window.CSSTransition&&a instanceof CSSTransition))return;"
     "a.pause();p.push(a);});}catch(x){}})();";
 constexpr const char* kResumeIdleAnimations =
     "(function(){var p=window.__evoPaused;if(!p||!p.length)return;window.__evoPaused=[];"
@@ -479,8 +477,7 @@ void EvoHost::paint_and_publish() {
   const bool idle = throttled(now);
   if (idle != was_throttled_) {
     was_throttled_ = idle;
-    log_printf("evo-host: %s", idle ? "idle, publishing at most 10 frames/s, big endless "
-                                      "animations paused"
+    log_printf("evo-host: %s", idle ? "idle, publishing at most 10 frames/s, animations paused"
                                     : "active, full frame rate");
     // WebKit renders an animation on the CPU whatever the host takes, so the
     // throttle alone does not stop a page from using a core while it is read.
