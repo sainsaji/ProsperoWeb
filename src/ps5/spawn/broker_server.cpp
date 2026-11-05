@@ -32,6 +32,10 @@ using nlohmann::json;
 
 constexpr int kKillTimeoutMs = 2000;
 constexpr int kPollMs = 200;
+// A child gets SIGTERM and this long to leave before SIGKILL: a WebProcess
+// that holds GPU memory from the system compositor must tell it Quit itself
+// (src/ps5/glslim), or the memory stays taken until the console reboots.
+constexpr int kTermGraceMs = 1000;
 
 std::atomic<BrokerSpawnHook> g_hook{nullptr};
 std::atomic<BrokerSelftestHook> g_selftest_hook{nullptr};
@@ -349,8 +353,13 @@ json Server::do_terminate(const json& msg) {
     }
     children_.erase(it);
   }
-  kill(static_cast<pid_t>(pid), SIGKILL);  // best-effort: it may be a zombie already
-  for (int waited = 0; waited < kKillTimeoutMs; waited += 10) {
+  kill(static_cast<pid_t>(pid), SIGTERM);  // best-effort: it may be a zombie already
+  bool killed = false;
+  for (int waited = 0; waited < kTermGraceMs + kKillTimeoutMs; waited += 10) {
+    if (!killed && waited >= kTermGraceMs) {
+      kill(static_cast<pid_t>(pid), SIGKILL);
+      killed = true;
+    }
     int status;
     if (try_reap(static_cast<int>(pid), &status)) {
       ps5_log_printf("broker: child pid=%lld terminated (%s)", pid,
@@ -397,11 +406,16 @@ void Server::kill_all_children() {
     pids.swap(children_);
   }
   for (int pid : pids) {
-    kill(pid, SIGKILL);
+    kill(pid, SIGTERM);  // kTermGraceMs to leave, then SIGKILL
   }
   for (int pid : pids) {
     int status;
-    for (int waited = 0; waited < kKillTimeoutMs && !try_reap(pid, &status); waited += 10) {
+    bool killed = false;
+    for (int waited = 0; waited < kTermGraceMs + kKillTimeoutMs && !try_reap(pid, &status); waited += 10) {
+      if (!killed && waited >= kTermGraceMs) {
+        kill(pid, SIGKILL);
+        killed = true;
+      }
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     ps5_log_printf("broker: killed child pid=%d", pid);

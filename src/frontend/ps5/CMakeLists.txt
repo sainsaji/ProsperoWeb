@@ -115,7 +115,9 @@ target_link_libraries(prosperoweb_frontend_ps5_objs PRIVATE prosperoweb::core pr
 # The final executable. It cannot link until the WebKit archives exist, so it
 # is excluded from the default build: cmake --build <dir> --target prosperoweb.
 add_executable(prosperoweb EXCLUDE_FROM_ALL
-  $<TARGET_OBJECTS:prosperoweb_frontend_ps5_objs>)
+  $<TARGET_OBJECTS:prosperoweb_frontend_ps5_objs>
+  # Sony's GLES library for GPU compositing (payload only: kernel access).
+  "${CMAKE_SOURCE_DIR}/src/ps5/glslim/ps5_glslim.c")
 target_link_libraries(prosperoweb PRIVATE
   prosperoweb::shell
   prosperoweb::core
@@ -128,7 +130,9 @@ target_link_libraries(prosperoweb PRIVATE
   ${PS5WEBKIT_LINK_LIBRARIES}
   ${SDL2_LIBRARIES}
   # ps5_ime.cpp, ps5_touchpad.cpp (also on SDL2's own link line)
-  SceImeDialog SceUserService ScePad)
+  SceImeDialog SceUserService ScePad
+  # ps5_glslim.c: sceSysmoduleLoadModuleInternal
+  SceSysmodule)
 target_link_directories(prosperoweb PRIVATE ${SDL2_LIBRARY_DIRS})
 # libWebKitPS5.a holds every WebKit object; drop what the browser never reaches.
 target_link_options(prosperoweb PRIVATE -Wl,--gc-sections)

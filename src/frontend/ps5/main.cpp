@@ -42,6 +42,10 @@
 #include "ps5_runtime_env.h"
 #include "ipc_selftest.h"
 
+// src/ps5/glslim (payload build only; the native title has no kernel access):
+// weak, so a build without it links.
+extern "C" int ps5_glslim_selftest(void) __attribute__((weak));
+
 #if PROSPEROWEB_NATIVE_TITLE
 #include <WebKit/WKRunLoop.h>
 
@@ -494,6 +498,17 @@ int main(int argc, char** argv) {
     // The main thread also runs the media presentation tick: above the
     // decoder threads, which inherit the default priority.
     raise_main_thread_priority();
+    // GPU compositing bring-up (EVO #237): with /data/prosperoweb/gpu
+    // present, start Sony's GLES library here and check frames reach the GPU
+    // and come back. Once started, every exit path tells the system
+    // compositor Quit (ps5_glslim.c); its log is /data/prosperoweb/glslim.txt.
+    if (ps5_glslim_selftest) {
+      struct stat st;
+      if (stat((std::string(kPs5DataDir) + "/gpu").c_str(), &st) == 0) {
+        const int g = ps5_glslim_selftest();
+        log_printf("main: GPU self-test %s (glslim.txt)", g == 0 ? "passed" : "FAILED");
+      }
+    }
     start_cpu_monitor();
     const int rc = ps5_webkit_web_process_main(argc, argv);
     log_printf("main: returned %d", rc);

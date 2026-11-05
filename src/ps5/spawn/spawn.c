@@ -446,11 +446,18 @@ int ps5_terminate_direct(int pid) {
     return 0;
   }
 
-  kill(pid, SIGKILL);  // best-effort: it may already be a zombie
+  // SIGTERM first: a WebProcess holding GPU memory from the system compositor
+  // must tell it Quit itself (src/ps5/glslim); SIGKILL after a second.
+  kill(pid, SIGTERM);  // best-effort: it may already be a zombie
 
-  // SIGKILL is asynchronous: wait (bounded) for the child to become
+  // Signals are asynchronous: wait (bounded) for the child to become
   // reapable instead of a single WNOHANG that usually comes too early.
-  for (int waited = 0; waited < PS5_SPAWN_KILL_TIMEOUT_MS; waited += 10) {
+  int killed = 0;
+  for (int waited = 0; waited < 1000 + PS5_SPAWN_KILL_TIMEOUT_MS; waited += 10) {
+    if (!killed && waited >= 1000) {
+      kill(pid, SIGKILL);
+      killed = 1;
+    }
     int status;
     if (try_reap(pid, &status)) {
       return 0;
