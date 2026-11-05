@@ -50,6 +50,11 @@ KNOWN_WEAK_ZERO = {
     # with a null check, so left at 0 they are simply disabled.
     "ZSTD_trace_decompress_begin",
     "ZSTD_trace_decompress_end",
+    # Sony's GLES library hooks (src/ps5/glslim), linked only into the EVO
+    # host. The GL stubs and WebKit's PS5 code check them for null, so the
+    # native title simply has no GPU compositing.
+    "ps5_glslim_log",
+    "ps5_glslim_proc",
 }
 
 # Loaded for a native app at start-up (Stremio PS5 native/check_imports.py).
