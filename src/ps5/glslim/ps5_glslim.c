@@ -164,33 +164,32 @@ void ps5_glslim_bye(const char* why) {
 extern char __ehdr_start[];
 #define IMAGE_SPAN 0x10000000u
 
-// Where a fatal signal came from: rip and the image addresses on the stack,
-// as offsets into this ELF. Scans at most 8 KB above rsp (the faulting thread
-// is deep in its stack, so this stays inside it). Reads nothing but the stack.
-static void dump_stack(const ucontext_t* uc) {
+// Where a fatal signal came from: the image addresses on the stack, as
+// offsets into this ELF. The SDK's ucontext_t does not match what this kernel
+// delivers (mc_rip read 0x2, mc_rsp 0 on the console), so registers are not
+// used: the scan starts at the handler's own frame and walks up through the
+// signal frame into the frames that raised the signal (no sigaltstack, so
+// they are all on this stack). At most 16 KB, which stays inside it.
+static void dump_stack(const void* context) {
   const uintptr_t lo = (uintptr_t)__ehdr_start, hi = lo + IMAGE_SPAN;
+  volatile uintptr_t here = 0;
+  const uintptr_t* p = (const uintptr_t*)(((uintptr_t)&here) & ~(uintptr_t)7);
   raw_hex("glslim: image ", lo);
   raw_hex(" tid ", (unsigned long long)pthread_getthreadid_np());
-  if (!uc) {
-    raw("\n");
-    return;
-  }
-  const uintptr_t rip = (uintptr_t)uc->uc_mcontext.mc_rip, rsp = (uintptr_t)uc->uc_mcontext.mc_rsp;
-  raw_hex(" rip ", rip);
-  if (rip >= lo && rip < hi) {
-    raw_hex(" = +", rip - lo);
-  }
-  raw_hex(" rsp ", rsp);
-  const uintptr_t* p = (const uintptr_t*)(rsp & ~(uintptr_t)7);
-  // Raw words first: return addresses into system modules (libkernel's
-  // abort, GLSlim) are outside the image.
-  raw("\nglslim: raw");
-  for (int i = 0; i < 64; ++i) {
-    raw_hex(" ", p[i]);
+  raw_hex(" sp ", (uintptr_t)p);
+  raw_hex(" context ", (uintptr_t)context);
+  // Raw words just past the signal context: return addresses into system
+  // modules (libkernel's abort, GLSlim) are outside the image.
+  if (context && (uintptr_t)context > (uintptr_t)p && (uintptr_t)context - (uintptr_t)p < 8192) {
+    raw("\nglslim: raw");
+    const uintptr_t* c = (const uintptr_t*)(((uintptr_t)context) & ~(uintptr_t)7);
+    for (int i = 0; i < 160; ++i) {
+      raw_hex(" ", c[i]);
+    }
   }
   raw("\nglslim: stack");
   int found = 0;
-  for (int i = 0; i < 1024 && found < 48; ++i) {
+  for (int i = 0; i < 2048 && found < 64; ++i) {
     const uintptr_t v = p[i];
     if (v > lo && v < hi) {
       raw_hex(" +", v - lo);
@@ -200,13 +199,29 @@ static void dump_stack(const ucontext_t* uc) {
   raw("\n");
 }
 
+// libc++'s failure report (hardening checks, std::__throw_* without
+// exceptions) goes to stderr, which nothing reads here. libc++.a defines it
+// weak: this copy writes the message to the log first.
+void prosperoweb_libcpp_verbose_abort(const char* format, ...) __asm__("_ZNSt3__122__libcpp_verbose_abortEPKcz");
+void prosperoweb_libcpp_verbose_abort(const char* format, ...) {
+  char message[512];
+  va_list ap;
+  va_start(ap, format);
+  vsnprintf(message, sizeof message, format, ap);
+  va_end(ap);
+  raw("glslim: libc++ abort: ");
+  raw(message);
+  raw("\n");
+  abort();
+}
+
 static void on_signal(int sig, siginfo_t* info, void* context) {
   (void)info;
   raw_hex("glslim: signal ", (unsigned)sig);
   raw("\n");
   ps5_glslim_bye(sig == SIGTERM ? "SIGTERM" : "fatal signal");
   if (sig != SIGTERM) {
-    dump_stack((const ucontext_t*)context);
+    dump_stack(context);
   }
   _exit(sig == SIGTERM ? 0 : 128 + sig);
 }
