@@ -5,787 +5,1736 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+void* ps5_glslim_proc(const char* name) __attribute__((weak));
+
+static void* ps5_gl_resolve(const char* name)
+{
+    return ps5_glslim_proc ? ps5_glslim_proc(name) : (void*)0;
+}
+
 EGLBoolean eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config)
 {
+    static __typeof__(&eglChooseConfig) real;
+    if (!real)
+        real = (__typeof__(&eglChooseConfig))ps5_gl_resolve("eglChooseConfig");
+    if (real) {
+        return real(dpy, attrib_list, configs, config_size, num_config);
+    }
     return 0;
 }
 
 EGLBoolean eglCopyBuffers(EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target)
 {
+    static __typeof__(&eglCopyBuffers) real;
+    if (!real)
+        real = (__typeof__(&eglCopyBuffers))ps5_gl_resolve("eglCopyBuffers");
+    if (real) {
+        return real(dpy, surface, target);
+    }
     return 0;
 }
 
 EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateContext) real;
+    if (!real)
+        real = (__typeof__(&eglCreateContext))ps5_gl_resolve("eglCreateContext");
+    if (real) {
+        return real(dpy, config, share_context, attrib_list);
+    }
     return (EGLContext)0;
 }
 
 EGLSurface eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreatePbufferSurface) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePbufferSurface))ps5_gl_resolve("eglCreatePbufferSurface");
+    if (real) {
+        return real(dpy, config, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLSurface eglCreatePixmapSurface(EGLDisplay dpy, EGLConfig config, EGLNativePixmapType pixmap, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreatePixmapSurface) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePixmapSurface))ps5_gl_resolve("eglCreatePixmapSurface");
+    if (real) {
+        return real(dpy, config, pixmap, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateWindowSurface) real;
+    if (!real)
+        real = (__typeof__(&eglCreateWindowSurface))ps5_gl_resolve("eglCreateWindowSurface");
+    if (real) {
+        return real(dpy, config, win, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLBoolean eglDestroyContext(EGLDisplay dpy, EGLContext ctx)
 {
+    static __typeof__(&eglDestroyContext) real;
+    if (!real)
+        real = (__typeof__(&eglDestroyContext))ps5_gl_resolve("eglDestroyContext");
+    if (real) {
+        return real(dpy, ctx);
+    }
     return 0;
 }
 
 EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface)
 {
+    static __typeof__(&eglDestroySurface) real;
+    if (!real)
+        real = (__typeof__(&eglDestroySurface))ps5_gl_resolve("eglDestroySurface");
+    if (real) {
+        return real(dpy, surface);
+    }
     return 0;
 }
 
 EGLBoolean eglGetConfigAttrib(EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglGetConfigAttrib) real;
+    if (!real)
+        real = (__typeof__(&eglGetConfigAttrib))ps5_gl_resolve("eglGetConfigAttrib");
+    if (real) {
+        return real(dpy, config, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglGetConfigs(EGLDisplay dpy, EGLConfig *configs, EGLint config_size, EGLint *num_config)
 {
+    static __typeof__(&eglGetConfigs) real;
+    if (!real)
+        real = (__typeof__(&eglGetConfigs))ps5_gl_resolve("eglGetConfigs");
+    if (real) {
+        return real(dpy, configs, config_size, num_config);
+    }
     return 0;
 }
 
 EGLDisplay eglGetCurrentDisplay(void)
 {
+    static __typeof__(&eglGetCurrentDisplay) real;
+    if (!real)
+        real = (__typeof__(&eglGetCurrentDisplay))ps5_gl_resolve("eglGetCurrentDisplay");
+    if (real) {
+        return real();
+    }
     return (EGLDisplay)0;
 }
 
 EGLSurface eglGetCurrentSurface(EGLint readdraw)
 {
+    static __typeof__(&eglGetCurrentSurface) real;
+    if (!real)
+        real = (__typeof__(&eglGetCurrentSurface))ps5_gl_resolve("eglGetCurrentSurface");
+    if (real) {
+        return real(readdraw);
+    }
     return (EGLSurface)0;
 }
 
 EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id)
 {
+    static __typeof__(&eglGetDisplay) real;
+    if (!real)
+        real = (__typeof__(&eglGetDisplay))ps5_gl_resolve("eglGetDisplay");
+    if (real) {
+        return real(display_id);
+    }
     return (EGLDisplay)0;
 }
 
 EGLint eglGetError(void)
 {
+    static __typeof__(&eglGetError) real;
+    if (!real)
+        real = (__typeof__(&eglGetError))ps5_gl_resolve("eglGetError");
+    if (real) {
+        return real();
+    }
     return EGL_NOT_INITIALIZED;
 }
 
 __eglMustCastToProperFunctionPointerType eglGetProcAddress(const char *procname)
 {
+    static __typeof__(&eglGetProcAddress) real;
+    if (!real)
+        real = (__typeof__(&eglGetProcAddress))ps5_gl_resolve("eglGetProcAddress");
+    if (real) {
+        return real(procname);
+    }
     return (__eglMustCastToProperFunctionPointerType)0;
 }
 
 EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor)
 {
+    static __typeof__(&eglInitialize) real;
+    if (!real)
+        real = (__typeof__(&eglInitialize))ps5_gl_resolve("eglInitialize");
+    if (real) {
+        return real(dpy, major, minor);
+    }
     return 0;
 }
 
 EGLBoolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx)
 {
+    static __typeof__(&eglMakeCurrent) real;
+    if (!real)
+        real = (__typeof__(&eglMakeCurrent))ps5_gl_resolve("eglMakeCurrent");
+    if (real) {
+        return real(dpy, draw, read, ctx);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryContext(EGLDisplay dpy, EGLContext ctx, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglQueryContext) real;
+    if (!real)
+        real = (__typeof__(&eglQueryContext))ps5_gl_resolve("eglQueryContext");
+    if (real) {
+        return real(dpy, ctx, attribute, value);
+    }
     return 0;
 }
 
 const char * eglQueryString(EGLDisplay dpy, EGLint name)
 {
+    static __typeof__(&eglQueryString) real;
+    if (!real)
+        real = (__typeof__(&eglQueryString))ps5_gl_resolve("eglQueryString");
+    if (real) {
+        return real(dpy, name);
+    }
     return (const char *)0;
 }
 
 EGLBoolean eglQuerySurface(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglQuerySurface) real;
+    if (!real)
+        real = (__typeof__(&eglQuerySurface))ps5_gl_resolve("eglQuerySurface");
+    if (real) {
+        return real(dpy, surface, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface)
 {
+    static __typeof__(&eglSwapBuffers) real;
+    if (!real)
+        real = (__typeof__(&eglSwapBuffers))ps5_gl_resolve("eglSwapBuffers");
+    if (real) {
+        return real(dpy, surface);
+    }
     return 0;
 }
 
 EGLBoolean eglTerminate(EGLDisplay dpy)
 {
+    static __typeof__(&eglTerminate) real;
+    if (!real)
+        real = (__typeof__(&eglTerminate))ps5_gl_resolve("eglTerminate");
+    if (real) {
+        return real(dpy);
+    }
     return 0;
 }
 
 EGLBoolean eglWaitGL(void)
 {
+    static __typeof__(&eglWaitGL) real;
+    if (!real)
+        real = (__typeof__(&eglWaitGL))ps5_gl_resolve("eglWaitGL");
+    if (real) {
+        return real();
+    }
     return 0;
 }
 
 EGLBoolean eglWaitNative(EGLint engine)
 {
+    static __typeof__(&eglWaitNative) real;
+    if (!real)
+        real = (__typeof__(&eglWaitNative))ps5_gl_resolve("eglWaitNative");
+    if (real) {
+        return real(engine);
+    }
     return 0;
 }
 
 EGLBoolean eglBindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {
+    static __typeof__(&eglBindTexImage) real;
+    if (!real)
+        real = (__typeof__(&eglBindTexImage))ps5_gl_resolve("eglBindTexImage");
+    if (real) {
+        return real(dpy, surface, buffer);
+    }
     return 0;
 }
 
 EGLBoolean eglReleaseTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {
+    static __typeof__(&eglReleaseTexImage) real;
+    if (!real)
+        real = (__typeof__(&eglReleaseTexImage))ps5_gl_resolve("eglReleaseTexImage");
+    if (real) {
+        return real(dpy, surface, buffer);
+    }
     return 0;
 }
 
 EGLBoolean eglSurfaceAttrib(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint value)
 {
+    static __typeof__(&eglSurfaceAttrib) real;
+    if (!real)
+        real = (__typeof__(&eglSurfaceAttrib))ps5_gl_resolve("eglSurfaceAttrib");
+    if (real) {
+        return real(dpy, surface, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglSwapInterval(EGLDisplay dpy, EGLint interval)
 {
+    static __typeof__(&eglSwapInterval) real;
+    if (!real)
+        real = (__typeof__(&eglSwapInterval))ps5_gl_resolve("eglSwapInterval");
+    if (real) {
+        return real(dpy, interval);
+    }
     return 0;
 }
 
 EGLBoolean eglBindAPI(EGLenum api)
 {
+    static __typeof__(&eglBindAPI) real;
+    if (!real)
+        real = (__typeof__(&eglBindAPI))ps5_gl_resolve("eglBindAPI");
+    if (real) {
+        return real(api);
+    }
     return 0;
 }
 
 EGLenum eglQueryAPI(void)
 {
+    static __typeof__(&eglQueryAPI) real;
+    if (!real)
+        real = (__typeof__(&eglQueryAPI))ps5_gl_resolve("eglQueryAPI");
+    if (real) {
+        return real();
+    }
     return (EGLenum)0;
 }
 
 EGLSurface eglCreatePbufferFromClientBuffer(EGLDisplay dpy, EGLenum buftype, EGLClientBuffer buffer, EGLConfig config, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreatePbufferFromClientBuffer) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePbufferFromClientBuffer))ps5_gl_resolve("eglCreatePbufferFromClientBuffer");
+    if (real) {
+        return real(dpy, buftype, buffer, config, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLBoolean eglReleaseThread(void)
 {
+    static __typeof__(&eglReleaseThread) real;
+    if (!real)
+        real = (__typeof__(&eglReleaseThread))ps5_gl_resolve("eglReleaseThread");
+    if (real) {
+        return real();
+    }
     return 0;
 }
 
 EGLBoolean eglWaitClient(void)
 {
+    static __typeof__(&eglWaitClient) real;
+    if (!real)
+        real = (__typeof__(&eglWaitClient))ps5_gl_resolve("eglWaitClient");
+    if (real) {
+        return real();
+    }
     return 0;
 }
 
 EGLContext eglGetCurrentContext(void)
 {
+    static __typeof__(&eglGetCurrentContext) real;
+    if (!real)
+        real = (__typeof__(&eglGetCurrentContext))ps5_gl_resolve("eglGetCurrentContext");
+    if (real) {
+        return real();
+    }
     return (EGLContext)0;
 }
 
 EGLSync eglCreateSync(EGLDisplay dpy, EGLenum type, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglCreateSync) real;
+    if (!real)
+        real = (__typeof__(&eglCreateSync))ps5_gl_resolve("eglCreateSync");
+    if (real) {
+        return real(dpy, type, attrib_list);
+    }
     return (EGLSync)0;
 }
 
 EGLBoolean eglDestroySync(EGLDisplay dpy, EGLSync sync)
 {
+    static __typeof__(&eglDestroySync) real;
+    if (!real)
+        real = (__typeof__(&eglDestroySync))ps5_gl_resolve("eglDestroySync");
+    if (real) {
+        return real(dpy, sync);
+    }
     return 0;
 }
 
 EGLint eglClientWaitSync(EGLDisplay dpy, EGLSync sync, EGLint flags, EGLTime timeout)
 {
+    static __typeof__(&eglClientWaitSync) real;
+    if (!real)
+        real = (__typeof__(&eglClientWaitSync))ps5_gl_resolve("eglClientWaitSync");
+    if (real) {
+        return real(dpy, sync, flags, timeout);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglGetSyncAttrib(EGLDisplay dpy, EGLSync sync, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglGetSyncAttrib) real;
+    if (!real)
+        real = (__typeof__(&eglGetSyncAttrib))ps5_gl_resolve("eglGetSyncAttrib");
+    if (real) {
+        return real(dpy, sync, attribute, value);
+    }
     return 0;
 }
 
 EGLImage eglCreateImage(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglCreateImage) real;
+    if (!real)
+        real = (__typeof__(&eglCreateImage))ps5_gl_resolve("eglCreateImage");
+    if (real) {
+        return real(dpy, ctx, target, buffer, attrib_list);
+    }
     return (EGLImage)0;
 }
 
 EGLBoolean eglDestroyImage(EGLDisplay dpy, EGLImage image)
 {
+    static __typeof__(&eglDestroyImage) real;
+    if (!real)
+        real = (__typeof__(&eglDestroyImage))ps5_gl_resolve("eglDestroyImage");
+    if (real) {
+        return real(dpy, image);
+    }
     return 0;
 }
 
 EGLDisplay eglGetPlatformDisplay(EGLenum platform, void *native_display, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglGetPlatformDisplay) real;
+    if (!real)
+        real = (__typeof__(&eglGetPlatformDisplay))ps5_gl_resolve("eglGetPlatformDisplay");
+    if (real) {
+        return real(platform, native_display, attrib_list);
+    }
     return (EGLDisplay)0;
 }
 
 EGLSurface eglCreatePlatformWindowSurface(EGLDisplay dpy, EGLConfig config, void *native_window, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglCreatePlatformWindowSurface) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePlatformWindowSurface))ps5_gl_resolve("eglCreatePlatformWindowSurface");
+    if (real) {
+        return real(dpy, config, native_window, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLSurface eglCreatePlatformPixmapSurface(EGLDisplay dpy, EGLConfig config, void *native_pixmap, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglCreatePlatformPixmapSurface) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePlatformPixmapSurface))ps5_gl_resolve("eglCreatePlatformPixmapSurface");
+    if (real) {
+        return real(dpy, config, native_pixmap, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLBoolean eglWaitSync(EGLDisplay dpy, EGLSync sync, EGLint flags)
 {
+    static __typeof__(&eglWaitSync) real;
+    if (!real)
+        real = (__typeof__(&eglWaitSync))ps5_gl_resolve("eglWaitSync");
+    if (real) {
+        return real(dpy, sync, flags);
+    }
     return 0;
 }
 
 EGLSyncKHR eglCreateSync64KHR(EGLDisplay dpy, EGLenum type, const EGLAttribKHR *attrib_list)
 {
+    static __typeof__(&eglCreateSync64KHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateSync64KHR))ps5_gl_resolve("eglCreateSync64KHR");
+    if (real) {
+        return real(dpy, type, attrib_list);
+    }
     return (EGLSyncKHR)0;
 }
 
 EGLint eglDebugMessageControlKHR(EGLDEBUGPROCKHR callback, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglDebugMessageControlKHR) real;
+    if (!real)
+        real = (__typeof__(&eglDebugMessageControlKHR))ps5_gl_resolve("eglDebugMessageControlKHR");
+    if (real) {
+        return real(callback, attrib_list);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglQueryDebugKHR(EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryDebugKHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDebugKHR))ps5_gl_resolve("eglQueryDebugKHR");
+    if (real) {
+        return real(attribute, value);
+    }
     return 0;
 }
 
 EGLint eglLabelObjectKHR(EGLDisplay display, EGLenum objectType, EGLObjectKHR object, EGLLabelKHR label)
 {
+    static __typeof__(&eglLabelObjectKHR) real;
+    if (!real)
+        real = (__typeof__(&eglLabelObjectKHR))ps5_gl_resolve("eglLabelObjectKHR");
+    if (real) {
+        return real(display, objectType, object, label);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglQueryDisplayAttribKHR(EGLDisplay dpy, EGLint name, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryDisplayAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDisplayAttribKHR))ps5_gl_resolve("eglQueryDisplayAttribKHR");
+    if (real) {
+        return real(dpy, name, value);
+    }
     return 0;
 }
 
 EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateSyncKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateSyncKHR))ps5_gl_resolve("eglCreateSyncKHR");
+    if (real) {
+        return real(dpy, type, attrib_list);
+    }
     return (EGLSyncKHR)0;
 }
 
 EGLBoolean eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync)
 {
+    static __typeof__(&eglDestroySyncKHR) real;
+    if (!real)
+        real = (__typeof__(&eglDestroySyncKHR))ps5_gl_resolve("eglDestroySyncKHR");
+    if (real) {
+        return real(dpy, sync);
+    }
     return 0;
 }
 
 EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout)
 {
+    static __typeof__(&eglClientWaitSyncKHR) real;
+    if (!real)
+        real = (__typeof__(&eglClientWaitSyncKHR))ps5_gl_resolve("eglClientWaitSyncKHR");
+    if (real) {
+        return real(dpy, sync, flags, timeout);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglGetSyncAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglGetSyncAttribKHR))ps5_gl_resolve("eglGetSyncAttribKHR");
+    if (real) {
+        return real(dpy, sync, attribute, value);
+    }
     return 0;
 }
 
 EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateImageKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateImageKHR))ps5_gl_resolve("eglCreateImageKHR");
+    if (real) {
+        return real(dpy, ctx, target, buffer, attrib_list);
+    }
     return (EGLImageKHR)0;
 }
 
 EGLBoolean eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image)
 {
+    static __typeof__(&eglDestroyImageKHR) real;
+    if (!real)
+        real = (__typeof__(&eglDestroyImageKHR))ps5_gl_resolve("eglDestroyImageKHR");
+    if (real) {
+        return real(dpy, image);
+    }
     return 0;
 }
 
 EGLBoolean eglLockSurfaceKHR(EGLDisplay dpy, EGLSurface surface, const EGLint *attrib_list)
 {
+    static __typeof__(&eglLockSurfaceKHR) real;
+    if (!real)
+        real = (__typeof__(&eglLockSurfaceKHR))ps5_gl_resolve("eglLockSurfaceKHR");
+    if (real) {
+        return real(dpy, surface, attrib_list);
+    }
     return 0;
 }
 
 EGLBoolean eglUnlockSurfaceKHR(EGLDisplay dpy, EGLSurface surface)
 {
+    static __typeof__(&eglUnlockSurfaceKHR) real;
+    if (!real)
+        real = (__typeof__(&eglUnlockSurfaceKHR))ps5_gl_resolve("eglUnlockSurfaceKHR");
+    if (real) {
+        return real(dpy, surface);
+    }
     return 0;
 }
 
 EGLBoolean eglQuerySurface64KHR(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLAttribKHR *value)
 {
+    static __typeof__(&eglQuerySurface64KHR) real;
+    if (!real)
+        real = (__typeof__(&eglQuerySurface64KHR))ps5_gl_resolve("eglQuerySurface64KHR");
+    if (real) {
+        return real(dpy, surface, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglSetDamageRegionKHR(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects)
 {
+    static __typeof__(&eglSetDamageRegionKHR) real;
+    if (!real)
+        real = (__typeof__(&eglSetDamageRegionKHR))ps5_gl_resolve("eglSetDamageRegionKHR");
+    if (real) {
+        return real(dpy, surface, rects, n_rects);
+    }
     return 0;
 }
 
 EGLBoolean eglSignalSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLenum mode)
 {
+    static __typeof__(&eglSignalSyncKHR) real;
+    if (!real)
+        real = (__typeof__(&eglSignalSyncKHR))ps5_gl_resolve("eglSignalSyncKHR");
+    if (real) {
+        return real(dpy, sync, mode);
+    }
     return 0;
 }
 
 EGLStreamKHR eglCreateStreamKHR(EGLDisplay dpy, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateStreamKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateStreamKHR))ps5_gl_resolve("eglCreateStreamKHR");
+    if (real) {
+        return real(dpy, attrib_list);
+    }
     return (EGLStreamKHR)0;
 }
 
 EGLBoolean eglDestroyStreamKHR(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglDestroyStreamKHR) real;
+    if (!real)
+        real = (__typeof__(&eglDestroyStreamKHR))ps5_gl_resolve("eglDestroyStreamKHR");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamAttribKHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLint value)
 {
+    static __typeof__(&eglStreamAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamAttribKHR))ps5_gl_resolve("eglStreamAttribKHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryStreamKHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLint *value)
 {
+    static __typeof__(&eglQueryStreamKHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamKHR))ps5_gl_resolve("eglQueryStreamKHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryStreamu64KHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLuint64KHR *value)
 {
+    static __typeof__(&eglQueryStreamu64KHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamu64KHR))ps5_gl_resolve("eglQueryStreamu64KHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLStreamKHR eglCreateStreamAttribKHR(EGLDisplay dpy, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglCreateStreamAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateStreamAttribKHR))ps5_gl_resolve("eglCreateStreamAttribKHR");
+    if (real) {
+        return real(dpy, attrib_list);
+    }
     return (EGLStreamKHR)0;
 }
 
 EGLBoolean eglSetStreamAttribKHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib value)
 {
+    static __typeof__(&eglSetStreamAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglSetStreamAttribKHR))ps5_gl_resolve("eglSetStreamAttribKHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryStreamAttribKHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryStreamAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamAttribKHR))ps5_gl_resolve("eglQueryStreamAttribKHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerAcquireAttribKHR(EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglStreamConsumerAcquireAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerAcquireAttribKHR))ps5_gl_resolve("eglStreamConsumerAcquireAttribKHR");
+    if (real) {
+        return real(dpy, stream, attrib_list);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerReleaseAttribKHR(EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglStreamConsumerReleaseAttribKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerReleaseAttribKHR))ps5_gl_resolve("eglStreamConsumerReleaseAttribKHR");
+    if (real) {
+        return real(dpy, stream, attrib_list);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerGLTextureExternalKHR(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglStreamConsumerGLTextureExternalKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerGLTextureExternalKHR))ps5_gl_resolve("eglStreamConsumerGLTextureExternalKHR");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerAcquireKHR(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglStreamConsumerAcquireKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerAcquireKHR))ps5_gl_resolve("eglStreamConsumerAcquireKHR");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglStreamConsumerReleaseKHR) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerReleaseKHR))ps5_gl_resolve("eglStreamConsumerReleaseKHR");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLNativeFileDescriptorKHR eglGetStreamFileDescriptorKHR(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglGetStreamFileDescriptorKHR) real;
+    if (!real)
+        real = (__typeof__(&eglGetStreamFileDescriptorKHR))ps5_gl_resolve("eglGetStreamFileDescriptorKHR");
+    if (real) {
+        return real(dpy, stream);
+    }
     return (EGLNativeFileDescriptorKHR)0;
 }
 
 EGLStreamKHR eglCreateStreamFromFileDescriptorKHR(EGLDisplay dpy, EGLNativeFileDescriptorKHR file_descriptor)
 {
+    static __typeof__(&eglCreateStreamFromFileDescriptorKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateStreamFromFileDescriptorKHR))ps5_gl_resolve("eglCreateStreamFromFileDescriptorKHR");
+    if (real) {
+        return real(dpy, file_descriptor);
+    }
     return (EGLStreamKHR)0;
 }
 
 EGLBoolean eglQueryStreamTimeKHR(EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLTimeKHR *value)
 {
+    static __typeof__(&eglQueryStreamTimeKHR) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamTimeKHR))ps5_gl_resolve("eglQueryStreamTimeKHR");
+    if (real) {
+        return real(dpy, stream, attribute, value);
+    }
     return 0;
 }
 
 EGLSurface eglCreateStreamProducerSurfaceKHR(EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateStreamProducerSurfaceKHR) real;
+    if (!real)
+        real = (__typeof__(&eglCreateStreamProducerSurfaceKHR))ps5_gl_resolve("eglCreateStreamProducerSurfaceKHR");
+    if (real) {
+        return real(dpy, config, stream, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLBoolean eglSwapBuffersWithDamageKHR(EGLDisplay dpy, EGLSurface surface, const EGLint *rects, EGLint n_rects)
 {
+    static __typeof__(&eglSwapBuffersWithDamageKHR) real;
+    if (!real)
+        real = (__typeof__(&eglSwapBuffersWithDamageKHR))ps5_gl_resolve("eglSwapBuffersWithDamageKHR");
+    if (real) {
+        return real(dpy, surface, rects, n_rects);
+    }
     return 0;
 }
 
 EGLint eglWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags)
 {
+    static __typeof__(&eglWaitSyncKHR) real;
+    if (!real)
+        real = (__typeof__(&eglWaitSyncKHR))ps5_gl_resolve("eglWaitSyncKHR");
+    if (real) {
+        return real(dpy, sync, flags);
+    }
     return (EGLint)0;
 }
 
 void eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get)
 {
+    static __typeof__(&eglSetBlobCacheFuncsANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglSetBlobCacheFuncsANDROID))ps5_gl_resolve("eglSetBlobCacheFuncsANDROID");
+    if (real) {
+        real(dpy, set, get);
+        return;
+    }
 }
 
 EGLClientBuffer eglCreateNativeClientBufferANDROID(const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateNativeClientBufferANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglCreateNativeClientBufferANDROID))ps5_gl_resolve("eglCreateNativeClientBufferANDROID");
+    if (real) {
+        return real(attrib_list);
+    }
     return (EGLClientBuffer)0;
 }
 
 EGLBoolean eglGetCompositorTimingSupportedANDROID(EGLDisplay dpy, EGLSurface surface, EGLint name)
 {
+    static __typeof__(&eglGetCompositorTimingSupportedANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetCompositorTimingSupportedANDROID))ps5_gl_resolve("eglGetCompositorTimingSupportedANDROID");
+    if (real) {
+        return real(dpy, surface, name);
+    }
     return 0;
 }
 
 EGLBoolean eglGetCompositorTimingANDROID(EGLDisplay dpy, EGLSurface surface, EGLint numTimestamps,  const EGLint *names, EGLnsecsANDROID *values)
 {
+    static __typeof__(&eglGetCompositorTimingANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetCompositorTimingANDROID))ps5_gl_resolve("eglGetCompositorTimingANDROID");
+    if (real) {
+        return real(dpy, surface, numTimestamps, names, values);
+    }
     return 0;
 }
 
 EGLBoolean eglGetNextFrameIdANDROID(EGLDisplay dpy, EGLSurface surface, EGLuint64KHR *frameId)
 {
+    static __typeof__(&eglGetNextFrameIdANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetNextFrameIdANDROID))ps5_gl_resolve("eglGetNextFrameIdANDROID");
+    if (real) {
+        return real(dpy, surface, frameId);
+    }
     return 0;
 }
 
 EGLBoolean eglGetFrameTimestampSupportedANDROID(EGLDisplay dpy, EGLSurface surface, EGLint timestamp)
 {
+    static __typeof__(&eglGetFrameTimestampSupportedANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetFrameTimestampSupportedANDROID))ps5_gl_resolve("eglGetFrameTimestampSupportedANDROID");
+    if (real) {
+        return real(dpy, surface, timestamp);
+    }
     return 0;
 }
 
 EGLBoolean eglGetFrameTimestampsANDROID(EGLDisplay dpy, EGLSurface surface, EGLuint64KHR frameId, EGLint numTimestamps,  const EGLint *timestamps, EGLnsecsANDROID *values)
 {
+    static __typeof__(&eglGetFrameTimestampsANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetFrameTimestampsANDROID))ps5_gl_resolve("eglGetFrameTimestampsANDROID");
+    if (real) {
+        return real(dpy, surface, frameId, numTimestamps, timestamps, values);
+    }
     return 0;
 }
 
 EGLClientBuffer eglGetNativeClientBufferANDROID(const struct AHardwareBuffer *buffer)
 {
+    static __typeof__(&eglGetNativeClientBufferANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglGetNativeClientBufferANDROID))ps5_gl_resolve("eglGetNativeClientBufferANDROID");
+    if (real) {
+        return real(buffer);
+    }
     return (EGLClientBuffer)0;
 }
 
 EGLint eglDupNativeFenceFDANDROID(EGLDisplay dpy, EGLSyncKHR sync)
 {
+    static __typeof__(&eglDupNativeFenceFDANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglDupNativeFenceFDANDROID))ps5_gl_resolve("eglDupNativeFenceFDANDROID");
+    if (real) {
+        return real(dpy, sync);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglPresentationTimeANDROID(EGLDisplay dpy, EGLSurface surface, EGLnsecsANDROID time)
 {
+    static __typeof__(&eglPresentationTimeANDROID) real;
+    if (!real)
+        real = (__typeof__(&eglPresentationTimeANDROID))ps5_gl_resolve("eglPresentationTimeANDROID");
+    if (real) {
+        return real(dpy, surface, time);
+    }
     return 0;
 }
 
 EGLBoolean eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surface, EGLint attribute, void **value)
 {
+    static __typeof__(&eglQuerySurfacePointerANGLE) real;
+    if (!real)
+        real = (__typeof__(&eglQuerySurfacePointerANGLE))ps5_gl_resolve("eglQuerySurfacePointerANGLE");
+    if (real) {
+        return real(dpy, surface, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglGetMscRateANGLE(EGLDisplay dpy, EGLSurface surface, EGLint *numerator, EGLint *denominator)
 {
+    static __typeof__(&eglGetMscRateANGLE) real;
+    if (!real)
+        real = (__typeof__(&eglGetMscRateANGLE))ps5_gl_resolve("eglGetMscRateANGLE");
+    if (real) {
+        return real(dpy, surface, numerator, denominator);
+    }
     return 0;
 }
 
 EGLBoolean eglClientSignalSyncEXT(EGLDisplay dpy, EGLSync sync, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglClientSignalSyncEXT) real;
+    if (!real)
+        real = (__typeof__(&eglClientSignalSyncEXT))ps5_gl_resolve("eglClientSignalSyncEXT");
+    if (real) {
+        return real(dpy, sync, attrib_list);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSetContextListEXT(const EGLint *external_ref_ids, EGLint num_entries)
 {
+    static __typeof__(&eglCompositorSetContextListEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSetContextListEXT))ps5_gl_resolve("eglCompositorSetContextListEXT");
+    if (real) {
+        return real(external_ref_ids, num_entries);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSetContextAttributesEXT(EGLint external_ref_id, const EGLint *context_attributes, EGLint num_entries)
 {
+    static __typeof__(&eglCompositorSetContextAttributesEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSetContextAttributesEXT))ps5_gl_resolve("eglCompositorSetContextAttributesEXT");
+    if (real) {
+        return real(external_ref_id, context_attributes, num_entries);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSetWindowListEXT(EGLint external_ref_id, const EGLint *external_win_ids, EGLint num_entries)
 {
+    static __typeof__(&eglCompositorSetWindowListEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSetWindowListEXT))ps5_gl_resolve("eglCompositorSetWindowListEXT");
+    if (real) {
+        return real(external_ref_id, external_win_ids, num_entries);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSetWindowAttributesEXT(EGLint external_win_id, const EGLint *window_attributes, EGLint num_entries)
 {
+    static __typeof__(&eglCompositorSetWindowAttributesEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSetWindowAttributesEXT))ps5_gl_resolve("eglCompositorSetWindowAttributesEXT");
+    if (real) {
+        return real(external_win_id, window_attributes, num_entries);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorBindTexWindowEXT(EGLint external_win_id)
 {
+    static __typeof__(&eglCompositorBindTexWindowEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorBindTexWindowEXT))ps5_gl_resolve("eglCompositorBindTexWindowEXT");
+    if (real) {
+        return real(external_win_id);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSetSizeEXT(EGLint external_win_id, EGLint width, EGLint height)
 {
+    static __typeof__(&eglCompositorSetSizeEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSetSizeEXT))ps5_gl_resolve("eglCompositorSetSizeEXT");
+    if (real) {
+        return real(external_win_id, width, height);
+    }
     return 0;
 }
 
 EGLBoolean eglCompositorSwapPolicyEXT(EGLint external_win_id, EGLint policy)
 {
+    static __typeof__(&eglCompositorSwapPolicyEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCompositorSwapPolicyEXT))ps5_gl_resolve("eglCompositorSwapPolicyEXT");
+    if (real) {
+        return real(external_win_id, policy);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDeviceAttribEXT(EGLDeviceEXT device, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryDeviceAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDeviceAttribEXT))ps5_gl_resolve("eglQueryDeviceAttribEXT");
+    if (real) {
+        return real(device, attribute, value);
+    }
     return 0;
 }
 
 const char * eglQueryDeviceStringEXT(EGLDeviceEXT device, EGLint name)
 {
+    static __typeof__(&eglQueryDeviceStringEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDeviceStringEXT))ps5_gl_resolve("eglQueryDeviceStringEXT");
+    if (real) {
+        return real(device, name);
+    }
     return (const char *)0;
 }
 
 EGLBoolean eglQueryDevicesEXT(EGLint max_devices, EGLDeviceEXT *devices, EGLint *num_devices)
 {
+    static __typeof__(&eglQueryDevicesEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDevicesEXT))ps5_gl_resolve("eglQueryDevicesEXT");
+    if (real) {
+        return real(max_devices, devices, num_devices);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDisplayAttribEXT(EGLDisplay dpy, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryDisplayAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDisplayAttribEXT))ps5_gl_resolve("eglQueryDisplayAttribEXT");
+    if (real) {
+        return real(dpy, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDeviceBinaryEXT(EGLDeviceEXT device, EGLint name, EGLint max_size, void *value, EGLint *size)
 {
+    static __typeof__(&eglQueryDeviceBinaryEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDeviceBinaryEXT))ps5_gl_resolve("eglQueryDeviceBinaryEXT");
+    if (real) {
+        return real(device, name, max_size, value, size);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDmaBufFormatsEXT(EGLDisplay dpy, EGLint max_formats, EGLint *formats, EGLint *num_formats)
 {
+    static __typeof__(&eglQueryDmaBufFormatsEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDmaBufFormatsEXT))ps5_gl_resolve("eglQueryDmaBufFormatsEXT");
+    if (real) {
+        return real(dpy, max_formats, formats, num_formats);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDmaBufModifiersEXT(EGLDisplay dpy, EGLint format, EGLint max_modifiers, EGLuint64KHR *modifiers, EGLBoolean *external_only, EGLint *num_modifiers)
 {
+    static __typeof__(&eglQueryDmaBufModifiersEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDmaBufModifiersEXT))ps5_gl_resolve("eglQueryDmaBufModifiersEXT");
+    if (real) {
+        return real(dpy, format, max_modifiers, modifiers, external_only, num_modifiers);
+    }
     return 0;
 }
 
 EGLBoolean eglGetOutputLayersEXT(EGLDisplay dpy, const EGLAttrib *attrib_list, EGLOutputLayerEXT *layers, EGLint max_layers, EGLint *num_layers)
 {
+    static __typeof__(&eglGetOutputLayersEXT) real;
+    if (!real)
+        real = (__typeof__(&eglGetOutputLayersEXT))ps5_gl_resolve("eglGetOutputLayersEXT");
+    if (real) {
+        return real(dpy, attrib_list, layers, max_layers, num_layers);
+    }
     return 0;
 }
 
 EGLBoolean eglGetOutputPortsEXT(EGLDisplay dpy, const EGLAttrib *attrib_list, EGLOutputPortEXT *ports, EGLint max_ports, EGLint *num_ports)
 {
+    static __typeof__(&eglGetOutputPortsEXT) real;
+    if (!real)
+        real = (__typeof__(&eglGetOutputPortsEXT))ps5_gl_resolve("eglGetOutputPortsEXT");
+    if (real) {
+        return real(dpy, attrib_list, ports, max_ports, num_ports);
+    }
     return 0;
 }
 
 EGLBoolean eglOutputLayerAttribEXT(EGLDisplay dpy, EGLOutputLayerEXT layer, EGLint attribute, EGLAttrib value)
 {
+    static __typeof__(&eglOutputLayerAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglOutputLayerAttribEXT))ps5_gl_resolve("eglOutputLayerAttribEXT");
+    if (real) {
+        return real(dpy, layer, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryOutputLayerAttribEXT(EGLDisplay dpy, EGLOutputLayerEXT layer, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryOutputLayerAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryOutputLayerAttribEXT))ps5_gl_resolve("eglQueryOutputLayerAttribEXT");
+    if (real) {
+        return real(dpy, layer, attribute, value);
+    }
     return 0;
 }
 
 const char * eglQueryOutputLayerStringEXT(EGLDisplay dpy, EGLOutputLayerEXT layer, EGLint name)
 {
+    static __typeof__(&eglQueryOutputLayerStringEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryOutputLayerStringEXT))ps5_gl_resolve("eglQueryOutputLayerStringEXT");
+    if (real) {
+        return real(dpy, layer, name);
+    }
     return (const char *)0;
 }
 
 EGLBoolean eglOutputPortAttribEXT(EGLDisplay dpy, EGLOutputPortEXT port, EGLint attribute, EGLAttrib value)
 {
+    static __typeof__(&eglOutputPortAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglOutputPortAttribEXT))ps5_gl_resolve("eglOutputPortAttribEXT");
+    if (real) {
+        return real(dpy, port, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryOutputPortAttribEXT(EGLDisplay dpy, EGLOutputPortEXT port, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryOutputPortAttribEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryOutputPortAttribEXT))ps5_gl_resolve("eglQueryOutputPortAttribEXT");
+    if (real) {
+        return real(dpy, port, attribute, value);
+    }
     return 0;
 }
 
 const char * eglQueryOutputPortStringEXT(EGLDisplay dpy, EGLOutputPortEXT port, EGLint name)
 {
+    static __typeof__(&eglQueryOutputPortStringEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQueryOutputPortStringEXT))ps5_gl_resolve("eglQueryOutputPortStringEXT");
+    if (real) {
+        return real(dpy, port, name);
+    }
     return (const char *)0;
 }
 
 EGLDisplay eglGetPlatformDisplayEXT(EGLenum platform, void *native_display, const EGLint *attrib_list)
 {
+    static __typeof__(&eglGetPlatformDisplayEXT) real;
+    if (!real)
+        real = (__typeof__(&eglGetPlatformDisplayEXT))ps5_gl_resolve("eglGetPlatformDisplayEXT");
+    if (real) {
+        return real(platform, native_display, attrib_list);
+    }
     return (EGLDisplay)0;
 }
 
 EGLSurface eglCreatePlatformWindowSurfaceEXT(EGLDisplay dpy, EGLConfig config, void *native_window, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreatePlatformWindowSurfaceEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePlatformWindowSurfaceEXT))ps5_gl_resolve("eglCreatePlatformWindowSurfaceEXT");
+    if (real) {
+        return real(dpy, config, native_window, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLSurface eglCreatePlatformPixmapSurfaceEXT(EGLDisplay dpy, EGLConfig config, void *native_pixmap, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreatePlatformPixmapSurfaceEXT) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePlatformPixmapSurfaceEXT))ps5_gl_resolve("eglCreatePlatformPixmapSurfaceEXT");
+    if (real) {
+        return real(dpy, config, native_pixmap, attrib_list);
+    }
     return (EGLSurface)0;
 }
 
 EGLBoolean eglStreamConsumerOutputEXT(EGLDisplay dpy, EGLStreamKHR stream, EGLOutputLayerEXT layer)
 {
+    static __typeof__(&eglStreamConsumerOutputEXT) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerOutputEXT))ps5_gl_resolve("eglStreamConsumerOutputEXT");
+    if (real) {
+        return real(dpy, stream, layer);
+    }
     return 0;
 }
 
 EGLBoolean eglQuerySupportedCompressionRatesEXT(EGLDisplay dpy, EGLConfig config, const EGLAttrib *attrib_list, EGLint *rates, EGLint rate_size, EGLint *num_rates)
 {
+    static __typeof__(&eglQuerySupportedCompressionRatesEXT) real;
+    if (!real)
+        real = (__typeof__(&eglQuerySupportedCompressionRatesEXT))ps5_gl_resolve("eglQuerySupportedCompressionRatesEXT");
+    if (real) {
+        return real(dpy, config, attrib_list, rates, rate_size, num_rates);
+    }
     return 0;
 }
 
 EGLBoolean eglSwapBuffersWithDamageEXT(EGLDisplay dpy, EGLSurface surface, const EGLint *rects, EGLint n_rects)
 {
+    static __typeof__(&eglSwapBuffersWithDamageEXT) real;
+    if (!real)
+        real = (__typeof__(&eglSwapBuffersWithDamageEXT))ps5_gl_resolve("eglSwapBuffersWithDamageEXT");
+    if (real) {
+        return real(dpy, surface, rects, n_rects);
+    }
     return 0;
 }
 
 EGLBoolean eglUnsignalSyncEXT(EGLDisplay dpy, EGLSync sync, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglUnsignalSyncEXT) real;
+    if (!real)
+        real = (__typeof__(&eglUnsignalSyncEXT))ps5_gl_resolve("eglUnsignalSyncEXT");
+    if (real) {
+        return real(dpy, sync, attrib_list);
+    }
     return 0;
 }
 
 EGLSurface eglCreatePixmapSurfaceHI(EGLDisplay dpy, EGLConfig config, struct EGLClientPixmapHI *pixmap)
 {
+    static __typeof__(&eglCreatePixmapSurfaceHI) real;
+    if (!real)
+        real = (__typeof__(&eglCreatePixmapSurfaceHI))ps5_gl_resolve("eglCreatePixmapSurfaceHI");
+    if (real) {
+        return real(dpy, config, pixmap);
+    }
     return (EGLSurface)0;
 }
 
 EGLImageKHR eglCreateDRMImageMESA(EGLDisplay dpy, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateDRMImageMESA) real;
+    if (!real)
+        real = (__typeof__(&eglCreateDRMImageMESA))ps5_gl_resolve("eglCreateDRMImageMESA");
+    if (real) {
+        return real(dpy, attrib_list);
+    }
     return (EGLImageKHR)0;
 }
 
 EGLBoolean eglExportDRMImageMESA(EGLDisplay dpy, EGLImageKHR image, EGLint *name, EGLint *handle, EGLint *stride)
 {
+    static __typeof__(&eglExportDRMImageMESA) real;
+    if (!real)
+        real = (__typeof__(&eglExportDRMImageMESA))ps5_gl_resolve("eglExportDRMImageMESA");
+    if (real) {
+        return real(dpy, image, name, handle, stride);
+    }
     return 0;
 }
 
 EGLBoolean eglExportDMABUFImageQueryMESA(EGLDisplay dpy, EGLImageKHR image, int *fourcc, int *num_planes, EGLuint64KHR *modifiers)
 {
+    static __typeof__(&eglExportDMABUFImageQueryMESA) real;
+    if (!real)
+        real = (__typeof__(&eglExportDMABUFImageQueryMESA))ps5_gl_resolve("eglExportDMABUFImageQueryMESA");
+    if (real) {
+        return real(dpy, image, fourcc, num_planes, modifiers);
+    }
     return 0;
 }
 
 EGLBoolean eglExportDMABUFImageMESA(EGLDisplay dpy, EGLImageKHR image, int *fds, EGLint *strides, EGLint *offsets)
 {
+    static __typeof__(&eglExportDMABUFImageMESA) real;
+    if (!real)
+        real = (__typeof__(&eglExportDMABUFImageMESA))ps5_gl_resolve("eglExportDMABUFImageMESA");
+    if (real) {
+        return real(dpy, image, fds, strides, offsets);
+    }
     return 0;
 }
 
 char * eglGetDisplayDriverConfig(EGLDisplay dpy)
 {
+    static __typeof__(&eglGetDisplayDriverConfig) real;
+    if (!real)
+        real = (__typeof__(&eglGetDisplayDriverConfig))ps5_gl_resolve("eglGetDisplayDriverConfig");
+    if (real) {
+        return real(dpy);
+    }
     return (char *)0;
 }
 
 const char * eglGetDisplayDriverName(EGLDisplay dpy)
 {
+    static __typeof__(&eglGetDisplayDriverName) real;
+    if (!real)
+        real = (__typeof__(&eglGetDisplayDriverName))ps5_gl_resolve("eglGetDisplayDriverName");
+    if (real) {
+        return real(dpy);
+    }
     return (const char *)0;
 }
 
 EGLBoolean eglSwapBuffersRegionNOK(EGLDisplay dpy, EGLSurface surface, EGLint numRects, const EGLint *rects)
 {
+    static __typeof__(&eglSwapBuffersRegionNOK) real;
+    if (!real)
+        real = (__typeof__(&eglSwapBuffersRegionNOK))ps5_gl_resolve("eglSwapBuffersRegionNOK");
+    if (real) {
+        return real(dpy, surface, numRects, rects);
+    }
     return 0;
 }
 
 EGLBoolean eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EGLint numRects, const EGLint *rects)
 {
+    static __typeof__(&eglSwapBuffersRegion2NOK) real;
+    if (!real)
+        real = (__typeof__(&eglSwapBuffersRegion2NOK))ps5_gl_resolve("eglSwapBuffersRegion2NOK");
+    if (real) {
+        return real(dpy, surface, numRects, rects);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryNativeDisplayNV(EGLDisplay dpy, EGLNativeDisplayType *display_id)
 {
+    static __typeof__(&eglQueryNativeDisplayNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryNativeDisplayNV))ps5_gl_resolve("eglQueryNativeDisplayNV");
+    if (real) {
+        return real(dpy, display_id);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryNativeWindowNV(EGLDisplay dpy, EGLSurface surf, EGLNativeWindowType *window)
 {
+    static __typeof__(&eglQueryNativeWindowNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryNativeWindowNV))ps5_gl_resolve("eglQueryNativeWindowNV");
+    if (real) {
+        return real(dpy, surf, window);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryNativePixmapNV(EGLDisplay dpy, EGLSurface surf, EGLNativePixmapType *pixmap)
 {
+    static __typeof__(&eglQueryNativePixmapNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryNativePixmapNV))ps5_gl_resolve("eglQueryNativePixmapNV");
+    if (real) {
+        return real(dpy, surf, pixmap);
+    }
     return 0;
 }
 
 EGLBoolean eglPostSubBufferNV(EGLDisplay dpy, EGLSurface surface, EGLint x, EGLint y, EGLint width, EGLint height)
 {
+    static __typeof__(&eglPostSubBufferNV) real;
+    if (!real)
+        real = (__typeof__(&eglPostSubBufferNV))ps5_gl_resolve("eglPostSubBufferNV");
+    if (real) {
+        return real(dpy, surface, x, y, width, height);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamImageConsumerConnectNV(EGLDisplay dpy, EGLStreamKHR stream, EGLint num_modifiers, const EGLuint64KHR *modifiers, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglStreamImageConsumerConnectNV) real;
+    if (!real)
+        real = (__typeof__(&eglStreamImageConsumerConnectNV))ps5_gl_resolve("eglStreamImageConsumerConnectNV");
+    if (real) {
+        return real(dpy, stream, num_modifiers, modifiers, attrib_list);
+    }
     return 0;
 }
 
 EGLint eglQueryStreamConsumerEventNV(EGLDisplay dpy, EGLStreamKHR stream, EGLTime timeout, EGLenum *event, EGLAttrib *aux)
 {
+    static __typeof__(&eglQueryStreamConsumerEventNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamConsumerEventNV))ps5_gl_resolve("eglQueryStreamConsumerEventNV");
+    if (real) {
+        return real(dpy, stream, timeout, event, aux);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglStreamAcquireImageNV(EGLDisplay dpy, EGLStreamKHR stream, EGLImage *pImage, EGLSync sync)
 {
+    static __typeof__(&eglStreamAcquireImageNV) real;
+    if (!real)
+        real = (__typeof__(&eglStreamAcquireImageNV))ps5_gl_resolve("eglStreamAcquireImageNV");
+    if (real) {
+        return real(dpy, stream, pImage, sync);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamReleaseImageNV(EGLDisplay dpy, EGLStreamKHR stream, EGLImage image, EGLSync sync)
 {
+    static __typeof__(&eglStreamReleaseImageNV) real;
+    if (!real)
+        real = (__typeof__(&eglStreamReleaseImageNV))ps5_gl_resolve("eglStreamReleaseImageNV");
+    if (real) {
+        return real(dpy, stream, image, sync);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamConsumerGLTextureExternalAttribsNV(EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list)
 {
+    static __typeof__(&eglStreamConsumerGLTextureExternalAttribsNV) real;
+    if (!real)
+        real = (__typeof__(&eglStreamConsumerGLTextureExternalAttribsNV))ps5_gl_resolve("eglStreamConsumerGLTextureExternalAttribsNV");
+    if (real) {
+        return real(dpy, stream, attrib_list);
+    }
     return 0;
 }
 
 EGLBoolean eglStreamFlushNV(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglStreamFlushNV) real;
+    if (!real)
+        real = (__typeof__(&eglStreamFlushNV))ps5_gl_resolve("eglStreamFlushNV");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryDisplayAttribNV(EGLDisplay dpy, EGLint attribute, EGLAttrib *value)
 {
+    static __typeof__(&eglQueryDisplayAttribNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryDisplayAttribNV))ps5_gl_resolve("eglQueryDisplayAttribNV");
+    if (real) {
+        return real(dpy, attribute, value);
+    }
     return 0;
 }
 
 EGLBoolean eglSetStreamMetadataNV(EGLDisplay dpy, EGLStreamKHR stream, EGLint n, EGLint offset, EGLint size, const void *data)
 {
+    static __typeof__(&eglSetStreamMetadataNV) real;
+    if (!real)
+        real = (__typeof__(&eglSetStreamMetadataNV))ps5_gl_resolve("eglSetStreamMetadataNV");
+    if (real) {
+        return real(dpy, stream, n, offset, size, data);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryStreamMetadataNV(EGLDisplay dpy, EGLStreamKHR stream, EGLenum name, EGLint n, EGLint offset, EGLint size, void *data)
 {
+    static __typeof__(&eglQueryStreamMetadataNV) real;
+    if (!real)
+        real = (__typeof__(&eglQueryStreamMetadataNV))ps5_gl_resolve("eglQueryStreamMetadataNV");
+    if (real) {
+        return real(dpy, stream, name, n, offset, size, data);
+    }
     return 0;
 }
 
 EGLBoolean eglResetStreamNV(EGLDisplay dpy, EGLStreamKHR stream)
 {
+    static __typeof__(&eglResetStreamNV) real;
+    if (!real)
+        real = (__typeof__(&eglResetStreamNV))ps5_gl_resolve("eglResetStreamNV");
+    if (real) {
+        return real(dpy, stream);
+    }
     return 0;
 }
 
 EGLSyncKHR eglCreateStreamSyncNV(EGLDisplay dpy, EGLStreamKHR stream, EGLenum type, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateStreamSyncNV) real;
+    if (!real)
+        real = (__typeof__(&eglCreateStreamSyncNV))ps5_gl_resolve("eglCreateStreamSyncNV");
+    if (real) {
+        return real(dpy, stream, type, attrib_list);
+    }
     return (EGLSyncKHR)0;
 }
 
 EGLSyncNV eglCreateFenceSyncNV(EGLDisplay dpy, EGLenum condition, const EGLint *attrib_list)
 {
+    static __typeof__(&eglCreateFenceSyncNV) real;
+    if (!real)
+        real = (__typeof__(&eglCreateFenceSyncNV))ps5_gl_resolve("eglCreateFenceSyncNV");
+    if (real) {
+        return real(dpy, condition, attrib_list);
+    }
     return (EGLSyncNV)0;
 }
 
 EGLBoolean eglDestroySyncNV(EGLSyncNV sync)
 {
+    static __typeof__(&eglDestroySyncNV) real;
+    if (!real)
+        real = (__typeof__(&eglDestroySyncNV))ps5_gl_resolve("eglDestroySyncNV");
+    if (real) {
+        return real(sync);
+    }
     return 0;
 }
 
 EGLBoolean eglFenceNV(EGLSyncNV sync)
 {
+    static __typeof__(&eglFenceNV) real;
+    if (!real)
+        real = (__typeof__(&eglFenceNV))ps5_gl_resolve("eglFenceNV");
+    if (real) {
+        return real(sync);
+    }
     return 0;
 }
 
 EGLint eglClientWaitSyncNV(EGLSyncNV sync, EGLint flags, EGLTimeNV timeout)
 {
+    static __typeof__(&eglClientWaitSyncNV) real;
+    if (!real)
+        real = (__typeof__(&eglClientWaitSyncNV))ps5_gl_resolve("eglClientWaitSyncNV");
+    if (real) {
+        return real(sync, flags, timeout);
+    }
     return (EGLint)0;
 }
 
 EGLBoolean eglSignalSyncNV(EGLSyncNV sync, EGLenum mode)
 {
+    static __typeof__(&eglSignalSyncNV) real;
+    if (!real)
+        real = (__typeof__(&eglSignalSyncNV))ps5_gl_resolve("eglSignalSyncNV");
+    if (real) {
+        return real(sync, mode);
+    }
     return 0;
 }
 
 EGLBoolean eglGetSyncAttribNV(EGLSyncNV sync, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglGetSyncAttribNV) real;
+    if (!real)
+        real = (__typeof__(&eglGetSyncAttribNV))ps5_gl_resolve("eglGetSyncAttribNV");
+    if (real) {
+        return real(sync, attribute, value);
+    }
     return 0;
 }
 
 EGLuint64NV eglGetSystemTimeFrequencyNV(void)
 {
+    static __typeof__(&eglGetSystemTimeFrequencyNV) real;
+    if (!real)
+        real = (__typeof__(&eglGetSystemTimeFrequencyNV))ps5_gl_resolve("eglGetSystemTimeFrequencyNV");
+    if (real) {
+        return real();
+    }
     return (EGLuint64NV)0;
 }
 
 EGLuint64NV eglGetSystemTimeNV(void)
 {
+    static __typeof__(&eglGetSystemTimeNV) real;
+    if (!real)
+        real = (__typeof__(&eglGetSystemTimeNV))ps5_gl_resolve("eglGetSystemTimeNV");
+    if (real) {
+        return real();
+    }
     return (EGLuint64NV)0;
 }
 
 EGLBoolean eglBindWaylandDisplayWL(EGLDisplay dpy, struct wl_display *display)
 {
+    static __typeof__(&eglBindWaylandDisplayWL) real;
+    if (!real)
+        real = (__typeof__(&eglBindWaylandDisplayWL))ps5_gl_resolve("eglBindWaylandDisplayWL");
+    if (real) {
+        return real(dpy, display);
+    }
     return 0;
 }
 
 EGLBoolean eglUnbindWaylandDisplayWL(EGLDisplay dpy, struct wl_display *display)
 {
+    static __typeof__(&eglUnbindWaylandDisplayWL) real;
+    if (!real)
+        real = (__typeof__(&eglUnbindWaylandDisplayWL))ps5_gl_resolve("eglUnbindWaylandDisplayWL");
+    if (real) {
+        return real(dpy, display);
+    }
     return 0;
 }
 
 EGLBoolean eglQueryWaylandBufferWL(EGLDisplay dpy, struct wl_resource *buffer, EGLint attribute, EGLint *value)
 {
+    static __typeof__(&eglQueryWaylandBufferWL) real;
+    if (!real)
+        real = (__typeof__(&eglQueryWaylandBufferWL))ps5_gl_resolve("eglQueryWaylandBufferWL");
+    if (real) {
+        return real(dpy, buffer, attribute, value);
+    }
     return 0;
 }
 
 struct wl_buffer * eglCreateWaylandBufferFromImageWL(EGLDisplay dpy, EGLImageKHR image)
 {
+    static __typeof__(&eglCreateWaylandBufferFromImageWL) real;
+    if (!real)
+        real = (__typeof__(&eglCreateWaylandBufferFromImageWL))ps5_gl_resolve("eglCreateWaylandBufferFromImageWL");
+    if (real) {
+        return real(dpy, image);
+    }
     return (struct wl_buffer *)0;
 }
-

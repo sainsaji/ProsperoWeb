@@ -568,5 +568,20 @@ int ps5_glslim_selftest(void) {
   free(px);
   ps5_glslim_log("selftest: 30 frames in %.1f ms, label wait avg %.2f ms, readback avg %.2f ms, %d stale, %d timeouts",
                  now_ms() - t_loop, wait_sum / 30, read_sum / 30, stale, timeouts);
+  // Give everything back: WebKit makes its own contexts from the same 48 MB.
+  P(glDeleteFramebuffers);
+  P(glDeleteTextures);
+  P(eglDestroyContext);
+  P(eglDestroySurface);
+  p_glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  if (p_glDeleteFramebuffers && p_glDeleteTextures) {
+    p_glDeleteFramebuffers(1, &fbo);
+    p_glDeleteTextures(1, &tex);
+  }
+  p_eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+  if (p_eglDestroyContext && p_eglDestroySurface) {
+    p_eglDestroyContext(dpy, ctx);
+    p_eglDestroySurface(dpy, surf);
+  }
   return stale || timeouts ? -1 : 0;
 }

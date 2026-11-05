@@ -5,3232 +5,8699 @@
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
 
+void* ps5_glslim_proc(const char* name) __attribute__((weak));
+
+static void* ps5_gl_resolve(const char* name)
+{
+    return ps5_glslim_proc ? ps5_glslim_proc(name) : (void*)0;
+}
+
 void glActiveTexture(GLenum texture)
 {
+    static __typeof__(&glActiveTexture) real;
+    if (!real)
+        real = (__typeof__(&glActiveTexture))ps5_gl_resolve("glActiveTexture");
+    if (real) {
+        real(texture);
+        return;
+    }
 }
 
 void glAttachShader(GLuint program, GLuint shader)
 {
+    static __typeof__(&glAttachShader) real;
+    if (!real)
+        real = (__typeof__(&glAttachShader))ps5_gl_resolve("glAttachShader");
+    if (real) {
+        real(program, shader);
+        return;
+    }
 }
 
 void glBindAttribLocation(GLuint program, GLuint index, const GLchar *name)
 {
+    static __typeof__(&glBindAttribLocation) real;
+    if (!real)
+        real = (__typeof__(&glBindAttribLocation))ps5_gl_resolve("glBindAttribLocation");
+    if (real) {
+        real(program, index, name);
+        return;
+    }
 }
 
 void glBindBuffer(GLenum target, GLuint buffer)
 {
+    static __typeof__(&glBindBuffer) real;
+    if (!real)
+        real = (__typeof__(&glBindBuffer))ps5_gl_resolve("glBindBuffer");
+    if (real) {
+        real(target, buffer);
+        return;
+    }
 }
 
 void glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
+    static __typeof__(&glBindFramebuffer) real;
+    if (!real)
+        real = (__typeof__(&glBindFramebuffer))ps5_gl_resolve("glBindFramebuffer");
+    if (real) {
+        real(target, framebuffer);
+        return;
+    }
 }
 
 void glBindRenderbuffer(GLenum target, GLuint renderbuffer)
 {
+    static __typeof__(&glBindRenderbuffer) real;
+    if (!real)
+        real = (__typeof__(&glBindRenderbuffer))ps5_gl_resolve("glBindRenderbuffer");
+    if (real) {
+        real(target, renderbuffer);
+        return;
+    }
 }
 
 void glBindTexture(GLenum target, GLuint texture)
 {
+    static __typeof__(&glBindTexture) real;
+    if (!real)
+        real = (__typeof__(&glBindTexture))ps5_gl_resolve("glBindTexture");
+    if (real) {
+        real(target, texture);
+        return;
+    }
 }
 
 void glBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
+    static __typeof__(&glBlendColor) real;
+    if (!real)
+        real = (__typeof__(&glBlendColor))ps5_gl_resolve("glBlendColor");
+    if (real) {
+        real(red, green, blue, alpha);
+        return;
+    }
 }
 
 void glBlendEquation(GLenum mode)
 {
+    static __typeof__(&glBlendEquation) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquation))ps5_gl_resolve("glBlendEquation");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
 {
+    static __typeof__(&glBlendEquationSeparate) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquationSeparate))ps5_gl_resolve("glBlendEquationSeparate");
+    if (real) {
+        real(modeRGB, modeAlpha);
+        return;
+    }
 }
 
 void glBlendFunc(GLenum sfactor, GLenum dfactor)
 {
+    static __typeof__(&glBlendFunc) real;
+    if (!real)
+        real = (__typeof__(&glBlendFunc))ps5_gl_resolve("glBlendFunc");
+    if (real) {
+        real(sfactor, dfactor);
+        return;
+    }
 }
 
 void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 {
+    static __typeof__(&glBlendFuncSeparate) real;
+    if (!real)
+        real = (__typeof__(&glBlendFuncSeparate))ps5_gl_resolve("glBlendFuncSeparate");
+    if (real) {
+        real(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+        return;
+    }
 }
 
 void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenum usage)
 {
+    static __typeof__(&glBufferData) real;
+    if (!real)
+        real = (__typeof__(&glBufferData))ps5_gl_resolve("glBufferData");
+    if (real) {
+        real(target, size, data, usage);
+        return;
+    }
 }
 
 void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data)
 {
+    static __typeof__(&glBufferSubData) real;
+    if (!real)
+        real = (__typeof__(&glBufferSubData))ps5_gl_resolve("glBufferSubData");
+    if (real) {
+        real(target, offset, size, data);
+        return;
+    }
 }
 
 GLenum glCheckFramebufferStatus(GLenum target)
 {
+    static __typeof__(&glCheckFramebufferStatus) real;
+    if (!real)
+        real = (__typeof__(&glCheckFramebufferStatus))ps5_gl_resolve("glCheckFramebufferStatus");
+    if (real) {
+        return real(target);
+    }
     return (GLenum)0;
 }
 
 void glClear(GLbitfield mask)
 {
+    static __typeof__(&glClear) real;
+    if (!real)
+        real = (__typeof__(&glClear))ps5_gl_resolve("glClear");
+    if (real) {
+        real(mask);
+        return;
+    }
 }
 
 void glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 {
+    static __typeof__(&glClearColor) real;
+    if (!real)
+        real = (__typeof__(&glClearColor))ps5_gl_resolve("glClearColor");
+    if (real) {
+        real(red, green, blue, alpha);
+        return;
+    }
 }
 
 void glClearDepthf(GLfloat d)
 {
+    static __typeof__(&glClearDepthf) real;
+    if (!real)
+        real = (__typeof__(&glClearDepthf))ps5_gl_resolve("glClearDepthf");
+    if (real) {
+        real(d);
+        return;
+    }
 }
 
 void glClearStencil(GLint s)
 {
+    static __typeof__(&glClearStencil) real;
+    if (!real)
+        real = (__typeof__(&glClearStencil))ps5_gl_resolve("glClearStencil");
+    if (real) {
+        real(s);
+        return;
+    }
 }
 
 void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
+    static __typeof__(&glColorMask) real;
+    if (!real)
+        real = (__typeof__(&glColorMask))ps5_gl_resolve("glColorMask");
+    if (real) {
+        real(red, green, blue, alpha);
+        return;
+    }
 }
 
 void glCompileShader(GLuint shader)
 {
+    static __typeof__(&glCompileShader) real;
+    if (!real)
+        real = (__typeof__(&glCompileShader))ps5_gl_resolve("glCompileShader");
+    if (real) {
+        real(shader);
+        return;
+    }
 }
 
 void glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexImage2D) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexImage2D))ps5_gl_resolve("glCompressedTexImage2D");
+    if (real) {
+        real(target, level, internalformat, width, height, border, imageSize, data);
+        return;
+    }
 }
 
 void glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexSubImage2D) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexSubImage2D))ps5_gl_resolve("glCompressedTexSubImage2D");
+    if (real) {
+        real(target, level, xoffset, yoffset, width, height, format, imageSize, data);
+        return;
+    }
 }
 
 void glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
+    static __typeof__(&glCopyTexImage2D) real;
+    if (!real)
+        real = (__typeof__(&glCopyTexImage2D))ps5_gl_resolve("glCopyTexImage2D");
+    if (real) {
+        real(target, level, internalformat, x, y, width, height, border);
+        return;
+    }
 }
 
 void glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glCopyTexSubImage2D) real;
+    if (!real)
+        real = (__typeof__(&glCopyTexSubImage2D))ps5_gl_resolve("glCopyTexSubImage2D");
+    if (real) {
+        real(target, level, xoffset, yoffset, x, y, width, height);
+        return;
+    }
 }
 
 GLuint glCreateProgram(void)
 {
+    static __typeof__(&glCreateProgram) real;
+    if (!real)
+        real = (__typeof__(&glCreateProgram))ps5_gl_resolve("glCreateProgram");
+    if (real) {
+        return real();
+    }
     return (GLuint)0;
 }
 
 GLuint glCreateShader(GLenum type)
 {
+    static __typeof__(&glCreateShader) real;
+    if (!real)
+        real = (__typeof__(&glCreateShader))ps5_gl_resolve("glCreateShader");
+    if (real) {
+        return real(type);
+    }
     return (GLuint)0;
 }
 
 void glCullFace(GLenum mode)
 {
+    static __typeof__(&glCullFace) real;
+    if (!real)
+        real = (__typeof__(&glCullFace))ps5_gl_resolve("glCullFace");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glDeleteBuffers(GLsizei n, const GLuint *buffers)
 {
+    static __typeof__(&glDeleteBuffers) real;
+    if (!real)
+        real = (__typeof__(&glDeleteBuffers))ps5_gl_resolve("glDeleteBuffers");
+    if (real) {
+        real(n, buffers);
+        return;
+    }
 }
 
 void glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
 {
+    static __typeof__(&glDeleteFramebuffers) real;
+    if (!real)
+        real = (__typeof__(&glDeleteFramebuffers))ps5_gl_resolve("glDeleteFramebuffers");
+    if (real) {
+        real(n, framebuffers);
+        return;
+    }
 }
 
 void glDeleteProgram(GLuint program)
 {
+    static __typeof__(&glDeleteProgram) real;
+    if (!real)
+        real = (__typeof__(&glDeleteProgram))ps5_gl_resolve("glDeleteProgram");
+    if (real) {
+        real(program);
+        return;
+    }
 }
 
 void glDeleteRenderbuffers(GLsizei n, const GLuint *renderbuffers)
 {
+    static __typeof__(&glDeleteRenderbuffers) real;
+    if (!real)
+        real = (__typeof__(&glDeleteRenderbuffers))ps5_gl_resolve("glDeleteRenderbuffers");
+    if (real) {
+        real(n, renderbuffers);
+        return;
+    }
 }
 
 void glDeleteShader(GLuint shader)
 {
+    static __typeof__(&glDeleteShader) real;
+    if (!real)
+        real = (__typeof__(&glDeleteShader))ps5_gl_resolve("glDeleteShader");
+    if (real) {
+        real(shader);
+        return;
+    }
 }
 
 void glDeleteTextures(GLsizei n, const GLuint *textures)
 {
+    static __typeof__(&glDeleteTextures) real;
+    if (!real)
+        real = (__typeof__(&glDeleteTextures))ps5_gl_resolve("glDeleteTextures");
+    if (real) {
+        real(n, textures);
+        return;
+    }
 }
 
 void glDepthFunc(GLenum func)
 {
+    static __typeof__(&glDepthFunc) real;
+    if (!real)
+        real = (__typeof__(&glDepthFunc))ps5_gl_resolve("glDepthFunc");
+    if (real) {
+        real(func);
+        return;
+    }
 }
 
 void glDepthMask(GLboolean flag)
 {
+    static __typeof__(&glDepthMask) real;
+    if (!real)
+        real = (__typeof__(&glDepthMask))ps5_gl_resolve("glDepthMask");
+    if (real) {
+        real(flag);
+        return;
+    }
 }
 
 void glDepthRangef(GLfloat n, GLfloat f)
 {
+    static __typeof__(&glDepthRangef) real;
+    if (!real)
+        real = (__typeof__(&glDepthRangef))ps5_gl_resolve("glDepthRangef");
+    if (real) {
+        real(n, f);
+        return;
+    }
 }
 
 void glDetachShader(GLuint program, GLuint shader)
 {
+    static __typeof__(&glDetachShader) real;
+    if (!real)
+        real = (__typeof__(&glDetachShader))ps5_gl_resolve("glDetachShader");
+    if (real) {
+        real(program, shader);
+        return;
+    }
 }
 
 void glDisable(GLenum cap)
 {
+    static __typeof__(&glDisable) real;
+    if (!real)
+        real = (__typeof__(&glDisable))ps5_gl_resolve("glDisable");
+    if (real) {
+        real(cap);
+        return;
+    }
 }
 
 void glDisableVertexAttribArray(GLuint index)
 {
+    static __typeof__(&glDisableVertexAttribArray) real;
+    if (!real)
+        real = (__typeof__(&glDisableVertexAttribArray))ps5_gl_resolve("glDisableVertexAttribArray");
+    if (real) {
+        real(index);
+        return;
+    }
 }
 
 void glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    static __typeof__(&glDrawArrays) real;
+    if (!real)
+        real = (__typeof__(&glDrawArrays))ps5_gl_resolve("glDrawArrays");
+    if (real) {
+        real(mode, first, count);
+        return;
+    }
 }
 
 void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices)
 {
+    static __typeof__(&glDrawElements) real;
+    if (!real)
+        real = (__typeof__(&glDrawElements))ps5_gl_resolve("glDrawElements");
+    if (real) {
+        real(mode, count, type, indices);
+        return;
+    }
 }
 
 void glEnable(GLenum cap)
 {
+    static __typeof__(&glEnable) real;
+    if (!real)
+        real = (__typeof__(&glEnable))ps5_gl_resolve("glEnable");
+    if (real) {
+        real(cap);
+        return;
+    }
 }
 
 void glEnableVertexAttribArray(GLuint index)
 {
+    static __typeof__(&glEnableVertexAttribArray) real;
+    if (!real)
+        real = (__typeof__(&glEnableVertexAttribArray))ps5_gl_resolve("glEnableVertexAttribArray");
+    if (real) {
+        real(index);
+        return;
+    }
 }
 
 void glFinish(void)
 {
+    static __typeof__(&glFinish) real;
+    if (!real)
+        real = (__typeof__(&glFinish))ps5_gl_resolve("glFinish");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glFlush(void)
 {
+    static __typeof__(&glFlush) real;
+    if (!real)
+        real = (__typeof__(&glFlush))ps5_gl_resolve("glFlush");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
 {
+    static __typeof__(&glFramebufferRenderbuffer) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferRenderbuffer))ps5_gl_resolve("glFramebufferRenderbuffer");
+    if (real) {
+        real(target, attachment, renderbuffertarget, renderbuffer);
+        return;
+    }
 }
 
 void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
+    static __typeof__(&glFramebufferTexture2D) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTexture2D))ps5_gl_resolve("glFramebufferTexture2D");
+    if (real) {
+        real(target, attachment, textarget, texture, level);
+        return;
+    }
 }
 
 void glFrontFace(GLenum mode)
 {
+    static __typeof__(&glFrontFace) real;
+    if (!real)
+        real = (__typeof__(&glFrontFace))ps5_gl_resolve("glFrontFace");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glGenBuffers(GLsizei n, GLuint *buffers)
 {
+    static __typeof__(&glGenBuffers) real;
+    if (!real)
+        real = (__typeof__(&glGenBuffers))ps5_gl_resolve("glGenBuffers");
+    if (real) {
+        real(n, buffers);
+        return;
+    }
 }
 
 void glGenerateMipmap(GLenum target)
 {
+    static __typeof__(&glGenerateMipmap) real;
+    if (!real)
+        real = (__typeof__(&glGenerateMipmap))ps5_gl_resolve("glGenerateMipmap");
+    if (real) {
+        real(target);
+        return;
+    }
 }
 
 void glGenFramebuffers(GLsizei n, GLuint *framebuffers)
 {
+    static __typeof__(&glGenFramebuffers) real;
+    if (!real)
+        real = (__typeof__(&glGenFramebuffers))ps5_gl_resolve("glGenFramebuffers");
+    if (real) {
+        real(n, framebuffers);
+        return;
+    }
 }
 
 void glGenRenderbuffers(GLsizei n, GLuint *renderbuffers)
 {
+    static __typeof__(&glGenRenderbuffers) real;
+    if (!real)
+        real = (__typeof__(&glGenRenderbuffers))ps5_gl_resolve("glGenRenderbuffers");
+    if (real) {
+        real(n, renderbuffers);
+        return;
+    }
 }
 
 void glGenTextures(GLsizei n, GLuint *textures)
 {
+    static __typeof__(&glGenTextures) real;
+    if (!real)
+        real = (__typeof__(&glGenTextures))ps5_gl_resolve("glGenTextures");
+    if (real) {
+        real(n, textures);
+        return;
+    }
 }
 
 void glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)
 {
+    static __typeof__(&glGetActiveAttrib) real;
+    if (!real)
+        real = (__typeof__(&glGetActiveAttrib))ps5_gl_resolve("glGetActiveAttrib");
+    if (real) {
+        real(program, index, bufSize, length, size, type, name);
+        return;
+    }
 }
 
 void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)
 {
+    static __typeof__(&glGetActiveUniform) real;
+    if (!real)
+        real = (__typeof__(&glGetActiveUniform))ps5_gl_resolve("glGetActiveUniform");
+    if (real) {
+        real(program, index, bufSize, length, size, type, name);
+        return;
+    }
 }
 
 void glGetAttachedShaders(GLuint program, GLsizei maxCount, GLsizei *count, GLuint *shaders)
 {
+    static __typeof__(&glGetAttachedShaders) real;
+    if (!real)
+        real = (__typeof__(&glGetAttachedShaders))ps5_gl_resolve("glGetAttachedShaders");
+    if (real) {
+        real(program, maxCount, count, shaders);
+        return;
+    }
 }
 
 GLint glGetAttribLocation(GLuint program, const GLchar *name)
 {
+    static __typeof__(&glGetAttribLocation) real;
+    if (!real)
+        real = (__typeof__(&glGetAttribLocation))ps5_gl_resolve("glGetAttribLocation");
+    if (real) {
+        return real(program, name);
+    }
     return (GLint)0;
 }
 
 void glGetBooleanv(GLenum pname, GLboolean *data)
 {
+    static __typeof__(&glGetBooleanv) real;
+    if (!real)
+        real = (__typeof__(&glGetBooleanv))ps5_gl_resolve("glGetBooleanv");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glGetBufferParameteriv(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetBufferParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glGetBufferParameteriv))ps5_gl_resolve("glGetBufferParameteriv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 GLenum glGetError(void)
 {
+    static __typeof__(&glGetError) real;
+    if (!real)
+        real = (__typeof__(&glGetError))ps5_gl_resolve("glGetError");
+    if (real) {
+        return real();
+    }
     return (GLenum)0;
 }
 
 void glGetFloatv(GLenum pname, GLfloat *data)
 {
+    static __typeof__(&glGetFloatv) real;
+    if (!real)
+        real = (__typeof__(&glGetFloatv))ps5_gl_resolve("glGetFloatv");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetFramebufferAttachmentParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glGetFramebufferAttachmentParameteriv))ps5_gl_resolve("glGetFramebufferAttachmentParameteriv");
+    if (real) {
+        real(target, attachment, pname, params);
+        return;
+    }
 }
 
 void glGetIntegerv(GLenum pname, GLint *data)
 {
+    static __typeof__(&glGetIntegerv) real;
+    if (!real)
+        real = (__typeof__(&glGetIntegerv))ps5_gl_resolve("glGetIntegerv");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glGetProgramiv(GLuint program, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetProgramiv) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramiv))ps5_gl_resolve("glGetProgramiv");
+    if (real) {
+        real(program, pname, params);
+        return;
+    }
 }
 
 void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
+    static __typeof__(&glGetProgramInfoLog) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramInfoLog))ps5_gl_resolve("glGetProgramInfoLog");
+    if (real) {
+        real(program, bufSize, length, infoLog);
+        return;
+    }
 }
 
 void glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetRenderbufferParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glGetRenderbufferParameteriv))ps5_gl_resolve("glGetRenderbufferParameteriv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetShaderiv(GLuint shader, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetShaderiv) real;
+    if (!real)
+        real = (__typeof__(&glGetShaderiv))ps5_gl_resolve("glGetShaderiv");
+    if (real) {
+        real(shader, pname, params);
+        return;
+    }
 }
 
 void glGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
+    static __typeof__(&glGetShaderInfoLog) real;
+    if (!real)
+        real = (__typeof__(&glGetShaderInfoLog))ps5_gl_resolve("glGetShaderInfoLog");
+    if (real) {
+        real(shader, bufSize, length, infoLog);
+        return;
+    }
 }
 
 void glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint *range, GLint *precision)
 {
+    static __typeof__(&glGetShaderPrecisionFormat) real;
+    if (!real)
+        real = (__typeof__(&glGetShaderPrecisionFormat))ps5_gl_resolve("glGetShaderPrecisionFormat");
+    if (real) {
+        real(shadertype, precisiontype, range, precision);
+        return;
+    }
 }
 
 void glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source)
 {
+    static __typeof__(&glGetShaderSource) real;
+    if (!real)
+        real = (__typeof__(&glGetShaderSource))ps5_gl_resolve("glGetShaderSource");
+    if (real) {
+        real(shader, bufSize, length, source);
+        return;
+    }
 }
 
 const GLubyte * glGetString(GLenum name)
 {
+    static __typeof__(&glGetString) real;
+    if (!real)
+        real = (__typeof__(&glGetString))ps5_gl_resolve("glGetString");
+    if (real) {
+        return real(name);
+    }
     return (const GLubyte *)0;
 }
 
 void glGetTexParameterfv(GLenum target, GLenum pname, GLfloat *params)
 {
+    static __typeof__(&glGetTexParameterfv) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameterfv))ps5_gl_resolve("glGetTexParameterfv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetTexParameteriv(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetTexParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameteriv))ps5_gl_resolve("glGetTexParameteriv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetUniformfv(GLuint program, GLint location, GLfloat *params)
 {
+    static __typeof__(&glGetUniformfv) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformfv))ps5_gl_resolve("glGetUniformfv");
+    if (real) {
+        real(program, location, params);
+        return;
+    }
 }
 
 void glGetUniformiv(GLuint program, GLint location, GLint *params)
 {
+    static __typeof__(&glGetUniformiv) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformiv))ps5_gl_resolve("glGetUniformiv");
+    if (real) {
+        real(program, location, params);
+        return;
+    }
 }
 
 GLint glGetUniformLocation(GLuint program, const GLchar *name)
 {
+    static __typeof__(&glGetUniformLocation) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformLocation))ps5_gl_resolve("glGetUniformLocation");
+    if (real) {
+        return real(program, name);
+    }
     return (GLint)0;
 }
 
 void glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat *params)
 {
+    static __typeof__(&glGetVertexAttribfv) real;
+    if (!real)
+        real = (__typeof__(&glGetVertexAttribfv))ps5_gl_resolve("glGetVertexAttribfv");
+    if (real) {
+        real(index, pname, params);
+        return;
+    }
 }
 
 void glGetVertexAttribiv(GLuint index, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetVertexAttribiv) real;
+    if (!real)
+        real = (__typeof__(&glGetVertexAttribiv))ps5_gl_resolve("glGetVertexAttribiv");
+    if (real) {
+        real(index, pname, params);
+        return;
+    }
 }
 
 void glGetVertexAttribPointerv(GLuint index, GLenum pname, void **pointer)
 {
+    static __typeof__(&glGetVertexAttribPointerv) real;
+    if (!real)
+        real = (__typeof__(&glGetVertexAttribPointerv))ps5_gl_resolve("glGetVertexAttribPointerv");
+    if (real) {
+        real(index, pname, pointer);
+        return;
+    }
 }
 
 void glHint(GLenum target, GLenum mode)
 {
+    static __typeof__(&glHint) real;
+    if (!real)
+        real = (__typeof__(&glHint))ps5_gl_resolve("glHint");
+    if (real) {
+        real(target, mode);
+        return;
+    }
 }
 
 GLboolean glIsBuffer(GLuint buffer)
 {
+    static __typeof__(&glIsBuffer) real;
+    if (!real)
+        real = (__typeof__(&glIsBuffer))ps5_gl_resolve("glIsBuffer");
+    if (real) {
+        return real(buffer);
+    }
     return 0;
 }
 
 GLboolean glIsEnabled(GLenum cap)
 {
+    static __typeof__(&glIsEnabled) real;
+    if (!real)
+        real = (__typeof__(&glIsEnabled))ps5_gl_resolve("glIsEnabled");
+    if (real) {
+        return real(cap);
+    }
     return 0;
 }
 
 GLboolean glIsFramebuffer(GLuint framebuffer)
 {
+    static __typeof__(&glIsFramebuffer) real;
+    if (!real)
+        real = (__typeof__(&glIsFramebuffer))ps5_gl_resolve("glIsFramebuffer");
+    if (real) {
+        return real(framebuffer);
+    }
     return 0;
 }
 
 GLboolean glIsProgram(GLuint program)
 {
+    static __typeof__(&glIsProgram) real;
+    if (!real)
+        real = (__typeof__(&glIsProgram))ps5_gl_resolve("glIsProgram");
+    if (real) {
+        return real(program);
+    }
     return 0;
 }
 
 GLboolean glIsRenderbuffer(GLuint renderbuffer)
 {
+    static __typeof__(&glIsRenderbuffer) real;
+    if (!real)
+        real = (__typeof__(&glIsRenderbuffer))ps5_gl_resolve("glIsRenderbuffer");
+    if (real) {
+        return real(renderbuffer);
+    }
     return 0;
 }
 
 GLboolean glIsShader(GLuint shader)
 {
+    static __typeof__(&glIsShader) real;
+    if (!real)
+        real = (__typeof__(&glIsShader))ps5_gl_resolve("glIsShader");
+    if (real) {
+        return real(shader);
+    }
     return 0;
 }
 
 GLboolean glIsTexture(GLuint texture)
 {
+    static __typeof__(&glIsTexture) real;
+    if (!real)
+        real = (__typeof__(&glIsTexture))ps5_gl_resolve("glIsTexture");
+    if (real) {
+        return real(texture);
+    }
     return 0;
 }
 
 void glLineWidth(GLfloat width)
 {
+    static __typeof__(&glLineWidth) real;
+    if (!real)
+        real = (__typeof__(&glLineWidth))ps5_gl_resolve("glLineWidth");
+    if (real) {
+        real(width);
+        return;
+    }
 }
 
 void glLinkProgram(GLuint program)
 {
+    static __typeof__(&glLinkProgram) real;
+    if (!real)
+        real = (__typeof__(&glLinkProgram))ps5_gl_resolve("glLinkProgram");
+    if (real) {
+        real(program);
+        return;
+    }
 }
 
 void glPixelStorei(GLenum pname, GLint param)
 {
+    static __typeof__(&glPixelStorei) real;
+    if (!real)
+        real = (__typeof__(&glPixelStorei))ps5_gl_resolve("glPixelStorei");
+    if (real) {
+        real(pname, param);
+        return;
+    }
 }
 
 void glPolygonOffset(GLfloat factor, GLfloat units)
 {
+    static __typeof__(&glPolygonOffset) real;
+    if (!real)
+        real = (__typeof__(&glPolygonOffset))ps5_gl_resolve("glPolygonOffset");
+    if (real) {
+        real(factor, units);
+        return;
+    }
 }
 
 void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
 {
+    static __typeof__(&glReadPixels) real;
+    if (!real)
+        real = (__typeof__(&glReadPixels))ps5_gl_resolve("glReadPixels");
+    if (real) {
+        real(x, y, width, height, format, type, pixels);
+        return;
+    }
 }
 
 void glReleaseShaderCompiler(void)
 {
+    static __typeof__(&glReleaseShaderCompiler) real;
+    if (!real)
+        real = (__typeof__(&glReleaseShaderCompiler))ps5_gl_resolve("glReleaseShaderCompiler");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorage) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorage))ps5_gl_resolve("glRenderbufferStorage");
+    if (real) {
+        real(target, internalformat, width, height);
+        return;
+    }
 }
 
 void glSampleCoverage(GLfloat value, GLboolean invert)
 {
+    static __typeof__(&glSampleCoverage) real;
+    if (!real)
+        real = (__typeof__(&glSampleCoverage))ps5_gl_resolve("glSampleCoverage");
+    if (real) {
+        real(value, invert);
+        return;
+    }
 }
 
 void glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glScissor) real;
+    if (!real)
+        real = (__typeof__(&glScissor))ps5_gl_resolve("glScissor");
+    if (real) {
+        real(x, y, width, height);
+        return;
+    }
 }
 
 void glShaderBinary(GLsizei count, const GLuint *shaders, GLenum binaryFormat, const void *binary, GLsizei length)
 {
+    static __typeof__(&glShaderBinary) real;
+    if (!real)
+        real = (__typeof__(&glShaderBinary))ps5_gl_resolve("glShaderBinary");
+    if (real) {
+        real(count, shaders, binaryFormat, binary, length);
+        return;
+    }
 }
 
 void glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length)
 {
+    static __typeof__(&glShaderSource) real;
+    if (!real)
+        real = (__typeof__(&glShaderSource))ps5_gl_resolve("glShaderSource");
+    if (real) {
+        real(shader, count, string, length);
+        return;
+    }
 }
 
 void glStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
+    static __typeof__(&glStencilFunc) real;
+    if (!real)
+        real = (__typeof__(&glStencilFunc))ps5_gl_resolve("glStencilFunc");
+    if (real) {
+        real(func, ref, mask);
+        return;
+    }
 }
 
 void glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask)
 {
+    static __typeof__(&glStencilFuncSeparate) real;
+    if (!real)
+        real = (__typeof__(&glStencilFuncSeparate))ps5_gl_resolve("glStencilFuncSeparate");
+    if (real) {
+        real(face, func, ref, mask);
+        return;
+    }
 }
 
 void glStencilMask(GLuint mask)
 {
+    static __typeof__(&glStencilMask) real;
+    if (!real)
+        real = (__typeof__(&glStencilMask))ps5_gl_resolve("glStencilMask");
+    if (real) {
+        real(mask);
+        return;
+    }
 }
 
 void glStencilMaskSeparate(GLenum face, GLuint mask)
 {
+    static __typeof__(&glStencilMaskSeparate) real;
+    if (!real)
+        real = (__typeof__(&glStencilMaskSeparate))ps5_gl_resolve("glStencilMaskSeparate");
+    if (real) {
+        real(face, mask);
+        return;
+    }
 }
 
 void glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
+    static __typeof__(&glStencilOp) real;
+    if (!real)
+        real = (__typeof__(&glStencilOp))ps5_gl_resolve("glStencilOp");
+    if (real) {
+        real(fail, zfail, zpass);
+        return;
+    }
 }
 
 void glStencilOpSeparate(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass)
 {
+    static __typeof__(&glStencilOpSeparate) real;
+    if (!real)
+        real = (__typeof__(&glStencilOpSeparate))ps5_gl_resolve("glStencilOpSeparate");
+    if (real) {
+        real(face, sfail, dpfail, dppass);
+        return;
+    }
 }
 
 void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexImage2D) real;
+    if (!real)
+        real = (__typeof__(&glTexImage2D))ps5_gl_resolve("glTexImage2D");
+    if (real) {
+        real(target, level, internalformat, width, height, border, format, type, pixels);
+        return;
+    }
 }
 
 void glTexParameterf(GLenum target, GLenum pname, GLfloat param)
 {
+    static __typeof__(&glTexParameterf) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterf))ps5_gl_resolve("glTexParameterf");
+    if (real) {
+        real(target, pname, param);
+        return;
+    }
 }
 
 void glTexParameterfv(GLenum target, GLenum pname, const GLfloat *params)
 {
+    static __typeof__(&glTexParameterfv) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterfv))ps5_gl_resolve("glTexParameterfv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glTexParameteri(GLenum target, GLenum pname, GLint param)
 {
+    static __typeof__(&glTexParameteri) real;
+    if (!real)
+        real = (__typeof__(&glTexParameteri))ps5_gl_resolve("glTexParameteri");
+    if (real) {
+        real(target, pname, param);
+        return;
+    }
 }
 
 void glTexParameteriv(GLenum target, GLenum pname, const GLint *params)
 {
+    static __typeof__(&glTexParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glTexParameteriv))ps5_gl_resolve("glTexParameteriv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexSubImage2D) real;
+    if (!real)
+        real = (__typeof__(&glTexSubImage2D))ps5_gl_resolve("glTexSubImage2D");
+    if (real) {
+        real(target, level, xoffset, yoffset, width, height, format, type, pixels);
+        return;
+    }
 }
 
 void glUniform1f(GLint location, GLfloat v0)
 {
+    static __typeof__(&glUniform1f) real;
+    if (!real)
+        real = (__typeof__(&glUniform1f))ps5_gl_resolve("glUniform1f");
+    if (real) {
+        real(location, v0);
+        return;
+    }
 }
 
 void glUniform1fv(GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glUniform1fv) real;
+    if (!real)
+        real = (__typeof__(&glUniform1fv))ps5_gl_resolve("glUniform1fv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform1i(GLint location, GLint v0)
 {
+    static __typeof__(&glUniform1i) real;
+    if (!real)
+        real = (__typeof__(&glUniform1i))ps5_gl_resolve("glUniform1i");
+    if (real) {
+        real(location, v0);
+        return;
+    }
 }
 
 void glUniform1iv(GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glUniform1iv) real;
+    if (!real)
+        real = (__typeof__(&glUniform1iv))ps5_gl_resolve("glUniform1iv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform2f(GLint location, GLfloat v0, GLfloat v1)
 {
+    static __typeof__(&glUniform2f) real;
+    if (!real)
+        real = (__typeof__(&glUniform2f))ps5_gl_resolve("glUniform2f");
+    if (real) {
+        real(location, v0, v1);
+        return;
+    }
 }
 
 void glUniform2fv(GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glUniform2fv) real;
+    if (!real)
+        real = (__typeof__(&glUniform2fv))ps5_gl_resolve("glUniform2fv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform2i(GLint location, GLint v0, GLint v1)
 {
+    static __typeof__(&glUniform2i) real;
+    if (!real)
+        real = (__typeof__(&glUniform2i))ps5_gl_resolve("glUniform2i");
+    if (real) {
+        real(location, v0, v1);
+        return;
+    }
 }
 
 void glUniform2iv(GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glUniform2iv) real;
+    if (!real)
+        real = (__typeof__(&glUniform2iv))ps5_gl_resolve("glUniform2iv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 {
+    static __typeof__(&glUniform3f) real;
+    if (!real)
+        real = (__typeof__(&glUniform3f))ps5_gl_resolve("glUniform3f");
+    if (real) {
+        real(location, v0, v1, v2);
+        return;
+    }
 }
 
 void glUniform3fv(GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glUniform3fv) real;
+    if (!real)
+        real = (__typeof__(&glUniform3fv))ps5_gl_resolve("glUniform3fv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform3i(GLint location, GLint v0, GLint v1, GLint v2)
 {
+    static __typeof__(&glUniform3i) real;
+    if (!real)
+        real = (__typeof__(&glUniform3i))ps5_gl_resolve("glUniform3i");
+    if (real) {
+        real(location, v0, v1, v2);
+        return;
+    }
 }
 
 void glUniform3iv(GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glUniform3iv) real;
+    if (!real)
+        real = (__typeof__(&glUniform3iv))ps5_gl_resolve("glUniform3iv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
+    static __typeof__(&glUniform4f) real;
+    if (!real)
+        real = (__typeof__(&glUniform4f))ps5_gl_resolve("glUniform4f");
+    if (real) {
+        real(location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glUniform4fv(GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glUniform4fv) real;
+    if (!real)
+        real = (__typeof__(&glUniform4fv))ps5_gl_resolve("glUniform4fv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform4i(GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
 {
+    static __typeof__(&glUniform4i) real;
+    if (!real)
+        real = (__typeof__(&glUniform4i))ps5_gl_resolve("glUniform4i");
+    if (real) {
+        real(location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glUniform4iv(GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glUniform4iv) real;
+    if (!real)
+        real = (__typeof__(&glUniform4iv))ps5_gl_resolve("glUniform4iv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix2fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix2fv))ps5_gl_resolve("glUniformMatrix2fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix3fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix3fv))ps5_gl_resolve("glUniformMatrix3fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix4fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix4fv))ps5_gl_resolve("glUniformMatrix4fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUseProgram(GLuint program)
 {
+    static __typeof__(&glUseProgram) real;
+    if (!real)
+        real = (__typeof__(&glUseProgram))ps5_gl_resolve("glUseProgram");
+    if (real) {
+        real(program);
+        return;
+    }
 }
 
 void glValidateProgram(GLuint program)
 {
+    static __typeof__(&glValidateProgram) real;
+    if (!real)
+        real = (__typeof__(&glValidateProgram))ps5_gl_resolve("glValidateProgram");
+    if (real) {
+        real(program);
+        return;
+    }
 }
 
 void glVertexAttrib1f(GLuint index, GLfloat x)
 {
+    static __typeof__(&glVertexAttrib1f) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib1f))ps5_gl_resolve("glVertexAttrib1f");
+    if (real) {
+        real(index, x);
+        return;
+    }
 }
 
 void glVertexAttrib1fv(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glVertexAttrib1fv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib1fv))ps5_gl_resolve("glVertexAttrib1fv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glVertexAttrib2f(GLuint index, GLfloat x, GLfloat y)
 {
+    static __typeof__(&glVertexAttrib2f) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib2f))ps5_gl_resolve("glVertexAttrib2f");
+    if (real) {
+        real(index, x, y);
+        return;
+    }
 }
 
 void glVertexAttrib2fv(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glVertexAttrib2fv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib2fv))ps5_gl_resolve("glVertexAttrib2fv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glVertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z)
 {
+    static __typeof__(&glVertexAttrib3f) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib3f))ps5_gl_resolve("glVertexAttrib3f");
+    if (real) {
+        real(index, x, y, z);
+        return;
+    }
 }
 
 void glVertexAttrib3fv(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glVertexAttrib3fv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib3fv))ps5_gl_resolve("glVertexAttrib3fv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glVertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
+    static __typeof__(&glVertexAttrib4f) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib4f))ps5_gl_resolve("glVertexAttrib4f");
+    if (real) {
+        real(index, x, y, z, w);
+        return;
+    }
 }
 
 void glVertexAttrib4fv(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glVertexAttrib4fv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttrib4fv))ps5_gl_resolve("glVertexAttrib4fv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer)
 {
+    static __typeof__(&glVertexAttribPointer) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribPointer))ps5_gl_resolve("glVertexAttribPointer");
+    if (real) {
+        real(index, size, type, normalized, stride, pointer);
+        return;
+    }
 }
 
 void glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glViewport) real;
+    if (!real)
+        real = (__typeof__(&glViewport))ps5_gl_resolve("glViewport");
+    if (real) {
+        real(x, y, width, height);
+        return;
+    }
 }
 
 void glReadBuffer(GLenum src)
 {
+    static __typeof__(&glReadBuffer) real;
+    if (!real)
+        real = (__typeof__(&glReadBuffer))ps5_gl_resolve("glReadBuffer");
+    if (real) {
+        real(src);
+        return;
+    }
 }
 
 void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices)
 {
+    static __typeof__(&glDrawRangeElements) real;
+    if (!real)
+        real = (__typeof__(&glDrawRangeElements))ps5_gl_resolve("glDrawRangeElements");
+    if (real) {
+        real(mode, start, end, count, type, indices);
+        return;
+    }
 }
 
 void glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexImage3D) real;
+    if (!real)
+        real = (__typeof__(&glTexImage3D))ps5_gl_resolve("glTexImage3D");
+    if (real) {
+        real(target, level, internalformat, width, height, depth, border, format, type, pixels);
+        return;
+    }
 }
 
 void glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexSubImage3D) real;
+    if (!real)
+        real = (__typeof__(&glTexSubImage3D))ps5_gl_resolve("glTexSubImage3D");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+        return;
+    }
 }
 
 void glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glCopyTexSubImage3D) real;
+    if (!real)
+        real = (__typeof__(&glCopyTexSubImage3D))ps5_gl_resolve("glCopyTexSubImage3D");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, x, y, width, height);
+        return;
+    }
 }
 
 void glCompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexImage3D) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexImage3D))ps5_gl_resolve("glCompressedTexImage3D");
+    if (real) {
+        real(target, level, internalformat, width, height, depth, border, imageSize, data);
+        return;
+    }
 }
 
 void glCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexSubImage3D) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexSubImage3D))ps5_gl_resolve("glCompressedTexSubImage3D");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
+        return;
+    }
 }
 
 void glGenQueries(GLsizei n, GLuint *ids)
 {
+    static __typeof__(&glGenQueries) real;
+    if (!real)
+        real = (__typeof__(&glGenQueries))ps5_gl_resolve("glGenQueries");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 void glDeleteQueries(GLsizei n, const GLuint *ids)
 {
+    static __typeof__(&glDeleteQueries) real;
+    if (!real)
+        real = (__typeof__(&glDeleteQueries))ps5_gl_resolve("glDeleteQueries");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 GLboolean glIsQuery(GLuint id)
 {
+    static __typeof__(&glIsQuery) real;
+    if (!real)
+        real = (__typeof__(&glIsQuery))ps5_gl_resolve("glIsQuery");
+    if (real) {
+        return real(id);
+    }
     return 0;
 }
 
 void glBeginQuery(GLenum target, GLuint id)
 {
+    static __typeof__(&glBeginQuery) real;
+    if (!real)
+        real = (__typeof__(&glBeginQuery))ps5_gl_resolve("glBeginQuery");
+    if (real) {
+        real(target, id);
+        return;
+    }
 }
 
 void glEndQuery(GLenum target)
 {
+    static __typeof__(&glEndQuery) real;
+    if (!real)
+        real = (__typeof__(&glEndQuery))ps5_gl_resolve("glEndQuery");
+    if (real) {
+        real(target);
+        return;
+    }
 }
 
 void glGetQueryiv(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetQueryiv) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryiv))ps5_gl_resolve("glGetQueryiv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetQueryObjectuiv) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryObjectuiv))ps5_gl_resolve("glGetQueryObjectuiv");
+    if (real) {
+        real(id, pname, params);
+        return;
+    }
 }
 
 GLboolean glUnmapBuffer(GLenum target)
 {
+    static __typeof__(&glUnmapBuffer) real;
+    if (!real)
+        real = (__typeof__(&glUnmapBuffer))ps5_gl_resolve("glUnmapBuffer");
+    if (real) {
+        return real(target);
+    }
     return 0;
 }
 
 void glGetBufferPointerv(GLenum target, GLenum pname, void **params)
 {
+    static __typeof__(&glGetBufferPointerv) real;
+    if (!real)
+        real = (__typeof__(&glGetBufferPointerv))ps5_gl_resolve("glGetBufferPointerv");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glDrawBuffers(GLsizei n, const GLenum *bufs)
 {
+    static __typeof__(&glDrawBuffers) real;
+    if (!real)
+        real = (__typeof__(&glDrawBuffers))ps5_gl_resolve("glDrawBuffers");
+    if (real) {
+        real(n, bufs);
+        return;
+    }
 }
 
 void glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix2x3fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix2x3fv))ps5_gl_resolve("glUniformMatrix2x3fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix3x2fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix3x2fv))ps5_gl_resolve("glUniformMatrix3x2fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix2x4fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix2x4fv))ps5_gl_resolve("glUniformMatrix2x4fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix4x2fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix4x2fv))ps5_gl_resolve("glUniformMatrix4x2fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix3x4fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix3x4fv))ps5_gl_resolve("glUniformMatrix3x4fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix4x3fv) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix4x3fv))ps5_gl_resolve("glUniformMatrix4x3fv");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
+    static __typeof__(&glBlitFramebuffer) real;
+    if (!real)
+        real = (__typeof__(&glBlitFramebuffer))ps5_gl_resolve("glBlitFramebuffer");
+    if (real) {
+        real(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisample) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisample))ps5_gl_resolve("glRenderbufferStorageMultisample");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer)
 {
+    static __typeof__(&glFramebufferTextureLayer) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureLayer))ps5_gl_resolve("glFramebufferTextureLayer");
+    if (real) {
+        real(target, attachment, texture, level, layer);
+        return;
+    }
 }
 
 void * glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
+    static __typeof__(&glMapBufferRange) real;
+    if (!real)
+        real = (__typeof__(&glMapBufferRange))ps5_gl_resolve("glMapBufferRange");
+    if (real) {
+        return real(target, offset, length, access);
+    }
     return (void *)0;
 }
 
 void glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
 {
+    static __typeof__(&glFlushMappedBufferRange) real;
+    if (!real)
+        real = (__typeof__(&glFlushMappedBufferRange))ps5_gl_resolve("glFlushMappedBufferRange");
+    if (real) {
+        real(target, offset, length);
+        return;
+    }
 }
 
 void glBindVertexArray(GLuint array)
 {
+    static __typeof__(&glBindVertexArray) real;
+    if (!real)
+        real = (__typeof__(&glBindVertexArray))ps5_gl_resolve("glBindVertexArray");
+    if (real) {
+        real(array);
+        return;
+    }
 }
 
 void glDeleteVertexArrays(GLsizei n, const GLuint *arrays)
 {
+    static __typeof__(&glDeleteVertexArrays) real;
+    if (!real)
+        real = (__typeof__(&glDeleteVertexArrays))ps5_gl_resolve("glDeleteVertexArrays");
+    if (real) {
+        real(n, arrays);
+        return;
+    }
 }
 
 void glGenVertexArrays(GLsizei n, GLuint *arrays)
 {
+    static __typeof__(&glGenVertexArrays) real;
+    if (!real)
+        real = (__typeof__(&glGenVertexArrays))ps5_gl_resolve("glGenVertexArrays");
+    if (real) {
+        real(n, arrays);
+        return;
+    }
 }
 
 GLboolean glIsVertexArray(GLuint array)
 {
+    static __typeof__(&glIsVertexArray) real;
+    if (!real)
+        real = (__typeof__(&glIsVertexArray))ps5_gl_resolve("glIsVertexArray");
+    if (real) {
+        return real(array);
+    }
     return 0;
 }
 
 void glGetIntegeri_v(GLenum target, GLuint index, GLint *data)
 {
+    static __typeof__(&glGetIntegeri_v) real;
+    if (!real)
+        real = (__typeof__(&glGetIntegeri_v))ps5_gl_resolve("glGetIntegeri_v");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glBeginTransformFeedback(GLenum primitiveMode)
 {
+    static __typeof__(&glBeginTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glBeginTransformFeedback))ps5_gl_resolve("glBeginTransformFeedback");
+    if (real) {
+        real(primitiveMode);
+        return;
+    }
 }
 
 void glEndTransformFeedback(void)
 {
+    static __typeof__(&glEndTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glEndTransformFeedback))ps5_gl_resolve("glEndTransformFeedback");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
 {
+    static __typeof__(&glBindBufferRange) real;
+    if (!real)
+        real = (__typeof__(&glBindBufferRange))ps5_gl_resolve("glBindBufferRange");
+    if (real) {
+        real(target, index, buffer, offset, size);
+        return;
+    }
 }
 
 void glBindBufferBase(GLenum target, GLuint index, GLuint buffer)
 {
+    static __typeof__(&glBindBufferBase) real;
+    if (!real)
+        real = (__typeof__(&glBindBufferBase))ps5_gl_resolve("glBindBufferBase");
+    if (real) {
+        real(target, index, buffer);
+        return;
+    }
 }
 
 void glTransformFeedbackVaryings(GLuint program, GLsizei count, const GLchar *const*varyings, GLenum bufferMode)
 {
+    static __typeof__(&glTransformFeedbackVaryings) real;
+    if (!real)
+        real = (__typeof__(&glTransformFeedbackVaryings))ps5_gl_resolve("glTransformFeedbackVaryings");
+    if (real) {
+        real(program, count, varyings, bufferMode);
+        return;
+    }
 }
 
 void glGetTransformFeedbackVarying(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLsizei *size, GLenum *type, GLchar *name)
 {
+    static __typeof__(&glGetTransformFeedbackVarying) real;
+    if (!real)
+        real = (__typeof__(&glGetTransformFeedbackVarying))ps5_gl_resolve("glGetTransformFeedbackVarying");
+    if (real) {
+        real(program, index, bufSize, length, size, type, name);
+        return;
+    }
 }
 
 void glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer)
 {
+    static __typeof__(&glVertexAttribIPointer) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribIPointer))ps5_gl_resolve("glVertexAttribIPointer");
+    if (real) {
+        real(index, size, type, stride, pointer);
+        return;
+    }
 }
 
 void glGetVertexAttribIiv(GLuint index, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetVertexAttribIiv) real;
+    if (!real)
+        real = (__typeof__(&glGetVertexAttribIiv))ps5_gl_resolve("glGetVertexAttribIiv");
+    if (real) {
+        real(index, pname, params);
+        return;
+    }
 }
 
 void glGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetVertexAttribIuiv) real;
+    if (!real)
+        real = (__typeof__(&glGetVertexAttribIuiv))ps5_gl_resolve("glGetVertexAttribIuiv");
+    if (real) {
+        real(index, pname, params);
+        return;
+    }
 }
 
 void glVertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w)
 {
+    static __typeof__(&glVertexAttribI4i) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribI4i))ps5_gl_resolve("glVertexAttribI4i");
+    if (real) {
+        real(index, x, y, z, w);
+        return;
+    }
 }
 
 void glVertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
 {
+    static __typeof__(&glVertexAttribI4ui) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribI4ui))ps5_gl_resolve("glVertexAttribI4ui");
+    if (real) {
+        real(index, x, y, z, w);
+        return;
+    }
 }
 
 void glVertexAttribI4iv(GLuint index, const GLint *v)
 {
+    static __typeof__(&glVertexAttribI4iv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribI4iv))ps5_gl_resolve("glVertexAttribI4iv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glVertexAttribI4uiv(GLuint index, const GLuint *v)
 {
+    static __typeof__(&glVertexAttribI4uiv) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribI4uiv))ps5_gl_resolve("glVertexAttribI4uiv");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glGetUniformuiv(GLuint program, GLint location, GLuint *params)
 {
+    static __typeof__(&glGetUniformuiv) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformuiv))ps5_gl_resolve("glGetUniformuiv");
+    if (real) {
+        real(program, location, params);
+        return;
+    }
 }
 
 GLint glGetFragDataLocation(GLuint program, const GLchar *name)
 {
+    static __typeof__(&glGetFragDataLocation) real;
+    if (!real)
+        real = (__typeof__(&glGetFragDataLocation))ps5_gl_resolve("glGetFragDataLocation");
+    if (real) {
+        return real(program, name);
+    }
     return (GLint)0;
 }
 
 void glUniform1ui(GLint location, GLuint v0)
 {
+    static __typeof__(&glUniform1ui) real;
+    if (!real)
+        real = (__typeof__(&glUniform1ui))ps5_gl_resolve("glUniform1ui");
+    if (real) {
+        real(location, v0);
+        return;
+    }
 }
 
 void glUniform2ui(GLint location, GLuint v0, GLuint v1)
 {
+    static __typeof__(&glUniform2ui) real;
+    if (!real)
+        real = (__typeof__(&glUniform2ui))ps5_gl_resolve("glUniform2ui");
+    if (real) {
+        real(location, v0, v1);
+        return;
+    }
 }
 
 void glUniform3ui(GLint location, GLuint v0, GLuint v1, GLuint v2)
 {
+    static __typeof__(&glUniform3ui) real;
+    if (!real)
+        real = (__typeof__(&glUniform3ui))ps5_gl_resolve("glUniform3ui");
+    if (real) {
+        real(location, v0, v1, v2);
+        return;
+    }
 }
 
 void glUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
 {
+    static __typeof__(&glUniform4ui) real;
+    if (!real)
+        real = (__typeof__(&glUniform4ui))ps5_gl_resolve("glUniform4ui");
+    if (real) {
+        real(location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glUniform1uiv(GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glUniform1uiv) real;
+    if (!real)
+        real = (__typeof__(&glUniform1uiv))ps5_gl_resolve("glUniform1uiv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform2uiv(GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glUniform2uiv) real;
+    if (!real)
+        real = (__typeof__(&glUniform2uiv))ps5_gl_resolve("glUniform2uiv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform3uiv(GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glUniform3uiv) real;
+    if (!real)
+        real = (__typeof__(&glUniform3uiv))ps5_gl_resolve("glUniform3uiv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform4uiv(GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glUniform4uiv) real;
+    if (!real)
+        real = (__typeof__(&glUniform4uiv))ps5_gl_resolve("glUniform4uiv");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint *value)
 {
+    static __typeof__(&glClearBufferiv) real;
+    if (!real)
+        real = (__typeof__(&glClearBufferiv))ps5_gl_resolve("glClearBufferiv");
+    if (real) {
+        real(buffer, drawbuffer, value);
+        return;
+    }
 }
 
 void glClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint *value)
 {
+    static __typeof__(&glClearBufferuiv) real;
+    if (!real)
+        real = (__typeof__(&glClearBufferuiv))ps5_gl_resolve("glClearBufferuiv");
+    if (real) {
+        real(buffer, drawbuffer, value);
+        return;
+    }
 }
 
 void glClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat *value)
 {
+    static __typeof__(&glClearBufferfv) real;
+    if (!real)
+        real = (__typeof__(&glClearBufferfv))ps5_gl_resolve("glClearBufferfv");
+    if (real) {
+        real(buffer, drawbuffer, value);
+        return;
+    }
 }
 
 void glClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
 {
+    static __typeof__(&glClearBufferfi) real;
+    if (!real)
+        real = (__typeof__(&glClearBufferfi))ps5_gl_resolve("glClearBufferfi");
+    if (real) {
+        real(buffer, drawbuffer, depth, stencil);
+        return;
+    }
 }
 
 const GLubyte * glGetStringi(GLenum name, GLuint index)
 {
+    static __typeof__(&glGetStringi) real;
+    if (!real)
+        real = (__typeof__(&glGetStringi))ps5_gl_resolve("glGetStringi");
+    if (real) {
+        return real(name, index);
+    }
     return (const GLubyte *)0;
 }
 
 void glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
 {
+    static __typeof__(&glCopyBufferSubData) real;
+    if (!real)
+        real = (__typeof__(&glCopyBufferSubData))ps5_gl_resolve("glCopyBufferSubData");
+    if (real) {
+        real(readTarget, writeTarget, readOffset, writeOffset, size);
+        return;
+    }
 }
 
 void glGetUniformIndices(GLuint program, GLsizei uniformCount, const GLchar *const*uniformNames, GLuint *uniformIndices)
 {
+    static __typeof__(&glGetUniformIndices) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformIndices))ps5_gl_resolve("glGetUniformIndices");
+    if (real) {
+        real(program, uniformCount, uniformNames, uniformIndices);
+        return;
+    }
 }
 
 void glGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const GLuint *uniformIndices, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetActiveUniformsiv) real;
+    if (!real)
+        real = (__typeof__(&glGetActiveUniformsiv))ps5_gl_resolve("glGetActiveUniformsiv");
+    if (real) {
+        real(program, uniformCount, uniformIndices, pname, params);
+        return;
+    }
 }
 
 GLuint glGetUniformBlockIndex(GLuint program, const GLchar *uniformBlockName)
 {
+    static __typeof__(&glGetUniformBlockIndex) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformBlockIndex))ps5_gl_resolve("glGetUniformBlockIndex");
+    if (real) {
+        return real(program, uniformBlockName);
+    }
     return (GLuint)0;
 }
 
 void glGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetActiveUniformBlockiv) real;
+    if (!real)
+        real = (__typeof__(&glGetActiveUniformBlockiv))ps5_gl_resolve("glGetActiveUniformBlockiv");
+    if (real) {
+        real(program, uniformBlockIndex, pname, params);
+        return;
+    }
 }
 
 void glGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei *length, GLchar *uniformBlockName)
 {
+    static __typeof__(&glGetActiveUniformBlockName) real;
+    if (!real)
+        real = (__typeof__(&glGetActiveUniformBlockName))ps5_gl_resolve("glGetActiveUniformBlockName");
+    if (real) {
+        real(program, uniformBlockIndex, bufSize, length, uniformBlockName);
+        return;
+    }
 }
 
 void glUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding)
 {
+    static __typeof__(&glUniformBlockBinding) real;
+    if (!real)
+        real = (__typeof__(&glUniformBlockBinding))ps5_gl_resolve("glUniformBlockBinding");
+    if (real) {
+        real(program, uniformBlockIndex, uniformBlockBinding);
+        return;
+    }
 }
 
 void glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
 {
+    static __typeof__(&glDrawArraysInstanced) real;
+    if (!real)
+        real = (__typeof__(&glDrawArraysInstanced))ps5_gl_resolve("glDrawArraysInstanced");
+    if (real) {
+        real(mode, first, count, instancecount);
+        return;
+    }
 }
 
 void glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount)
 {
+    static __typeof__(&glDrawElementsInstanced) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstanced))ps5_gl_resolve("glDrawElementsInstanced");
+    if (real) {
+        real(mode, count, type, indices, instancecount);
+        return;
+    }
 }
 
 GLsync glFenceSync(GLenum condition, GLbitfield flags)
 {
+    static __typeof__(&glFenceSync) real;
+    if (!real)
+        real = (__typeof__(&glFenceSync))ps5_gl_resolve("glFenceSync");
+    if (real) {
+        return real(condition, flags);
+    }
     return (GLsync)0;
 }
 
 GLboolean glIsSync(GLsync sync)
 {
+    static __typeof__(&glIsSync) real;
+    if (!real)
+        real = (__typeof__(&glIsSync))ps5_gl_resolve("glIsSync");
+    if (real) {
+        return real(sync);
+    }
     return 0;
 }
 
 void glDeleteSync(GLsync sync)
 {
+    static __typeof__(&glDeleteSync) real;
+    if (!real)
+        real = (__typeof__(&glDeleteSync))ps5_gl_resolve("glDeleteSync");
+    if (real) {
+        real(sync);
+        return;
+    }
 }
 
 GLenum glClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
+    static __typeof__(&glClientWaitSync) real;
+    if (!real)
+        real = (__typeof__(&glClientWaitSync))ps5_gl_resolve("glClientWaitSync");
+    if (real) {
+        return real(sync, flags, timeout);
+    }
     return (GLenum)0;
 }
 
 void glWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
+    static __typeof__(&glWaitSync) real;
+    if (!real)
+        real = (__typeof__(&glWaitSync))ps5_gl_resolve("glWaitSync");
+    if (real) {
+        real(sync, flags, timeout);
+        return;
+    }
 }
 
 void glGetInteger64v(GLenum pname, GLint64 *data)
 {
+    static __typeof__(&glGetInteger64v) real;
+    if (!real)
+        real = (__typeof__(&glGetInteger64v))ps5_gl_resolve("glGetInteger64v");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glGetSynciv(GLsync sync, GLenum pname, GLsizei count, GLsizei *length, GLint *values)
 {
+    static __typeof__(&glGetSynciv) real;
+    if (!real)
+        real = (__typeof__(&glGetSynciv))ps5_gl_resolve("glGetSynciv");
+    if (real) {
+        real(sync, pname, count, length, values);
+        return;
+    }
 }
 
 void glGetInteger64i_v(GLenum target, GLuint index, GLint64 *data)
 {
+    static __typeof__(&glGetInteger64i_v) real;
+    if (!real)
+        real = (__typeof__(&glGetInteger64i_v))ps5_gl_resolve("glGetInteger64i_v");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glGetBufferParameteri64v(GLenum target, GLenum pname, GLint64 *params)
 {
+    static __typeof__(&glGetBufferParameteri64v) real;
+    if (!real)
+        real = (__typeof__(&glGetBufferParameteri64v))ps5_gl_resolve("glGetBufferParameteri64v");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGenSamplers(GLsizei count, GLuint *samplers)
 {
+    static __typeof__(&glGenSamplers) real;
+    if (!real)
+        real = (__typeof__(&glGenSamplers))ps5_gl_resolve("glGenSamplers");
+    if (real) {
+        real(count, samplers);
+        return;
+    }
 }
 
 void glDeleteSamplers(GLsizei count, const GLuint *samplers)
 {
+    static __typeof__(&glDeleteSamplers) real;
+    if (!real)
+        real = (__typeof__(&glDeleteSamplers))ps5_gl_resolve("glDeleteSamplers");
+    if (real) {
+        real(count, samplers);
+        return;
+    }
 }
 
 GLboolean glIsSampler(GLuint sampler)
 {
+    static __typeof__(&glIsSampler) real;
+    if (!real)
+        real = (__typeof__(&glIsSampler))ps5_gl_resolve("glIsSampler");
+    if (real) {
+        return real(sampler);
+    }
     return 0;
 }
 
 void glBindSampler(GLuint unit, GLuint sampler)
 {
+    static __typeof__(&glBindSampler) real;
+    if (!real)
+        real = (__typeof__(&glBindSampler))ps5_gl_resolve("glBindSampler");
+    if (real) {
+        real(unit, sampler);
+        return;
+    }
 }
 
 void glSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
 {
+    static __typeof__(&glSamplerParameteri) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameteri))ps5_gl_resolve("glSamplerParameteri");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glSamplerParameteriv(GLuint sampler, GLenum pname, const GLint *param)
 {
+    static __typeof__(&glSamplerParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameteriv))ps5_gl_resolve("glSamplerParameteriv");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
 {
+    static __typeof__(&glSamplerParameterf) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterf))ps5_gl_resolve("glSamplerParameterf");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glSamplerParameterfv(GLuint sampler, GLenum pname, const GLfloat *param)
 {
+    static __typeof__(&glSamplerParameterfv) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterfv))ps5_gl_resolve("glSamplerParameterfv");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetSamplerParameteriv) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameteriv))ps5_gl_resolve("glGetSamplerParameteriv");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat *params)
 {
+    static __typeof__(&glGetSamplerParameterfv) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameterfv))ps5_gl_resolve("glGetSamplerParameterfv");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glVertexAttribDivisor(GLuint index, GLuint divisor)
 {
+    static __typeof__(&glVertexAttribDivisor) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribDivisor))ps5_gl_resolve("glVertexAttribDivisor");
+    if (real) {
+        real(index, divisor);
+        return;
+    }
 }
 
 void glBindTransformFeedback(GLenum target, GLuint id)
 {
+    static __typeof__(&glBindTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glBindTransformFeedback))ps5_gl_resolve("glBindTransformFeedback");
+    if (real) {
+        real(target, id);
+        return;
+    }
 }
 
 void glDeleteTransformFeedbacks(GLsizei n, const GLuint *ids)
 {
+    static __typeof__(&glDeleteTransformFeedbacks) real;
+    if (!real)
+        real = (__typeof__(&glDeleteTransformFeedbacks))ps5_gl_resolve("glDeleteTransformFeedbacks");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 void glGenTransformFeedbacks(GLsizei n, GLuint *ids)
 {
+    static __typeof__(&glGenTransformFeedbacks) real;
+    if (!real)
+        real = (__typeof__(&glGenTransformFeedbacks))ps5_gl_resolve("glGenTransformFeedbacks");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 GLboolean glIsTransformFeedback(GLuint id)
 {
+    static __typeof__(&glIsTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glIsTransformFeedback))ps5_gl_resolve("glIsTransformFeedback");
+    if (real) {
+        return real(id);
+    }
     return 0;
 }
 
 void glPauseTransformFeedback(void)
 {
+    static __typeof__(&glPauseTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glPauseTransformFeedback))ps5_gl_resolve("glPauseTransformFeedback");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glResumeTransformFeedback(void)
 {
+    static __typeof__(&glResumeTransformFeedback) real;
+    if (!real)
+        real = (__typeof__(&glResumeTransformFeedback))ps5_gl_resolve("glResumeTransformFeedback");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, void *binary)
 {
+    static __typeof__(&glGetProgramBinary) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramBinary))ps5_gl_resolve("glGetProgramBinary");
+    if (real) {
+        real(program, bufSize, length, binaryFormat, binary);
+        return;
+    }
 }
 
 void glProgramBinary(GLuint program, GLenum binaryFormat, const void *binary, GLsizei length)
 {
+    static __typeof__(&glProgramBinary) real;
+    if (!real)
+        real = (__typeof__(&glProgramBinary))ps5_gl_resolve("glProgramBinary");
+    if (real) {
+        real(program, binaryFormat, binary, length);
+        return;
+    }
 }
 
 void glProgramParameteri(GLuint program, GLenum pname, GLint value)
 {
+    static __typeof__(&glProgramParameteri) real;
+    if (!real)
+        real = (__typeof__(&glProgramParameteri))ps5_gl_resolve("glProgramParameteri");
+    if (real) {
+        real(program, pname, value);
+        return;
+    }
 }
 
 void glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments)
 {
+    static __typeof__(&glInvalidateFramebuffer) real;
+    if (!real)
+        real = (__typeof__(&glInvalidateFramebuffer))ps5_gl_resolve("glInvalidateFramebuffer");
+    if (real) {
+        real(target, numAttachments, attachments);
+        return;
+    }
 }
 
 void glInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments, const GLenum *attachments, GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glInvalidateSubFramebuffer) real;
+    if (!real)
+        real = (__typeof__(&glInvalidateSubFramebuffer))ps5_gl_resolve("glInvalidateSubFramebuffer");
+    if (real) {
+        real(target, numAttachments, attachments, x, y, width, height);
+        return;
+    }
 }
 
 void glTexStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glTexStorage2D) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage2D))ps5_gl_resolve("glTexStorage2D");
+    if (real) {
+        real(target, levels, internalformat, width, height);
+        return;
+    }
 }
 
 void glTexStorage3D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
 {
+    static __typeof__(&glTexStorage3D) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage3D))ps5_gl_resolve("glTexStorage3D");
+    if (real) {
+        real(target, levels, internalformat, width, height, depth);
+        return;
+    }
 }
 
 void glGetInternalformativ(GLenum target, GLenum internalformat, GLenum pname, GLsizei count, GLint *params)
 {
+    static __typeof__(&glGetInternalformativ) real;
+    if (!real)
+        real = (__typeof__(&glGetInternalformativ))ps5_gl_resolve("glGetInternalformativ");
+    if (real) {
+        real(target, internalformat, pname, count, params);
+        return;
+    }
 }
 
 void glBlendBarrierKHR(void)
 {
+    static __typeof__(&glBlendBarrierKHR) real;
+    if (!real)
+        real = (__typeof__(&glBlendBarrierKHR))ps5_gl_resolve("glBlendBarrierKHR");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glDebugMessageControlKHR(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled)
 {
+    static __typeof__(&glDebugMessageControlKHR) real;
+    if (!real)
+        real = (__typeof__(&glDebugMessageControlKHR))ps5_gl_resolve("glDebugMessageControlKHR");
+    if (real) {
+        real(source, type, severity, count, ids, enabled);
+        return;
+    }
 }
 
 void glDebugMessageInsertKHR(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf)
 {
+    static __typeof__(&glDebugMessageInsertKHR) real;
+    if (!real)
+        real = (__typeof__(&glDebugMessageInsertKHR))ps5_gl_resolve("glDebugMessageInsertKHR");
+    if (real) {
+        real(source, type, id, severity, length, buf);
+        return;
+    }
 }
 
 void glDebugMessageCallbackKHR(GLDEBUGPROCKHR callback, const void *userParam)
 {
+    static __typeof__(&glDebugMessageCallbackKHR) real;
+    if (!real)
+        real = (__typeof__(&glDebugMessageCallbackKHR))ps5_gl_resolve("glDebugMessageCallbackKHR");
+    if (real) {
+        real(callback, userParam);
+        return;
+    }
 }
 
 GLuint glGetDebugMessageLogKHR(GLuint count, GLsizei bufSize, GLenum *sources, GLenum *types, GLuint *ids, GLenum *severities, GLsizei *lengths, GLchar *messageLog)
 {
+    static __typeof__(&glGetDebugMessageLogKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetDebugMessageLogKHR))ps5_gl_resolve("glGetDebugMessageLogKHR");
+    if (real) {
+        return real(count, bufSize, sources, types, ids, severities, lengths, messageLog);
+    }
     return (GLuint)0;
 }
 
 void glPushDebugGroupKHR(GLenum source, GLuint id, GLsizei length, const GLchar *message)
 {
+    static __typeof__(&glPushDebugGroupKHR) real;
+    if (!real)
+        real = (__typeof__(&glPushDebugGroupKHR))ps5_gl_resolve("glPushDebugGroupKHR");
+    if (real) {
+        real(source, id, length, message);
+        return;
+    }
 }
 
 void glPopDebugGroupKHR(void)
 {
+    static __typeof__(&glPopDebugGroupKHR) real;
+    if (!real)
+        real = (__typeof__(&glPopDebugGroupKHR))ps5_gl_resolve("glPopDebugGroupKHR");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glObjectLabelKHR(GLenum identifier, GLuint name, GLsizei length, const GLchar *label)
 {
+    static __typeof__(&glObjectLabelKHR) real;
+    if (!real)
+        real = (__typeof__(&glObjectLabelKHR))ps5_gl_resolve("glObjectLabelKHR");
+    if (real) {
+        real(identifier, name, length, label);
+        return;
+    }
 }
 
 void glGetObjectLabelKHR(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei *length, GLchar *label)
 {
+    static __typeof__(&glGetObjectLabelKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetObjectLabelKHR))ps5_gl_resolve("glGetObjectLabelKHR");
+    if (real) {
+        real(identifier, name, bufSize, length, label);
+        return;
+    }
 }
 
 void glObjectPtrLabelKHR(const void *ptr, GLsizei length, const GLchar *label)
 {
+    static __typeof__(&glObjectPtrLabelKHR) real;
+    if (!real)
+        real = (__typeof__(&glObjectPtrLabelKHR))ps5_gl_resolve("glObjectPtrLabelKHR");
+    if (real) {
+        real(ptr, length, label);
+        return;
+    }
 }
 
 void glGetObjectPtrLabelKHR(const void *ptr, GLsizei bufSize, GLsizei *length, GLchar *label)
 {
+    static __typeof__(&glGetObjectPtrLabelKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetObjectPtrLabelKHR))ps5_gl_resolve("glGetObjectPtrLabelKHR");
+    if (real) {
+        real(ptr, bufSize, length, label);
+        return;
+    }
 }
 
 void glGetPointervKHR(GLenum pname, void **params)
 {
+    static __typeof__(&glGetPointervKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetPointervKHR))ps5_gl_resolve("glGetPointervKHR");
+    if (real) {
+        real(pname, params);
+        return;
+    }
 }
 
 void glMaxShaderCompilerThreadsKHR(GLuint count)
 {
+    static __typeof__(&glMaxShaderCompilerThreadsKHR) real;
+    if (!real)
+        real = (__typeof__(&glMaxShaderCompilerThreadsKHR))ps5_gl_resolve("glMaxShaderCompilerThreadsKHR");
+    if (real) {
+        real(count);
+        return;
+    }
 }
 
 GLenum glGetGraphicsResetStatusKHR(void)
 {
+    static __typeof__(&glGetGraphicsResetStatusKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetGraphicsResetStatusKHR))ps5_gl_resolve("glGetGraphicsResetStatusKHR");
+    if (real) {
+        return real();
+    }
     return (GLenum)0;
 }
 
 void glReadnPixelsKHR(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void *data)
 {
+    static __typeof__(&glReadnPixelsKHR) real;
+    if (!real)
+        real = (__typeof__(&glReadnPixelsKHR))ps5_gl_resolve("glReadnPixelsKHR");
+    if (real) {
+        real(x, y, width, height, format, type, bufSize, data);
+        return;
+    }
 }
 
 void glGetnUniformfvKHR(GLuint program, GLint location, GLsizei bufSize, GLfloat *params)
 {
+    static __typeof__(&glGetnUniformfvKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetnUniformfvKHR))ps5_gl_resolve("glGetnUniformfvKHR");
+    if (real) {
+        real(program, location, bufSize, params);
+        return;
+    }
 }
 
 void glGetnUniformivKHR(GLuint program, GLint location, GLsizei bufSize, GLint *params)
 {
+    static __typeof__(&glGetnUniformivKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetnUniformivKHR))ps5_gl_resolve("glGetnUniformivKHR");
+    if (real) {
+        real(program, location, bufSize, params);
+        return;
+    }
 }
 
 void glGetnUniformuivKHR(GLuint program, GLint location, GLsizei bufSize, GLuint *params)
 {
+    static __typeof__(&glGetnUniformuivKHR) real;
+    if (!real)
+        real = (__typeof__(&glGetnUniformuivKHR))ps5_gl_resolve("glGetnUniformuivKHR");
+    if (real) {
+        real(program, location, bufSize, params);
+        return;
+    }
 }
 
 void glEGLImageTargetTexture2DOES(GLenum target, GLeglImageOES image)
 {
+    static __typeof__(&glEGLImageTargetTexture2DOES) real;
+    if (!real)
+        real = (__typeof__(&glEGLImageTargetTexture2DOES))ps5_gl_resolve("glEGLImageTargetTexture2DOES");
+    if (real) {
+        real(target, image);
+        return;
+    }
 }
 
 void glEGLImageTargetRenderbufferStorageOES(GLenum target, GLeglImageOES image)
 {
+    static __typeof__(&glEGLImageTargetRenderbufferStorageOES) real;
+    if (!real)
+        real = (__typeof__(&glEGLImageTargetRenderbufferStorageOES))ps5_gl_resolve("glEGLImageTargetRenderbufferStorageOES");
+    if (real) {
+        real(target, image);
+        return;
+    }
 }
 
 void glCopyImageSubDataOES(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)
 {
+    static __typeof__(&glCopyImageSubDataOES) real;
+    if (!real)
+        real = (__typeof__(&glCopyImageSubDataOES))ps5_gl_resolve("glCopyImageSubDataOES");
+    if (real) {
+        real(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth);
+        return;
+    }
 }
 
 void glEnableiOES(GLenum target, GLuint index)
 {
+    static __typeof__(&glEnableiOES) real;
+    if (!real)
+        real = (__typeof__(&glEnableiOES))ps5_gl_resolve("glEnableiOES");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 void glDisableiOES(GLenum target, GLuint index)
 {
+    static __typeof__(&glDisableiOES) real;
+    if (!real)
+        real = (__typeof__(&glDisableiOES))ps5_gl_resolve("glDisableiOES");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 void glBlendEquationiOES(GLuint buf, GLenum mode)
 {
+    static __typeof__(&glBlendEquationiOES) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquationiOES))ps5_gl_resolve("glBlendEquationiOES");
+    if (real) {
+        real(buf, mode);
+        return;
+    }
 }
 
 void glBlendEquationSeparateiOES(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
 {
+    static __typeof__(&glBlendEquationSeparateiOES) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquationSeparateiOES))ps5_gl_resolve("glBlendEquationSeparateiOES");
+    if (real) {
+        real(buf, modeRGB, modeAlpha);
+        return;
+    }
 }
 
 void glBlendFunciOES(GLuint buf, GLenum src, GLenum dst)
 {
+    static __typeof__(&glBlendFunciOES) real;
+    if (!real)
+        real = (__typeof__(&glBlendFunciOES))ps5_gl_resolve("glBlendFunciOES");
+    if (real) {
+        real(buf, src, dst);
+        return;
+    }
 }
 
 void glBlendFuncSeparateiOES(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
 {
+    static __typeof__(&glBlendFuncSeparateiOES) real;
+    if (!real)
+        real = (__typeof__(&glBlendFuncSeparateiOES))ps5_gl_resolve("glBlendFuncSeparateiOES");
+    if (real) {
+        real(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+        return;
+    }
 }
 
 void glColorMaskiOES(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
 {
+    static __typeof__(&glColorMaskiOES) real;
+    if (!real)
+        real = (__typeof__(&glColorMaskiOES))ps5_gl_resolve("glColorMaskiOES");
+    if (real) {
+        real(index, r, g, b, a);
+        return;
+    }
 }
 
 GLboolean glIsEnablediOES(GLenum target, GLuint index)
 {
+    static __typeof__(&glIsEnablediOES) real;
+    if (!real)
+        real = (__typeof__(&glIsEnablediOES))ps5_gl_resolve("glIsEnablediOES");
+    if (real) {
+        return real(target, index);
+    }
     return 0;
 }
 
 void glDrawElementsBaseVertexOES(GLenum mode, GLsizei count, GLenum type, const void *indices, GLint basevertex)
 {
+    static __typeof__(&glDrawElementsBaseVertexOES) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsBaseVertexOES))ps5_gl_resolve("glDrawElementsBaseVertexOES");
+    if (real) {
+        real(mode, count, type, indices, basevertex);
+        return;
+    }
 }
 
 void glDrawRangeElementsBaseVertexOES(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices, GLint basevertex)
 {
+    static __typeof__(&glDrawRangeElementsBaseVertexOES) real;
+    if (!real)
+        real = (__typeof__(&glDrawRangeElementsBaseVertexOES))ps5_gl_resolve("glDrawRangeElementsBaseVertexOES");
+    if (real) {
+        real(mode, start, end, count, type, indices, basevertex);
+        return;
+    }
 }
 
 void glDrawElementsInstancedBaseVertexOES(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex)
 {
+    static __typeof__(&glDrawElementsInstancedBaseVertexOES) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedBaseVertexOES))ps5_gl_resolve("glDrawElementsInstancedBaseVertexOES");
+    if (real) {
+        real(mode, count, type, indices, instancecount, basevertex);
+        return;
+    }
 }
 
 void glMultiDrawElementsBaseVertexEXT(GLenum mode, const GLsizei *count, GLenum type, const void *const*indices, GLsizei drawcount, const GLint *basevertex)
 {
+    static __typeof__(&glMultiDrawElementsBaseVertexEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawElementsBaseVertexEXT))ps5_gl_resolve("glMultiDrawElementsBaseVertexEXT");
+    if (real) {
+        real(mode, count, type, indices, drawcount, basevertex);
+        return;
+    }
 }
 
 void glFramebufferTextureOES(GLenum target, GLenum attachment, GLuint texture, GLint level)
 {
+    static __typeof__(&glFramebufferTextureOES) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureOES))ps5_gl_resolve("glFramebufferTextureOES");
+    if (real) {
+        real(target, attachment, texture, level);
+        return;
+    }
 }
 
 void glGetProgramBinaryOES(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, void *binary)
 {
+    static __typeof__(&glGetProgramBinaryOES) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramBinaryOES))ps5_gl_resolve("glGetProgramBinaryOES");
+    if (real) {
+        real(program, bufSize, length, binaryFormat, binary);
+        return;
+    }
 }
 
 void glProgramBinaryOES(GLuint program, GLenum binaryFormat, const void *binary, GLint length)
 {
+    static __typeof__(&glProgramBinaryOES) real;
+    if (!real)
+        real = (__typeof__(&glProgramBinaryOES))ps5_gl_resolve("glProgramBinaryOES");
+    if (real) {
+        real(program, binaryFormat, binary, length);
+        return;
+    }
 }
 
 void * glMapBufferOES(GLenum target, GLenum access)
 {
+    static __typeof__(&glMapBufferOES) real;
+    if (!real)
+        real = (__typeof__(&glMapBufferOES))ps5_gl_resolve("glMapBufferOES");
+    if (real) {
+        return real(target, access);
+    }
     return (void *)0;
 }
 
 GLboolean glUnmapBufferOES(GLenum target)
 {
+    static __typeof__(&glUnmapBufferOES) real;
+    if (!real)
+        real = (__typeof__(&glUnmapBufferOES))ps5_gl_resolve("glUnmapBufferOES");
+    if (real) {
+        return real(target);
+    }
     return 0;
 }
 
 void glGetBufferPointervOES(GLenum target, GLenum pname, void **params)
 {
+    static __typeof__(&glGetBufferPointervOES) real;
+    if (!real)
+        real = (__typeof__(&glGetBufferPointervOES))ps5_gl_resolve("glGetBufferPointervOES");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glPrimitiveBoundingBoxOES(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW)
 {
+    static __typeof__(&glPrimitiveBoundingBoxOES) real;
+    if (!real)
+        real = (__typeof__(&glPrimitiveBoundingBoxOES))ps5_gl_resolve("glPrimitiveBoundingBoxOES");
+    if (real) {
+        real(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+        return;
+    }
 }
 
 void glMinSampleShadingOES(GLfloat value)
 {
+    static __typeof__(&glMinSampleShadingOES) real;
+    if (!real)
+        real = (__typeof__(&glMinSampleShadingOES))ps5_gl_resolve("glMinSampleShadingOES");
+    if (real) {
+        real(value);
+        return;
+    }
 }
 
 void glPatchParameteriOES(GLenum pname, GLint value)
 {
+    static __typeof__(&glPatchParameteriOES) real;
+    if (!real)
+        real = (__typeof__(&glPatchParameteriOES))ps5_gl_resolve("glPatchParameteriOES");
+    if (real) {
+        real(pname, value);
+        return;
+    }
 }
 
 void glTexImage3DOES(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexImage3DOES) real;
+    if (!real)
+        real = (__typeof__(&glTexImage3DOES))ps5_gl_resolve("glTexImage3DOES");
+    if (real) {
+        real(target, level, internalformat, width, height, depth, border, format, type, pixels);
+        return;
+    }
 }
 
 void glTexSubImage3DOES(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *pixels)
 {
+    static __typeof__(&glTexSubImage3DOES) real;
+    if (!real)
+        real = (__typeof__(&glTexSubImage3DOES))ps5_gl_resolve("glTexSubImage3DOES");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+        return;
+    }
 }
 
 void glCopyTexSubImage3DOES(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glCopyTexSubImage3DOES) real;
+    if (!real)
+        real = (__typeof__(&glCopyTexSubImage3DOES))ps5_gl_resolve("glCopyTexSubImage3DOES");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, x, y, width, height);
+        return;
+    }
 }
 
 void glCompressedTexImage3DOES(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexImage3DOES) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexImage3DOES))ps5_gl_resolve("glCompressedTexImage3DOES");
+    if (real) {
+        real(target, level, internalformat, width, height, depth, border, imageSize, data);
+        return;
+    }
 }
 
 void glCompressedTexSubImage3DOES(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void *data)
 {
+    static __typeof__(&glCompressedTexSubImage3DOES) real;
+    if (!real)
+        real = (__typeof__(&glCompressedTexSubImage3DOES))ps5_gl_resolve("glCompressedTexSubImage3DOES");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data);
+        return;
+    }
 }
 
 void glFramebufferTexture3DOES(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset)
 {
+    static __typeof__(&glFramebufferTexture3DOES) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTexture3DOES))ps5_gl_resolve("glFramebufferTexture3DOES");
+    if (real) {
+        real(target, attachment, textarget, texture, level, zoffset);
+        return;
+    }
 }
 
 void glTexParameterIivOES(GLenum target, GLenum pname, const GLint *params)
 {
+    static __typeof__(&glTexParameterIivOES) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterIivOES))ps5_gl_resolve("glTexParameterIivOES");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glTexParameterIuivOES(GLenum target, GLenum pname, const GLuint *params)
 {
+    static __typeof__(&glTexParameterIuivOES) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterIuivOES))ps5_gl_resolve("glTexParameterIuivOES");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetTexParameterIivOES(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetTexParameterIivOES) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameterIivOES))ps5_gl_resolve("glGetTexParameterIivOES");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetTexParameterIuivOES(GLenum target, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetTexParameterIuivOES) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameterIuivOES))ps5_gl_resolve("glGetTexParameterIuivOES");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glSamplerParameterIivOES(GLuint sampler, GLenum pname, const GLint *param)
 {
+    static __typeof__(&glSamplerParameterIivOES) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterIivOES))ps5_gl_resolve("glSamplerParameterIivOES");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glSamplerParameterIuivOES(GLuint sampler, GLenum pname, const GLuint *param)
 {
+    static __typeof__(&glSamplerParameterIuivOES) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterIuivOES))ps5_gl_resolve("glSamplerParameterIuivOES");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glGetSamplerParameterIivOES(GLuint sampler, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetSamplerParameterIivOES) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameterIivOES))ps5_gl_resolve("glGetSamplerParameterIivOES");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glGetSamplerParameterIuivOES(GLuint sampler, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetSamplerParameterIuivOES) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameterIuivOES))ps5_gl_resolve("glGetSamplerParameterIuivOES");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glTexBufferOES(GLenum target, GLenum internalformat, GLuint buffer)
 {
+    static __typeof__(&glTexBufferOES) real;
+    if (!real)
+        real = (__typeof__(&glTexBufferOES))ps5_gl_resolve("glTexBufferOES");
+    if (real) {
+        real(target, internalformat, buffer);
+        return;
+    }
 }
 
 void glTexBufferRangeOES(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)
 {
+    static __typeof__(&glTexBufferRangeOES) real;
+    if (!real)
+        real = (__typeof__(&glTexBufferRangeOES))ps5_gl_resolve("glTexBufferRangeOES");
+    if (real) {
+        real(target, internalformat, buffer, offset, size);
+        return;
+    }
 }
 
 void glTexStorage3DMultisampleOES(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
 {
+    static __typeof__(&glTexStorage3DMultisampleOES) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage3DMultisampleOES))ps5_gl_resolve("glTexStorage3DMultisampleOES");
+    if (real) {
+        real(target, samples, internalformat, width, height, depth, fixedsamplelocations);
+        return;
+    }
 }
 
 void glTextureViewOES(GLuint texture, GLenum target, GLuint origtexture, GLenum internalformat, GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers)
 {
+    static __typeof__(&glTextureViewOES) real;
+    if (!real)
+        real = (__typeof__(&glTextureViewOES))ps5_gl_resolve("glTextureViewOES");
+    if (real) {
+        real(texture, target, origtexture, internalformat, minlevel, numlevels, minlayer, numlayers);
+        return;
+    }
 }
 
 void glBindVertexArrayOES(GLuint array)
 {
+    static __typeof__(&glBindVertexArrayOES) real;
+    if (!real)
+        real = (__typeof__(&glBindVertexArrayOES))ps5_gl_resolve("glBindVertexArrayOES");
+    if (real) {
+        real(array);
+        return;
+    }
 }
 
 void glDeleteVertexArraysOES(GLsizei n, const GLuint *arrays)
 {
+    static __typeof__(&glDeleteVertexArraysOES) real;
+    if (!real)
+        real = (__typeof__(&glDeleteVertexArraysOES))ps5_gl_resolve("glDeleteVertexArraysOES");
+    if (real) {
+        real(n, arrays);
+        return;
+    }
 }
 
 void glGenVertexArraysOES(GLsizei n, GLuint *arrays)
 {
+    static __typeof__(&glGenVertexArraysOES) real;
+    if (!real)
+        real = (__typeof__(&glGenVertexArraysOES))ps5_gl_resolve("glGenVertexArraysOES");
+    if (real) {
+        real(n, arrays);
+        return;
+    }
 }
 
 GLboolean glIsVertexArrayOES(GLuint array)
 {
+    static __typeof__(&glIsVertexArrayOES) real;
+    if (!real)
+        real = (__typeof__(&glIsVertexArrayOES))ps5_gl_resolve("glIsVertexArrayOES");
+    if (real) {
+        return real(array);
+    }
     return 0;
 }
 
 void glViewportArrayvOES(GLuint first, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glViewportArrayvOES) real;
+    if (!real)
+        real = (__typeof__(&glViewportArrayvOES))ps5_gl_resolve("glViewportArrayvOES");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glViewportIndexedfOES(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
+    static __typeof__(&glViewportIndexedfOES) real;
+    if (!real)
+        real = (__typeof__(&glViewportIndexedfOES))ps5_gl_resolve("glViewportIndexedfOES");
+    if (real) {
+        real(index, x, y, w, h);
+        return;
+    }
 }
 
 void glViewportIndexedfvOES(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glViewportIndexedfvOES) real;
+    if (!real)
+        real = (__typeof__(&glViewportIndexedfvOES))ps5_gl_resolve("glViewportIndexedfvOES");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glScissorArrayvOES(GLuint first, GLsizei count, const GLint *v)
 {
+    static __typeof__(&glScissorArrayvOES) real;
+    if (!real)
+        real = (__typeof__(&glScissorArrayvOES))ps5_gl_resolve("glScissorArrayvOES");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glScissorIndexedOES(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glScissorIndexedOES) real;
+    if (!real)
+        real = (__typeof__(&glScissorIndexedOES))ps5_gl_resolve("glScissorIndexedOES");
+    if (real) {
+        real(index, left, bottom, width, height);
+        return;
+    }
 }
 
 void glScissorIndexedvOES(GLuint index, const GLint *v)
 {
+    static __typeof__(&glScissorIndexedvOES) real;
+    if (!real)
+        real = (__typeof__(&glScissorIndexedvOES))ps5_gl_resolve("glScissorIndexedvOES");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glDepthRangeArrayfvOES(GLuint first, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glDepthRangeArrayfvOES) real;
+    if (!real)
+        real = (__typeof__(&glDepthRangeArrayfvOES))ps5_gl_resolve("glDepthRangeArrayfvOES");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glDepthRangeIndexedfOES(GLuint index, GLfloat n, GLfloat f)
 {
+    static __typeof__(&glDepthRangeIndexedfOES) real;
+    if (!real)
+        real = (__typeof__(&glDepthRangeIndexedfOES))ps5_gl_resolve("glDepthRangeIndexedfOES");
+    if (real) {
+        real(index, n, f);
+        return;
+    }
 }
 
 void glGetFloati_vOES(GLenum target, GLuint index, GLfloat *data)
 {
+    static __typeof__(&glGetFloati_vOES) real;
+    if (!real)
+        real = (__typeof__(&glGetFloati_vOES))ps5_gl_resolve("glGetFloati_vOES");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleAdvancedAMD(GLenum target, GLsizei samples, GLsizei storageSamples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleAdvancedAMD) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleAdvancedAMD))ps5_gl_resolve("glRenderbufferStorageMultisampleAdvancedAMD");
+    if (real) {
+        real(target, samples, storageSamples, internalformat, width, height);
+        return;
+    }
 }
 
 void glNamedRenderbufferStorageMultisampleAdvancedAMD(GLuint renderbuffer, GLsizei samples, GLsizei storageSamples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glNamedRenderbufferStorageMultisampleAdvancedAMD) real;
+    if (!real)
+        real = (__typeof__(&glNamedRenderbufferStorageMultisampleAdvancedAMD))ps5_gl_resolve("glNamedRenderbufferStorageMultisampleAdvancedAMD");
+    if (real) {
+        real(renderbuffer, samples, storageSamples, internalformat, width, height);
+        return;
+    }
 }
 
 void glGetPerfMonitorGroupsAMD(GLint *numGroups, GLsizei groupsSize, GLuint *groups)
 {
+    static __typeof__(&glGetPerfMonitorGroupsAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorGroupsAMD))ps5_gl_resolve("glGetPerfMonitorGroupsAMD");
+    if (real) {
+        real(numGroups, groupsSize, groups);
+        return;
+    }
 }
 
 void glGetPerfMonitorCountersAMD(GLuint group, GLint *numCounters, GLint *maxActiveCounters, GLsizei counterSize, GLuint *counters)
 {
+    static __typeof__(&glGetPerfMonitorCountersAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorCountersAMD))ps5_gl_resolve("glGetPerfMonitorCountersAMD");
+    if (real) {
+        real(group, numCounters, maxActiveCounters, counterSize, counters);
+        return;
+    }
 }
 
 void glGetPerfMonitorGroupStringAMD(GLuint group, GLsizei bufSize, GLsizei *length, GLchar *groupString)
 {
+    static __typeof__(&glGetPerfMonitorGroupStringAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorGroupStringAMD))ps5_gl_resolve("glGetPerfMonitorGroupStringAMD");
+    if (real) {
+        real(group, bufSize, length, groupString);
+        return;
+    }
 }
 
 void glGetPerfMonitorCounterStringAMD(GLuint group, GLuint counter, GLsizei bufSize, GLsizei *length, GLchar *counterString)
 {
+    static __typeof__(&glGetPerfMonitorCounterStringAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorCounterStringAMD))ps5_gl_resolve("glGetPerfMonitorCounterStringAMD");
+    if (real) {
+        real(group, counter, bufSize, length, counterString);
+        return;
+    }
 }
 
 void glGetPerfMonitorCounterInfoAMD(GLuint group, GLuint counter, GLenum pname, void *data)
 {
+    static __typeof__(&glGetPerfMonitorCounterInfoAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorCounterInfoAMD))ps5_gl_resolve("glGetPerfMonitorCounterInfoAMD");
+    if (real) {
+        real(group, counter, pname, data);
+        return;
+    }
 }
 
 void glGenPerfMonitorsAMD(GLsizei n, GLuint *monitors)
 {
+    static __typeof__(&glGenPerfMonitorsAMD) real;
+    if (!real)
+        real = (__typeof__(&glGenPerfMonitorsAMD))ps5_gl_resolve("glGenPerfMonitorsAMD");
+    if (real) {
+        real(n, monitors);
+        return;
+    }
 }
 
 void glDeletePerfMonitorsAMD(GLsizei n, GLuint *monitors)
 {
+    static __typeof__(&glDeletePerfMonitorsAMD) real;
+    if (!real)
+        real = (__typeof__(&glDeletePerfMonitorsAMD))ps5_gl_resolve("glDeletePerfMonitorsAMD");
+    if (real) {
+        real(n, monitors);
+        return;
+    }
 }
 
 void glSelectPerfMonitorCountersAMD(GLuint monitor, GLboolean enable, GLuint group, GLint numCounters, GLuint *counterList)
 {
+    static __typeof__(&glSelectPerfMonitorCountersAMD) real;
+    if (!real)
+        real = (__typeof__(&glSelectPerfMonitorCountersAMD))ps5_gl_resolve("glSelectPerfMonitorCountersAMD");
+    if (real) {
+        real(monitor, enable, group, numCounters, counterList);
+        return;
+    }
 }
 
 void glBeginPerfMonitorAMD(GLuint monitor)
 {
+    static __typeof__(&glBeginPerfMonitorAMD) real;
+    if (!real)
+        real = (__typeof__(&glBeginPerfMonitorAMD))ps5_gl_resolve("glBeginPerfMonitorAMD");
+    if (real) {
+        real(monitor);
+        return;
+    }
 }
 
 void glEndPerfMonitorAMD(GLuint monitor)
 {
+    static __typeof__(&glEndPerfMonitorAMD) real;
+    if (!real)
+        real = (__typeof__(&glEndPerfMonitorAMD))ps5_gl_resolve("glEndPerfMonitorAMD");
+    if (real) {
+        real(monitor);
+        return;
+    }
 }
 
 void glGetPerfMonitorCounterDataAMD(GLuint monitor, GLenum pname, GLsizei dataSize, GLuint *data, GLint *bytesWritten)
 {
+    static __typeof__(&glGetPerfMonitorCounterDataAMD) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfMonitorCounterDataAMD))ps5_gl_resolve("glGetPerfMonitorCounterDataAMD");
+    if (real) {
+        real(monitor, pname, dataSize, data, bytesWritten);
+        return;
+    }
 }
 
 void glBlitFramebufferANGLE(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
+    static __typeof__(&glBlitFramebufferANGLE) real;
+    if (!real)
+        real = (__typeof__(&glBlitFramebufferANGLE))ps5_gl_resolve("glBlitFramebufferANGLE");
+    if (real) {
+        real(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleANGLE(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleANGLE) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleANGLE))ps5_gl_resolve("glRenderbufferStorageMultisampleANGLE");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glDrawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
 {
+    static __typeof__(&glDrawArraysInstancedANGLE) real;
+    if (!real)
+        real = (__typeof__(&glDrawArraysInstancedANGLE))ps5_gl_resolve("glDrawArraysInstancedANGLE");
+    if (real) {
+        real(mode, first, count, primcount);
+        return;
+    }
 }
 
 void glDrawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
 {
+    static __typeof__(&glDrawElementsInstancedANGLE) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedANGLE))ps5_gl_resolve("glDrawElementsInstancedANGLE");
+    if (real) {
+        real(mode, count, type, indices, primcount);
+        return;
+    }
 }
 
 void glVertexAttribDivisorANGLE(GLuint index, GLuint divisor)
 {
+    static __typeof__(&glVertexAttribDivisorANGLE) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribDivisorANGLE))ps5_gl_resolve("glVertexAttribDivisorANGLE");
+    if (real) {
+        real(index, divisor);
+        return;
+    }
 }
 
 void glGetTranslatedShaderSourceANGLE(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source)
 {
+    static __typeof__(&glGetTranslatedShaderSourceANGLE) real;
+    if (!real)
+        real = (__typeof__(&glGetTranslatedShaderSourceANGLE))ps5_gl_resolve("glGetTranslatedShaderSourceANGLE");
+    if (real) {
+        real(shader, bufSize, length, source);
+        return;
+    }
 }
 
 void glCopyTextureLevelsAPPLE(GLuint destinationTexture, GLuint sourceTexture, GLint sourceBaseLevel, GLsizei sourceLevelCount)
 {
+    static __typeof__(&glCopyTextureLevelsAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glCopyTextureLevelsAPPLE))ps5_gl_resolve("glCopyTextureLevelsAPPLE");
+    if (real) {
+        real(destinationTexture, sourceTexture, sourceBaseLevel, sourceLevelCount);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleAPPLE(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleAPPLE))ps5_gl_resolve("glRenderbufferStorageMultisampleAPPLE");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glResolveMultisampleFramebufferAPPLE(void)
 {
+    static __typeof__(&glResolveMultisampleFramebufferAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glResolveMultisampleFramebufferAPPLE))ps5_gl_resolve("glResolveMultisampleFramebufferAPPLE");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 GLsync glFenceSyncAPPLE(GLenum condition, GLbitfield flags)
 {
+    static __typeof__(&glFenceSyncAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glFenceSyncAPPLE))ps5_gl_resolve("glFenceSyncAPPLE");
+    if (real) {
+        return real(condition, flags);
+    }
     return (GLsync)0;
 }
 
 GLboolean glIsSyncAPPLE(GLsync sync)
 {
+    static __typeof__(&glIsSyncAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glIsSyncAPPLE))ps5_gl_resolve("glIsSyncAPPLE");
+    if (real) {
+        return real(sync);
+    }
     return 0;
 }
 
 void glDeleteSyncAPPLE(GLsync sync)
 {
+    static __typeof__(&glDeleteSyncAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glDeleteSyncAPPLE))ps5_gl_resolve("glDeleteSyncAPPLE");
+    if (real) {
+        real(sync);
+        return;
+    }
 }
 
 GLenum glClientWaitSyncAPPLE(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
+    static __typeof__(&glClientWaitSyncAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glClientWaitSyncAPPLE))ps5_gl_resolve("glClientWaitSyncAPPLE");
+    if (real) {
+        return real(sync, flags, timeout);
+    }
     return (GLenum)0;
 }
 
 void glWaitSyncAPPLE(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
+    static __typeof__(&glWaitSyncAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glWaitSyncAPPLE))ps5_gl_resolve("glWaitSyncAPPLE");
+    if (real) {
+        real(sync, flags, timeout);
+        return;
+    }
 }
 
 void glGetInteger64vAPPLE(GLenum pname, GLint64 *params)
 {
+    static __typeof__(&glGetInteger64vAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glGetInteger64vAPPLE))ps5_gl_resolve("glGetInteger64vAPPLE");
+    if (real) {
+        real(pname, params);
+        return;
+    }
 }
 
 void glGetSyncivAPPLE(GLsync sync, GLenum pname, GLsizei count, GLsizei *length, GLint *values)
 {
+    static __typeof__(&glGetSyncivAPPLE) real;
+    if (!real)
+        real = (__typeof__(&glGetSyncivAPPLE))ps5_gl_resolve("glGetSyncivAPPLE");
+    if (real) {
+        real(sync, pname, count, length, values);
+        return;
+    }
 }
 
 void glMaxActiveShaderCoresARM(GLuint count)
 {
+    static __typeof__(&glMaxActiveShaderCoresARM) real;
+    if (!real)
+        real = (__typeof__(&glMaxActiveShaderCoresARM))ps5_gl_resolve("glMaxActiveShaderCoresARM");
+    if (real) {
+        real(count);
+        return;
+    }
 }
 
 void glEGLImageTargetTexStorageEXT(GLenum target, GLeglImageOES image, const GLint* attrib_list)
 {
+    static __typeof__(&glEGLImageTargetTexStorageEXT) real;
+    if (!real)
+        real = (__typeof__(&glEGLImageTargetTexStorageEXT))ps5_gl_resolve("glEGLImageTargetTexStorageEXT");
+    if (real) {
+        real(target, image, attrib_list);
+        return;
+    }
 }
 
 void glEGLImageTargetTextureStorageEXT(GLuint texture, GLeglImageOES image, const GLint* attrib_list)
 {
+    static __typeof__(&glEGLImageTargetTextureStorageEXT) real;
+    if (!real)
+        real = (__typeof__(&glEGLImageTargetTextureStorageEXT))ps5_gl_resolve("glEGLImageTargetTextureStorageEXT");
+    if (real) {
+        real(texture, image, attrib_list);
+        return;
+    }
 }
 
 void glDrawArraysInstancedBaseInstanceEXT(GLenum mode, GLint first, GLsizei count, GLsizei instancecount, GLuint baseinstance)
 {
+    static __typeof__(&glDrawArraysInstancedBaseInstanceEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawArraysInstancedBaseInstanceEXT))ps5_gl_resolve("glDrawArraysInstancedBaseInstanceEXT");
+    if (real) {
+        real(mode, first, count, instancecount, baseinstance);
+        return;
+    }
 }
 
 void glDrawElementsInstancedBaseInstanceEXT(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance)
 {
+    static __typeof__(&glDrawElementsInstancedBaseInstanceEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedBaseInstanceEXT))ps5_gl_resolve("glDrawElementsInstancedBaseInstanceEXT");
+    if (real) {
+        real(mode, count, type, indices, instancecount, baseinstance);
+        return;
+    }
 }
 
 void glDrawElementsInstancedBaseVertexBaseInstanceEXT(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance)
 {
+    static __typeof__(&glDrawElementsInstancedBaseVertexBaseInstanceEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedBaseVertexBaseInstanceEXT))ps5_gl_resolve("glDrawElementsInstancedBaseVertexBaseInstanceEXT");
+    if (real) {
+        real(mode, count, type, indices, instancecount, basevertex, baseinstance);
+        return;
+    }
 }
 
 void glBindFragDataLocationIndexedEXT(GLuint program, GLuint colorNumber, GLuint index, const GLchar *name)
 {
+    static __typeof__(&glBindFragDataLocationIndexedEXT) real;
+    if (!real)
+        real = (__typeof__(&glBindFragDataLocationIndexedEXT))ps5_gl_resolve("glBindFragDataLocationIndexedEXT");
+    if (real) {
+        real(program, colorNumber, index, name);
+        return;
+    }
 }
 
 void glBindFragDataLocationEXT(GLuint program, GLuint color, const GLchar *name)
 {
+    static __typeof__(&glBindFragDataLocationEXT) real;
+    if (!real)
+        real = (__typeof__(&glBindFragDataLocationEXT))ps5_gl_resolve("glBindFragDataLocationEXT");
+    if (real) {
+        real(program, color, name);
+        return;
+    }
 }
 
 GLint glGetProgramResourceLocationIndexEXT(GLuint program, GLenum programInterface, const GLchar *name)
 {
+    static __typeof__(&glGetProgramResourceLocationIndexEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramResourceLocationIndexEXT))ps5_gl_resolve("glGetProgramResourceLocationIndexEXT");
+    if (real) {
+        return real(program, programInterface, name);
+    }
     return (GLint)0;
 }
 
 GLint glGetFragDataIndexEXT(GLuint program, const GLchar *name)
 {
+    static __typeof__(&glGetFragDataIndexEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetFragDataIndexEXT))ps5_gl_resolve("glGetFragDataIndexEXT");
+    if (real) {
+        return real(program, name);
+    }
     return (GLint)0;
 }
 
 void glBufferStorageEXT(GLenum target, GLsizeiptr size, const void *data, GLbitfield flags)
 {
+    static __typeof__(&glBufferStorageEXT) real;
+    if (!real)
+        real = (__typeof__(&glBufferStorageEXT))ps5_gl_resolve("glBufferStorageEXT");
+    if (real) {
+        real(target, size, data, flags);
+        return;
+    }
 }
 
 void glClearTexImageEXT(GLuint texture, GLint level, GLenum format, GLenum type, const void *data)
 {
+    static __typeof__(&glClearTexImageEXT) real;
+    if (!real)
+        real = (__typeof__(&glClearTexImageEXT))ps5_gl_resolve("glClearTexImageEXT");
+    if (real) {
+        real(texture, level, format, type, data);
+        return;
+    }
 }
 
 void glClearTexSubImageEXT(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data)
 {
+    static __typeof__(&glClearTexSubImageEXT) real;
+    if (!real)
+        real = (__typeof__(&glClearTexSubImageEXT))ps5_gl_resolve("glClearTexSubImageEXT");
+    if (real) {
+        real(texture, level, xoffset, yoffset, zoffset, width, height, depth, format, type, data);
+        return;
+    }
 }
 
 void glClipControlEXT(GLenum origin, GLenum depth)
 {
+    static __typeof__(&glClipControlEXT) real;
+    if (!real)
+        real = (__typeof__(&glClipControlEXT))ps5_gl_resolve("glClipControlEXT");
+    if (real) {
+        real(origin, depth);
+        return;
+    }
 }
 
 void glCopyImageSubDataEXT(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)
 {
+    static __typeof__(&glCopyImageSubDataEXT) real;
+    if (!real)
+        real = (__typeof__(&glCopyImageSubDataEXT))ps5_gl_resolve("glCopyImageSubDataEXT");
+    if (real) {
+        real(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth);
+        return;
+    }
 }
 
 void glLabelObjectEXT(GLenum type, GLuint object, GLsizei length, const GLchar *label)
 {
+    static __typeof__(&glLabelObjectEXT) real;
+    if (!real)
+        real = (__typeof__(&glLabelObjectEXT))ps5_gl_resolve("glLabelObjectEXT");
+    if (real) {
+        real(type, object, length, label);
+        return;
+    }
 }
 
 void glGetObjectLabelEXT(GLenum type, GLuint object, GLsizei bufSize, GLsizei *length, GLchar *label)
 {
+    static __typeof__(&glGetObjectLabelEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetObjectLabelEXT))ps5_gl_resolve("glGetObjectLabelEXT");
+    if (real) {
+        real(type, object, bufSize, length, label);
+        return;
+    }
 }
 
 void glInsertEventMarkerEXT(GLsizei length, const GLchar *marker)
 {
+    static __typeof__(&glInsertEventMarkerEXT) real;
+    if (!real)
+        real = (__typeof__(&glInsertEventMarkerEXT))ps5_gl_resolve("glInsertEventMarkerEXT");
+    if (real) {
+        real(length, marker);
+        return;
+    }
 }
 
 void glPushGroupMarkerEXT(GLsizei length, const GLchar *marker)
 {
+    static __typeof__(&glPushGroupMarkerEXT) real;
+    if (!real)
+        real = (__typeof__(&glPushGroupMarkerEXT))ps5_gl_resolve("glPushGroupMarkerEXT");
+    if (real) {
+        real(length, marker);
+        return;
+    }
 }
 
 void glPopGroupMarkerEXT(void)
 {
+    static __typeof__(&glPopGroupMarkerEXT) real;
+    if (!real)
+        real = (__typeof__(&glPopGroupMarkerEXT))ps5_gl_resolve("glPopGroupMarkerEXT");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glDiscardFramebufferEXT(GLenum target, GLsizei numAttachments, const GLenum *attachments)
 {
+    static __typeof__(&glDiscardFramebufferEXT) real;
+    if (!real)
+        real = (__typeof__(&glDiscardFramebufferEXT))ps5_gl_resolve("glDiscardFramebufferEXT");
+    if (real) {
+        real(target, numAttachments, attachments);
+        return;
+    }
 }
 
 void glGenQueriesEXT(GLsizei n, GLuint *ids)
 {
+    static __typeof__(&glGenQueriesEXT) real;
+    if (!real)
+        real = (__typeof__(&glGenQueriesEXT))ps5_gl_resolve("glGenQueriesEXT");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 void glDeleteQueriesEXT(GLsizei n, const GLuint *ids)
 {
+    static __typeof__(&glDeleteQueriesEXT) real;
+    if (!real)
+        real = (__typeof__(&glDeleteQueriesEXT))ps5_gl_resolve("glDeleteQueriesEXT");
+    if (real) {
+        real(n, ids);
+        return;
+    }
 }
 
 GLboolean glIsQueryEXT(GLuint id)
 {
+    static __typeof__(&glIsQueryEXT) real;
+    if (!real)
+        real = (__typeof__(&glIsQueryEXT))ps5_gl_resolve("glIsQueryEXT");
+    if (real) {
+        return real(id);
+    }
     return 0;
 }
 
 void glBeginQueryEXT(GLenum target, GLuint id)
 {
+    static __typeof__(&glBeginQueryEXT) real;
+    if (!real)
+        real = (__typeof__(&glBeginQueryEXT))ps5_gl_resolve("glBeginQueryEXT");
+    if (real) {
+        real(target, id);
+        return;
+    }
 }
 
 void glEndQueryEXT(GLenum target)
 {
+    static __typeof__(&glEndQueryEXT) real;
+    if (!real)
+        real = (__typeof__(&glEndQueryEXT))ps5_gl_resolve("glEndQueryEXT");
+    if (real) {
+        real(target);
+        return;
+    }
 }
 
 void glQueryCounterEXT(GLuint id, GLenum target)
 {
+    static __typeof__(&glQueryCounterEXT) real;
+    if (!real)
+        real = (__typeof__(&glQueryCounterEXT))ps5_gl_resolve("glQueryCounterEXT");
+    if (real) {
+        real(id, target);
+        return;
+    }
 }
 
 void glGetQueryivEXT(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetQueryivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryivEXT))ps5_gl_resolve("glGetQueryivEXT");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetQueryObjectivEXT(GLuint id, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetQueryObjectivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryObjectivEXT))ps5_gl_resolve("glGetQueryObjectivEXT");
+    if (real) {
+        real(id, pname, params);
+        return;
+    }
 }
 
 void glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetQueryObjectuivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryObjectuivEXT))ps5_gl_resolve("glGetQueryObjectuivEXT");
+    if (real) {
+        real(id, pname, params);
+        return;
+    }
 }
 
 void glGetQueryObjecti64vEXT(GLuint id, GLenum pname, GLint64 *params)
 {
+    static __typeof__(&glGetQueryObjecti64vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryObjecti64vEXT))ps5_gl_resolve("glGetQueryObjecti64vEXT");
+    if (real) {
+        real(id, pname, params);
+        return;
+    }
 }
 
 void glGetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64 *params)
 {
+    static __typeof__(&glGetQueryObjectui64vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetQueryObjectui64vEXT))ps5_gl_resolve("glGetQueryObjectui64vEXT");
+    if (real) {
+        real(id, pname, params);
+        return;
+    }
 }
 
 void glGetInteger64vEXT(GLenum pname, GLint64 *data)
 {
+    static __typeof__(&glGetInteger64vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetInteger64vEXT))ps5_gl_resolve("glGetInteger64vEXT");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glDrawBuffersEXT(GLsizei n, const GLenum *bufs)
 {
+    static __typeof__(&glDrawBuffersEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawBuffersEXT))ps5_gl_resolve("glDrawBuffersEXT");
+    if (real) {
+        real(n, bufs);
+        return;
+    }
 }
 
 void glEnableiEXT(GLenum target, GLuint index)
 {
+    static __typeof__(&glEnableiEXT) real;
+    if (!real)
+        real = (__typeof__(&glEnableiEXT))ps5_gl_resolve("glEnableiEXT");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 void glDisableiEXT(GLenum target, GLuint index)
 {
+    static __typeof__(&glDisableiEXT) real;
+    if (!real)
+        real = (__typeof__(&glDisableiEXT))ps5_gl_resolve("glDisableiEXT");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 void glBlendEquationiEXT(GLuint buf, GLenum mode)
 {
+    static __typeof__(&glBlendEquationiEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquationiEXT))ps5_gl_resolve("glBlendEquationiEXT");
+    if (real) {
+        real(buf, mode);
+        return;
+    }
 }
 
 void glBlendEquationSeparateiEXT(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
 {
+    static __typeof__(&glBlendEquationSeparateiEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlendEquationSeparateiEXT))ps5_gl_resolve("glBlendEquationSeparateiEXT");
+    if (real) {
+        real(buf, modeRGB, modeAlpha);
+        return;
+    }
 }
 
 void glBlendFunciEXT(GLuint buf, GLenum src, GLenum dst)
 {
+    static __typeof__(&glBlendFunciEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlendFunciEXT))ps5_gl_resolve("glBlendFunciEXT");
+    if (real) {
+        real(buf, src, dst);
+        return;
+    }
 }
 
 void glBlendFuncSeparateiEXT(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
 {
+    static __typeof__(&glBlendFuncSeparateiEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlendFuncSeparateiEXT))ps5_gl_resolve("glBlendFuncSeparateiEXT");
+    if (real) {
+        real(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+        return;
+    }
 }
 
 void glColorMaskiEXT(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
 {
+    static __typeof__(&glColorMaskiEXT) real;
+    if (!real)
+        real = (__typeof__(&glColorMaskiEXT))ps5_gl_resolve("glColorMaskiEXT");
+    if (real) {
+        real(index, r, g, b, a);
+        return;
+    }
 }
 
 GLboolean glIsEnablediEXT(GLenum target, GLuint index)
 {
+    static __typeof__(&glIsEnablediEXT) real;
+    if (!real)
+        real = (__typeof__(&glIsEnablediEXT))ps5_gl_resolve("glIsEnablediEXT");
+    if (real) {
+        return real(target, index);
+    }
     return 0;
 }
 
 void glDrawElementsBaseVertexEXT(GLenum mode, GLsizei count, GLenum type, const void *indices, GLint basevertex)
 {
+    static __typeof__(&glDrawElementsBaseVertexEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsBaseVertexEXT))ps5_gl_resolve("glDrawElementsBaseVertexEXT");
+    if (real) {
+        real(mode, count, type, indices, basevertex);
+        return;
+    }
 }
 
 void glDrawRangeElementsBaseVertexEXT(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices, GLint basevertex)
 {
+    static __typeof__(&glDrawRangeElementsBaseVertexEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawRangeElementsBaseVertexEXT))ps5_gl_resolve("glDrawRangeElementsBaseVertexEXT");
+    if (real) {
+        real(mode, start, end, count, type, indices, basevertex);
+        return;
+    }
 }
 
 void glDrawElementsInstancedBaseVertexEXT(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex)
 {
+    static __typeof__(&glDrawElementsInstancedBaseVertexEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedBaseVertexEXT))ps5_gl_resolve("glDrawElementsInstancedBaseVertexEXT");
+    if (real) {
+        real(mode, count, type, indices, instancecount, basevertex);
+        return;
+    }
 }
 
 void glDrawArraysInstancedEXT(GLenum mode, GLint start, GLsizei count, GLsizei primcount)
 {
+    static __typeof__(&glDrawArraysInstancedEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawArraysInstancedEXT))ps5_gl_resolve("glDrawArraysInstancedEXT");
+    if (real) {
+        real(mode, start, count, primcount);
+        return;
+    }
 }
 
 void glDrawElementsInstancedEXT(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
 {
+    static __typeof__(&glDrawElementsInstancedEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedEXT))ps5_gl_resolve("glDrawElementsInstancedEXT");
+    if (real) {
+        real(mode, count, type, indices, primcount);
+        return;
+    }
 }
 
 void glDrawTransformFeedbackEXT(GLenum mode, GLuint id)
 {
+    static __typeof__(&glDrawTransformFeedbackEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawTransformFeedbackEXT))ps5_gl_resolve("glDrawTransformFeedbackEXT");
+    if (real) {
+        real(mode, id);
+        return;
+    }
 }
 
 void glDrawTransformFeedbackInstancedEXT(GLenum mode, GLuint id, GLsizei instancecount)
 {
+    static __typeof__(&glDrawTransformFeedbackInstancedEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawTransformFeedbackInstancedEXT))ps5_gl_resolve("glDrawTransformFeedbackInstancedEXT");
+    if (real) {
+        real(mode, id, instancecount);
+        return;
+    }
 }
 
 void glBufferStorageExternalEXT(GLenum target, GLintptr offset, GLsizeiptr size, GLeglClientBufferEXT clientBuffer, GLbitfield flags)
 {
+    static __typeof__(&glBufferStorageExternalEXT) real;
+    if (!real)
+        real = (__typeof__(&glBufferStorageExternalEXT))ps5_gl_resolve("glBufferStorageExternalEXT");
+    if (real) {
+        real(target, offset, size, clientBuffer, flags);
+        return;
+    }
 }
 
 void glNamedBufferStorageExternalEXT(GLuint buffer, GLintptr offset, GLsizeiptr size, GLeglClientBufferEXT clientBuffer, GLbitfield flags)
 {
+    static __typeof__(&glNamedBufferStorageExternalEXT) real;
+    if (!real)
+        real = (__typeof__(&glNamedBufferStorageExternalEXT))ps5_gl_resolve("glNamedBufferStorageExternalEXT");
+    if (real) {
+        real(buffer, offset, size, clientBuffer, flags);
+        return;
+    }
 }
 
 void glGetFragmentShadingRatesEXT(GLsizei samples, GLsizei maxCount, GLsizei *count, GLenum *shadingRates)
 {
+    static __typeof__(&glGetFragmentShadingRatesEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetFragmentShadingRatesEXT))ps5_gl_resolve("glGetFragmentShadingRatesEXT");
+    if (real) {
+        real(samples, maxCount, count, shadingRates);
+        return;
+    }
 }
 
 void glShadingRateEXT(GLenum rate)
 {
+    static __typeof__(&glShadingRateEXT) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateEXT))ps5_gl_resolve("glShadingRateEXT");
+    if (real) {
+        real(rate);
+        return;
+    }
 }
 
 void glShadingRateCombinerOpsEXT(GLenum combinerOp0, GLenum combinerOp1)
 {
+    static __typeof__(&glShadingRateCombinerOpsEXT) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateCombinerOpsEXT))ps5_gl_resolve("glShadingRateCombinerOpsEXT");
+    if (real) {
+        real(combinerOp0, combinerOp1);
+        return;
+    }
 }
 
 void glFramebufferShadingRateEXT(GLenum target, GLenum attachment, GLuint texture, GLint baseLayer, GLsizei numLayers, GLsizei texelWidth, GLsizei texelHeight)
 {
+    static __typeof__(&glFramebufferShadingRateEXT) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferShadingRateEXT))ps5_gl_resolve("glFramebufferShadingRateEXT");
+    if (real) {
+        real(target, attachment, texture, baseLayer, numLayers, texelWidth, texelHeight);
+        return;
+    }
 }
 
 void glBlitFramebufferLayersEXT(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
+    static __typeof__(&glBlitFramebufferLayersEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlitFramebufferLayersEXT))ps5_gl_resolve("glBlitFramebufferLayersEXT");
+    if (real) {
+        real(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+        return;
+    }
 }
 
 void glBlitFramebufferLayerEXT(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint srcLayer, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLint dstLayer, GLbitfield mask, GLenum filter)
 {
+    static __typeof__(&glBlitFramebufferLayerEXT) real;
+    if (!real)
+        real = (__typeof__(&glBlitFramebufferLayerEXT))ps5_gl_resolve("glBlitFramebufferLayerEXT");
+    if (real) {
+        real(srcX0, srcY0, srcX1, srcY1, srcLayer, dstX0, dstY0, dstX1, dstY1, dstLayer, mask, filter);
+        return;
+    }
 }
 
 void glFramebufferTextureEXT(GLenum target, GLenum attachment, GLuint texture, GLint level)
 {
+    static __typeof__(&glFramebufferTextureEXT) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureEXT))ps5_gl_resolve("glFramebufferTextureEXT");
+    if (real) {
+        real(target, attachment, texture, level);
+        return;
+    }
 }
 
 void glVertexAttribDivisorEXT(GLuint index, GLuint divisor)
 {
+    static __typeof__(&glVertexAttribDivisorEXT) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribDivisorEXT))ps5_gl_resolve("glVertexAttribDivisorEXT");
+    if (real) {
+        real(index, divisor);
+        return;
+    }
 }
 
 void * glMapBufferRangeEXT(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
+    static __typeof__(&glMapBufferRangeEXT) real;
+    if (!real)
+        real = (__typeof__(&glMapBufferRangeEXT))ps5_gl_resolve("glMapBufferRangeEXT");
+    if (real) {
+        return real(target, offset, length, access);
+    }
     return (void *)0;
 }
 
 void glFlushMappedBufferRangeEXT(GLenum target, GLintptr offset, GLsizeiptr length)
 {
+    static __typeof__(&glFlushMappedBufferRangeEXT) real;
+    if (!real)
+        real = (__typeof__(&glFlushMappedBufferRangeEXT))ps5_gl_resolve("glFlushMappedBufferRangeEXT");
+    if (real) {
+        real(target, offset, length);
+        return;
+    }
 }
 
 void glGetUnsignedBytevEXT(GLenum pname, GLubyte *data)
 {
+    static __typeof__(&glGetUnsignedBytevEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetUnsignedBytevEXT))ps5_gl_resolve("glGetUnsignedBytevEXT");
+    if (real) {
+        real(pname, data);
+        return;
+    }
 }
 
 void glGetUnsignedBytei_vEXT(GLenum target, GLuint index, GLubyte *data)
 {
+    static __typeof__(&glGetUnsignedBytei_vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetUnsignedBytei_vEXT))ps5_gl_resolve("glGetUnsignedBytei_vEXT");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glDeleteMemoryObjectsEXT(GLsizei n, const GLuint *memoryObjects)
 {
+    static __typeof__(&glDeleteMemoryObjectsEXT) real;
+    if (!real)
+        real = (__typeof__(&glDeleteMemoryObjectsEXT))ps5_gl_resolve("glDeleteMemoryObjectsEXT");
+    if (real) {
+        real(n, memoryObjects);
+        return;
+    }
 }
 
 GLboolean glIsMemoryObjectEXT(GLuint memoryObject)
 {
+    static __typeof__(&glIsMemoryObjectEXT) real;
+    if (!real)
+        real = (__typeof__(&glIsMemoryObjectEXT))ps5_gl_resolve("glIsMemoryObjectEXT");
+    if (real) {
+        return real(memoryObject);
+    }
     return 0;
 }
 
 void glCreateMemoryObjectsEXT(GLsizei n, GLuint *memoryObjects)
 {
+    static __typeof__(&glCreateMemoryObjectsEXT) real;
+    if (!real)
+        real = (__typeof__(&glCreateMemoryObjectsEXT))ps5_gl_resolve("glCreateMemoryObjectsEXT");
+    if (real) {
+        real(n, memoryObjects);
+        return;
+    }
 }
 
 void glMemoryObjectParameterivEXT(GLuint memoryObject, GLenum pname, const GLint *params)
 {
+    static __typeof__(&glMemoryObjectParameterivEXT) real;
+    if (!real)
+        real = (__typeof__(&glMemoryObjectParameterivEXT))ps5_gl_resolve("glMemoryObjectParameterivEXT");
+    if (real) {
+        real(memoryObject, pname, params);
+        return;
+    }
 }
 
 void glGetMemoryObjectParameterivEXT(GLuint memoryObject, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetMemoryObjectParameterivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetMemoryObjectParameterivEXT))ps5_gl_resolve("glGetMemoryObjectParameterivEXT");
+    if (real) {
+        real(memoryObject, pname, params);
+        return;
+    }
 }
 
 void glTexStorageMem2DEXT(GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTexStorageMem2DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageMem2DEXT))ps5_gl_resolve("glTexStorageMem2DEXT");
+    if (real) {
+        real(target, levels, internalFormat, width, height, memory, offset);
+        return;
+    }
 }
 
 void glTexStorageMem2DMultisampleEXT(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTexStorageMem2DMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageMem2DMultisampleEXT))ps5_gl_resolve("glTexStorageMem2DMultisampleEXT");
+    if (real) {
+        real(target, samples, internalFormat, width, height, fixedSampleLocations, memory, offset);
+        return;
+    }
 }
 
 void glTexStorageMem3DEXT(GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTexStorageMem3DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageMem3DEXT))ps5_gl_resolve("glTexStorageMem3DEXT");
+    if (real) {
+        real(target, levels, internalFormat, width, height, depth, memory, offset);
+        return;
+    }
 }
 
 void glTexStorageMem3DMultisampleEXT(GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTexStorageMem3DMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageMem3DMultisampleEXT))ps5_gl_resolve("glTexStorageMem3DMultisampleEXT");
+    if (real) {
+        real(target, samples, internalFormat, width, height, depth, fixedSampleLocations, memory, offset);
+        return;
+    }
 }
 
 void glBufferStorageMemEXT(GLenum target, GLsizeiptr size, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glBufferStorageMemEXT) real;
+    if (!real)
+        real = (__typeof__(&glBufferStorageMemEXT))ps5_gl_resolve("glBufferStorageMemEXT");
+    if (real) {
+        real(target, size, memory, offset);
+        return;
+    }
 }
 
 void glTextureStorageMem2DEXT(GLuint texture, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTextureStorageMem2DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorageMem2DEXT))ps5_gl_resolve("glTextureStorageMem2DEXT");
+    if (real) {
+        real(texture, levels, internalFormat, width, height, memory, offset);
+        return;
+    }
 }
 
 void glTextureStorageMem2DMultisampleEXT(GLuint texture, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTextureStorageMem2DMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorageMem2DMultisampleEXT))ps5_gl_resolve("glTextureStorageMem2DMultisampleEXT");
+    if (real) {
+        real(texture, samples, internalFormat, width, height, fixedSampleLocations, memory, offset);
+        return;
+    }
 }
 
 void glTextureStorageMem3DEXT(GLuint texture, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTextureStorageMem3DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorageMem3DEXT))ps5_gl_resolve("glTextureStorageMem3DEXT");
+    if (real) {
+        real(texture, levels, internalFormat, width, height, depth, memory, offset);
+        return;
+    }
 }
 
 void glTextureStorageMem3DMultisampleEXT(GLuint texture, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTextureStorageMem3DMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorageMem3DMultisampleEXT))ps5_gl_resolve("glTextureStorageMem3DMultisampleEXT");
+    if (real) {
+        real(texture, samples, internalFormat, width, height, depth, fixedSampleLocations, memory, offset);
+        return;
+    }
 }
 
 void glNamedBufferStorageMemEXT(GLuint buffer, GLsizeiptr size, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glNamedBufferStorageMemEXT) real;
+    if (!real)
+        real = (__typeof__(&glNamedBufferStorageMemEXT))ps5_gl_resolve("glNamedBufferStorageMemEXT");
+    if (real) {
+        real(buffer, size, memory, offset);
+        return;
+    }
 }
 
 void glImportMemoryFdEXT(GLuint memory, GLuint64 size, GLenum handleType, GLint fd)
 {
+    static __typeof__(&glImportMemoryFdEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportMemoryFdEXT))ps5_gl_resolve("glImportMemoryFdEXT");
+    if (real) {
+        real(memory, size, handleType, fd);
+        return;
+    }
 }
 
 void glImportMemoryWin32HandleEXT(GLuint memory, GLuint64 size, GLenum handleType, void *handle)
 {
+    static __typeof__(&glImportMemoryWin32HandleEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportMemoryWin32HandleEXT))ps5_gl_resolve("glImportMemoryWin32HandleEXT");
+    if (real) {
+        real(memory, size, handleType, handle);
+        return;
+    }
 }
 
 void glImportMemoryWin32NameEXT(GLuint memory, GLuint64 size, GLenum handleType, const void *name)
 {
+    static __typeof__(&glImportMemoryWin32NameEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportMemoryWin32NameEXT))ps5_gl_resolve("glImportMemoryWin32NameEXT");
+    if (real) {
+        real(memory, size, handleType, name);
+        return;
+    }
 }
 
 void glDrawMeshTasksEXT(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z)
 {
+    static __typeof__(&glDrawMeshTasksEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawMeshTasksEXT))ps5_gl_resolve("glDrawMeshTasksEXT");
+    if (real) {
+        real(num_groups_x, num_groups_y, num_groups_z);
+        return;
+    }
 }
 
 void glDrawMeshTasksIndirectEXT(GLintptr indirect)
 {
+    static __typeof__(&glDrawMeshTasksIndirectEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawMeshTasksIndirectEXT))ps5_gl_resolve("glDrawMeshTasksIndirectEXT");
+    if (real) {
+        real(indirect);
+        return;
+    }
 }
 
 void glMultiDrawMeshTasksIndirectEXT(GLintptr indirect, GLsizei drawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawMeshTasksIndirectEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawMeshTasksIndirectEXT))ps5_gl_resolve("glMultiDrawMeshTasksIndirectEXT");
+    if (real) {
+        real(indirect, drawcount, stride);
+        return;
+    }
 }
 
 void glMultiDrawMeshTasksIndirectCountEXT(GLintptr indirect, GLintptr drawcount, GLsizei maxdrawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawMeshTasksIndirectCountEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawMeshTasksIndirectCountEXT))ps5_gl_resolve("glMultiDrawMeshTasksIndirectCountEXT");
+    if (real) {
+        real(indirect, drawcount, maxdrawcount, stride);
+        return;
+    }
 }
 
 void glMultiDrawArraysEXT(GLenum mode, const GLint *first, const GLsizei *count, GLsizei primcount)
 {
+    static __typeof__(&glMultiDrawArraysEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawArraysEXT))ps5_gl_resolve("glMultiDrawArraysEXT");
+    if (real) {
+        real(mode, first, count, primcount);
+        return;
+    }
 }
 
 void glMultiDrawElementsEXT(GLenum mode, const GLsizei *count, GLenum type, const void *const*indices, GLsizei primcount)
 {
+    static __typeof__(&glMultiDrawElementsEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawElementsEXT))ps5_gl_resolve("glMultiDrawElementsEXT");
+    if (real) {
+        real(mode, count, type, indices, primcount);
+        return;
+    }
 }
 
 void glMultiDrawArraysIndirectEXT(GLenum mode, const void *indirect, GLsizei drawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawArraysIndirectEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawArraysIndirectEXT))ps5_gl_resolve("glMultiDrawArraysIndirectEXT");
+    if (real) {
+        real(mode, indirect, drawcount, stride);
+        return;
+    }
 }
 
 void glMultiDrawElementsIndirectEXT(GLenum mode, GLenum type, const void *indirect, GLsizei drawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawElementsIndirectEXT) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawElementsIndirectEXT))ps5_gl_resolve("glMultiDrawElementsIndirectEXT");
+    if (real) {
+        real(mode, type, indirect, drawcount, stride);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleEXT(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleEXT))ps5_gl_resolve("glRenderbufferStorageMultisampleEXT");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glFramebufferTexture2DMultisampleEXT(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
 {
+    static __typeof__(&glFramebufferTexture2DMultisampleEXT) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTexture2DMultisampleEXT))ps5_gl_resolve("glFramebufferTexture2DMultisampleEXT");
+    if (real) {
+        real(target, attachment, textarget, texture, level, samples);
+        return;
+    }
 }
 
 void glReadBufferIndexedEXT(GLenum src, GLint index)
 {
+    static __typeof__(&glReadBufferIndexedEXT) real;
+    if (!real)
+        real = (__typeof__(&glReadBufferIndexedEXT))ps5_gl_resolve("glReadBufferIndexedEXT");
+    if (real) {
+        real(src, index);
+        return;
+    }
 }
 
 void glDrawBuffersIndexedEXT(GLint n, const GLenum *location, const GLint *indices)
 {
+    static __typeof__(&glDrawBuffersIndexedEXT) real;
+    if (!real)
+        real = (__typeof__(&glDrawBuffersIndexedEXT))ps5_gl_resolve("glDrawBuffersIndexedEXT");
+    if (real) {
+        real(n, location, indices);
+        return;
+    }
 }
 
 void glGetIntegeri_vEXT(GLenum target, GLuint index, GLint *data)
 {
+    static __typeof__(&glGetIntegeri_vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetIntegeri_vEXT))ps5_gl_resolve("glGetIntegeri_vEXT");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glPolygonOffsetClampEXT(GLfloat factor, GLfloat units, GLfloat clamp)
 {
+    static __typeof__(&glPolygonOffsetClampEXT) real;
+    if (!real)
+        real = (__typeof__(&glPolygonOffsetClampEXT))ps5_gl_resolve("glPolygonOffsetClampEXT");
+    if (real) {
+        real(factor, units, clamp);
+        return;
+    }
 }
 
 void glPrimitiveBoundingBoxEXT(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW)
 {
+    static __typeof__(&glPrimitiveBoundingBoxEXT) real;
+    if (!real)
+        real = (__typeof__(&glPrimitiveBoundingBoxEXT))ps5_gl_resolve("glPrimitiveBoundingBoxEXT");
+    if (real) {
+        real(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+        return;
+    }
 }
 
 void glRasterSamplesEXT(GLuint samples, GLboolean fixedsamplelocations)
 {
+    static __typeof__(&glRasterSamplesEXT) real;
+    if (!real)
+        real = (__typeof__(&glRasterSamplesEXT))ps5_gl_resolve("glRasterSamplesEXT");
+    if (real) {
+        real(samples, fixedsamplelocations);
+        return;
+    }
 }
 
 GLenum glGetGraphicsResetStatusEXT(void)
 {
+    static __typeof__(&glGetGraphicsResetStatusEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetGraphicsResetStatusEXT))ps5_gl_resolve("glGetGraphicsResetStatusEXT");
+    if (real) {
+        return real();
+    }
     return (GLenum)0;
 }
 
 void glReadnPixelsEXT(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void *data)
 {
+    static __typeof__(&glReadnPixelsEXT) real;
+    if (!real)
+        real = (__typeof__(&glReadnPixelsEXT))ps5_gl_resolve("glReadnPixelsEXT");
+    if (real) {
+        real(x, y, width, height, format, type, bufSize, data);
+        return;
+    }
 }
 
 void glGetnUniformfvEXT(GLuint program, GLint location, GLsizei bufSize, GLfloat *params)
 {
+    static __typeof__(&glGetnUniformfvEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetnUniformfvEXT))ps5_gl_resolve("glGetnUniformfvEXT");
+    if (real) {
+        real(program, location, bufSize, params);
+        return;
+    }
 }
 
 void glGetnUniformivEXT(GLuint program, GLint location, GLsizei bufSize, GLint *params)
 {
+    static __typeof__(&glGetnUniformivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetnUniformivEXT))ps5_gl_resolve("glGetnUniformivEXT");
+    if (real) {
+        real(program, location, bufSize, params);
+        return;
+    }
 }
 
 void glGenSemaphoresEXT(GLsizei n, GLuint *semaphores)
 {
+    static __typeof__(&glGenSemaphoresEXT) real;
+    if (!real)
+        real = (__typeof__(&glGenSemaphoresEXT))ps5_gl_resolve("glGenSemaphoresEXT");
+    if (real) {
+        real(n, semaphores);
+        return;
+    }
 }
 
 void glDeleteSemaphoresEXT(GLsizei n, const GLuint *semaphores)
 {
+    static __typeof__(&glDeleteSemaphoresEXT) real;
+    if (!real)
+        real = (__typeof__(&glDeleteSemaphoresEXT))ps5_gl_resolve("glDeleteSemaphoresEXT");
+    if (real) {
+        real(n, semaphores);
+        return;
+    }
 }
 
 GLboolean glIsSemaphoreEXT(GLuint semaphore)
 {
+    static __typeof__(&glIsSemaphoreEXT) real;
+    if (!real)
+        real = (__typeof__(&glIsSemaphoreEXT))ps5_gl_resolve("glIsSemaphoreEXT");
+    if (real) {
+        return real(semaphore);
+    }
     return 0;
 }
 
 void glSemaphoreParameterui64vEXT(GLuint semaphore, GLenum pname, const GLuint64 *params)
 {
+    static __typeof__(&glSemaphoreParameterui64vEXT) real;
+    if (!real)
+        real = (__typeof__(&glSemaphoreParameterui64vEXT))ps5_gl_resolve("glSemaphoreParameterui64vEXT");
+    if (real) {
+        real(semaphore, pname, params);
+        return;
+    }
 }
 
 void glGetSemaphoreParameterui64vEXT(GLuint semaphore, GLenum pname, GLuint64 *params)
 {
+    static __typeof__(&glGetSemaphoreParameterui64vEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetSemaphoreParameterui64vEXT))ps5_gl_resolve("glGetSemaphoreParameterui64vEXT");
+    if (real) {
+        real(semaphore, pname, params);
+        return;
+    }
 }
 
 void glWaitSemaphoreEXT(GLuint semaphore, GLuint numBufferBarriers, const GLuint *buffers, GLuint numTextureBarriers, const GLuint *textures, const GLenum *srcLayouts)
 {
+    static __typeof__(&glWaitSemaphoreEXT) real;
+    if (!real)
+        real = (__typeof__(&glWaitSemaphoreEXT))ps5_gl_resolve("glWaitSemaphoreEXT");
+    if (real) {
+        real(semaphore, numBufferBarriers, buffers, numTextureBarriers, textures, srcLayouts);
+        return;
+    }
 }
 
 void glSignalSemaphoreEXT(GLuint semaphore, GLuint numBufferBarriers, const GLuint *buffers, GLuint numTextureBarriers, const GLuint *textures, const GLenum *dstLayouts)
 {
+    static __typeof__(&glSignalSemaphoreEXT) real;
+    if (!real)
+        real = (__typeof__(&glSignalSemaphoreEXT))ps5_gl_resolve("glSignalSemaphoreEXT");
+    if (real) {
+        real(semaphore, numBufferBarriers, buffers, numTextureBarriers, textures, dstLayouts);
+        return;
+    }
 }
 
 void glImportSemaphoreFdEXT(GLuint semaphore, GLenum handleType, GLint fd)
 {
+    static __typeof__(&glImportSemaphoreFdEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportSemaphoreFdEXT))ps5_gl_resolve("glImportSemaphoreFdEXT");
+    if (real) {
+        real(semaphore, handleType, fd);
+        return;
+    }
 }
 
 void glImportSemaphoreWin32HandleEXT(GLuint semaphore, GLenum handleType, void *handle)
 {
+    static __typeof__(&glImportSemaphoreWin32HandleEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportSemaphoreWin32HandleEXT))ps5_gl_resolve("glImportSemaphoreWin32HandleEXT");
+    if (real) {
+        real(semaphore, handleType, handle);
+        return;
+    }
 }
 
 void glImportSemaphoreWin32NameEXT(GLuint semaphore, GLenum handleType, const void *name)
 {
+    static __typeof__(&glImportSemaphoreWin32NameEXT) real;
+    if (!real)
+        real = (__typeof__(&glImportSemaphoreWin32NameEXT))ps5_gl_resolve("glImportSemaphoreWin32NameEXT");
+    if (real) {
+        real(semaphore, handleType, name);
+        return;
+    }
 }
 
 void glActiveShaderProgramEXT(GLuint pipeline, GLuint program)
 {
+    static __typeof__(&glActiveShaderProgramEXT) real;
+    if (!real)
+        real = (__typeof__(&glActiveShaderProgramEXT))ps5_gl_resolve("glActiveShaderProgramEXT");
+    if (real) {
+        real(pipeline, program);
+        return;
+    }
 }
 
 void glBindProgramPipelineEXT(GLuint pipeline)
 {
+    static __typeof__(&glBindProgramPipelineEXT) real;
+    if (!real)
+        real = (__typeof__(&glBindProgramPipelineEXT))ps5_gl_resolve("glBindProgramPipelineEXT");
+    if (real) {
+        real(pipeline);
+        return;
+    }
 }
 
 GLuint glCreateShaderProgramvEXT(GLenum type, GLsizei count, const GLchar *const*strings)
 {
+    static __typeof__(&glCreateShaderProgramvEXT) real;
+    if (!real)
+        real = (__typeof__(&glCreateShaderProgramvEXT))ps5_gl_resolve("glCreateShaderProgramvEXT");
+    if (real) {
+        return real(type, count, strings);
+    }
     return (GLuint)0;
 }
 
 void glDeleteProgramPipelinesEXT(GLsizei n, const GLuint *pipelines)
 {
+    static __typeof__(&glDeleteProgramPipelinesEXT) real;
+    if (!real)
+        real = (__typeof__(&glDeleteProgramPipelinesEXT))ps5_gl_resolve("glDeleteProgramPipelinesEXT");
+    if (real) {
+        real(n, pipelines);
+        return;
+    }
 }
 
 void glGenProgramPipelinesEXT(GLsizei n, GLuint *pipelines)
 {
+    static __typeof__(&glGenProgramPipelinesEXT) real;
+    if (!real)
+        real = (__typeof__(&glGenProgramPipelinesEXT))ps5_gl_resolve("glGenProgramPipelinesEXT");
+    if (real) {
+        real(n, pipelines);
+        return;
+    }
 }
 
 void glGetProgramPipelineInfoLogEXT(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
+    static __typeof__(&glGetProgramPipelineInfoLogEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramPipelineInfoLogEXT))ps5_gl_resolve("glGetProgramPipelineInfoLogEXT");
+    if (real) {
+        real(pipeline, bufSize, length, infoLog);
+        return;
+    }
 }
 
 void glGetProgramPipelineivEXT(GLuint pipeline, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetProgramPipelineivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramPipelineivEXT))ps5_gl_resolve("glGetProgramPipelineivEXT");
+    if (real) {
+        real(pipeline, pname, params);
+        return;
+    }
 }
 
 GLboolean glIsProgramPipelineEXT(GLuint pipeline)
 {
+    static __typeof__(&glIsProgramPipelineEXT) real;
+    if (!real)
+        real = (__typeof__(&glIsProgramPipelineEXT))ps5_gl_resolve("glIsProgramPipelineEXT");
+    if (real) {
+        return real(pipeline);
+    }
     return 0;
 }
 
 void glProgramParameteriEXT(GLuint program, GLenum pname, GLint value)
 {
+    static __typeof__(&glProgramParameteriEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramParameteriEXT))ps5_gl_resolve("glProgramParameteriEXT");
+    if (real) {
+        real(program, pname, value);
+        return;
+    }
 }
 
 void glProgramUniform1fEXT(GLuint program, GLint location, GLfloat v0)
 {
+    static __typeof__(&glProgramUniform1fEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1fEXT))ps5_gl_resolve("glProgramUniform1fEXT");
+    if (real) {
+        real(program, location, v0);
+        return;
+    }
 }
 
 void glProgramUniform1fvEXT(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniform1fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1fvEXT))ps5_gl_resolve("glProgramUniform1fvEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform1iEXT(GLuint program, GLint location, GLint v0)
 {
+    static __typeof__(&glProgramUniform1iEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1iEXT))ps5_gl_resolve("glProgramUniform1iEXT");
+    if (real) {
+        real(program, location, v0);
+        return;
+    }
 }
 
 void glProgramUniform1ivEXT(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glProgramUniform1ivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1ivEXT))ps5_gl_resolve("glProgramUniform1ivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform2fEXT(GLuint program, GLint location, GLfloat v0, GLfloat v1)
 {
+    static __typeof__(&glProgramUniform2fEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2fEXT))ps5_gl_resolve("glProgramUniform2fEXT");
+    if (real) {
+        real(program, location, v0, v1);
+        return;
+    }
 }
 
 void glProgramUniform2fvEXT(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniform2fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2fvEXT))ps5_gl_resolve("glProgramUniform2fvEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform2iEXT(GLuint program, GLint location, GLint v0, GLint v1)
 {
+    static __typeof__(&glProgramUniform2iEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2iEXT))ps5_gl_resolve("glProgramUniform2iEXT");
+    if (real) {
+        real(program, location, v0, v1);
+        return;
+    }
 }
 
 void glProgramUniform2ivEXT(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glProgramUniform2ivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2ivEXT))ps5_gl_resolve("glProgramUniform2ivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform3fEXT(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
 {
+    static __typeof__(&glProgramUniform3fEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3fEXT))ps5_gl_resolve("glProgramUniform3fEXT");
+    if (real) {
+        real(program, location, v0, v1, v2);
+        return;
+    }
 }
 
 void glProgramUniform3fvEXT(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniform3fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3fvEXT))ps5_gl_resolve("glProgramUniform3fvEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform3iEXT(GLuint program, GLint location, GLint v0, GLint v1, GLint v2)
 {
+    static __typeof__(&glProgramUniform3iEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3iEXT))ps5_gl_resolve("glProgramUniform3iEXT");
+    if (real) {
+        real(program, location, v0, v1, v2);
+        return;
+    }
 }
 
 void glProgramUniform3ivEXT(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glProgramUniform3ivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3ivEXT))ps5_gl_resolve("glProgramUniform3ivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform4fEXT(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
+    static __typeof__(&glProgramUniform4fEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4fEXT))ps5_gl_resolve("glProgramUniform4fEXT");
+    if (real) {
+        real(program, location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glProgramUniform4fvEXT(GLuint program, GLint location, GLsizei count, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniform4fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4fvEXT))ps5_gl_resolve("glProgramUniform4fvEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform4iEXT(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
 {
+    static __typeof__(&glProgramUniform4iEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4iEXT))ps5_gl_resolve("glProgramUniform4iEXT");
+    if (real) {
+        real(program, location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glProgramUniform4ivEXT(GLuint program, GLint location, GLsizei count, const GLint *value)
 {
+    static __typeof__(&glProgramUniform4ivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4ivEXT))ps5_gl_resolve("glProgramUniform4ivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix2fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix2fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix2fvEXT))ps5_gl_resolve("glProgramUniformMatrix2fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix3fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix3fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix3fvEXT))ps5_gl_resolve("glProgramUniformMatrix3fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix4fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix4fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix4fvEXT))ps5_gl_resolve("glProgramUniformMatrix4fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glUseProgramStagesEXT(GLuint pipeline, GLbitfield stages, GLuint program)
 {
+    static __typeof__(&glUseProgramStagesEXT) real;
+    if (!real)
+        real = (__typeof__(&glUseProgramStagesEXT))ps5_gl_resolve("glUseProgramStagesEXT");
+    if (real) {
+        real(pipeline, stages, program);
+        return;
+    }
 }
 
 void glValidateProgramPipelineEXT(GLuint pipeline)
 {
+    static __typeof__(&glValidateProgramPipelineEXT) real;
+    if (!real)
+        real = (__typeof__(&glValidateProgramPipelineEXT))ps5_gl_resolve("glValidateProgramPipelineEXT");
+    if (real) {
+        real(pipeline);
+        return;
+    }
 }
 
 void glProgramUniform1uiEXT(GLuint program, GLint location, GLuint v0)
 {
+    static __typeof__(&glProgramUniform1uiEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1uiEXT))ps5_gl_resolve("glProgramUniform1uiEXT");
+    if (real) {
+        real(program, location, v0);
+        return;
+    }
 }
 
 void glProgramUniform2uiEXT(GLuint program, GLint location, GLuint v0, GLuint v1)
 {
+    static __typeof__(&glProgramUniform2uiEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2uiEXT))ps5_gl_resolve("glProgramUniform2uiEXT");
+    if (real) {
+        real(program, location, v0, v1);
+        return;
+    }
 }
 
 void glProgramUniform3uiEXT(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2)
 {
+    static __typeof__(&glProgramUniform3uiEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3uiEXT))ps5_gl_resolve("glProgramUniform3uiEXT");
+    if (real) {
+        real(program, location, v0, v1, v2);
+        return;
+    }
 }
 
 void glProgramUniform4uiEXT(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3)
 {
+    static __typeof__(&glProgramUniform4uiEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4uiEXT))ps5_gl_resolve("glProgramUniform4uiEXT");
+    if (real) {
+        real(program, location, v0, v1, v2, v3);
+        return;
+    }
 }
 
 void glProgramUniform1uivEXT(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glProgramUniform1uivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1uivEXT))ps5_gl_resolve("glProgramUniform1uivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform2uivEXT(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glProgramUniform2uivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2uivEXT))ps5_gl_resolve("glProgramUniform2uivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform3uivEXT(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glProgramUniform3uivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3uivEXT))ps5_gl_resolve("glProgramUniform3uivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform4uivEXT(GLuint program, GLint location, GLsizei count, const GLuint *value)
 {
+    static __typeof__(&glProgramUniform4uivEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4uivEXT))ps5_gl_resolve("glProgramUniform4uivEXT");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix2x3fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix2x3fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix2x3fvEXT))ps5_gl_resolve("glProgramUniformMatrix2x3fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix3x2fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix3x2fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix3x2fvEXT))ps5_gl_resolve("glProgramUniformMatrix3x2fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix2x4fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix2x4fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix2x4fvEXT))ps5_gl_resolve("glProgramUniformMatrix2x4fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix4x2fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix4x2fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix4x2fvEXT))ps5_gl_resolve("glProgramUniformMatrix4x2fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix3x4fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix3x4fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix3x4fvEXT))ps5_gl_resolve("glProgramUniformMatrix3x4fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glProgramUniformMatrix4x3fvEXT(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glProgramUniformMatrix4x3fvEXT) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformMatrix4x3fvEXT))ps5_gl_resolve("glProgramUniformMatrix4x3fvEXT");
+    if (real) {
+        real(program, location, count, transpose, value);
+        return;
+    }
 }
 
 void glFramebufferFetchBarrierEXT(void)
 {
+    static __typeof__(&glFramebufferFetchBarrierEXT) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferFetchBarrierEXT))ps5_gl_resolve("glFramebufferFetchBarrierEXT");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glFramebufferPixelLocalStorageSizeEXT(GLuint target, GLsizei size)
 {
+    static __typeof__(&glFramebufferPixelLocalStorageSizeEXT) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferPixelLocalStorageSizeEXT))ps5_gl_resolve("glFramebufferPixelLocalStorageSizeEXT");
+    if (real) {
+        real(target, size);
+        return;
+    }
 }
 
 GLsizei glGetFramebufferPixelLocalStorageSizeEXT(GLuint target)
 {
+    static __typeof__(&glGetFramebufferPixelLocalStorageSizeEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetFramebufferPixelLocalStorageSizeEXT))ps5_gl_resolve("glGetFramebufferPixelLocalStorageSizeEXT");
+    if (real) {
+        return real(target);
+    }
     return (GLsizei)0;
 }
 
 void glClearPixelLocalStorageuiEXT(GLsizei offset, GLsizei n, const GLuint *values)
 {
+    static __typeof__(&glClearPixelLocalStorageuiEXT) real;
+    if (!real)
+        real = (__typeof__(&glClearPixelLocalStorageuiEXT))ps5_gl_resolve("glClearPixelLocalStorageuiEXT");
+    if (real) {
+        real(offset, n, values);
+        return;
+    }
 }
 
 void glTexPageCommitmentEXT(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit)
 {
+    static __typeof__(&glTexPageCommitmentEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexPageCommitmentEXT))ps5_gl_resolve("glTexPageCommitmentEXT");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, commit);
+        return;
+    }
 }
 
 void glPatchParameteriEXT(GLenum pname, GLint value)
 {
+    static __typeof__(&glPatchParameteriEXT) real;
+    if (!real)
+        real = (__typeof__(&glPatchParameteriEXT))ps5_gl_resolve("glPatchParameteriEXT");
+    if (real) {
+        real(pname, value);
+        return;
+    }
 }
 
 void glTexParameterIivEXT(GLenum target, GLenum pname, const GLint *params)
 {
+    static __typeof__(&glTexParameterIivEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterIivEXT))ps5_gl_resolve("glTexParameterIivEXT");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glTexParameterIuivEXT(GLenum target, GLenum pname, const GLuint *params)
 {
+    static __typeof__(&glTexParameterIuivEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexParameterIuivEXT))ps5_gl_resolve("glTexParameterIuivEXT");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetTexParameterIivEXT(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetTexParameterIivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameterIivEXT))ps5_gl_resolve("glGetTexParameterIivEXT");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glGetTexParameterIuivEXT(GLenum target, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetTexParameterIuivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetTexParameterIuivEXT))ps5_gl_resolve("glGetTexParameterIuivEXT");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 void glSamplerParameterIivEXT(GLuint sampler, GLenum pname, const GLint *param)
 {
+    static __typeof__(&glSamplerParameterIivEXT) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterIivEXT))ps5_gl_resolve("glSamplerParameterIivEXT");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glSamplerParameterIuivEXT(GLuint sampler, GLenum pname, const GLuint *param)
 {
+    static __typeof__(&glSamplerParameterIuivEXT) real;
+    if (!real)
+        real = (__typeof__(&glSamplerParameterIuivEXT))ps5_gl_resolve("glSamplerParameterIuivEXT");
+    if (real) {
+        real(sampler, pname, param);
+        return;
+    }
 }
 
 void glGetSamplerParameterIivEXT(GLuint sampler, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetSamplerParameterIivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameterIivEXT))ps5_gl_resolve("glGetSamplerParameterIivEXT");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glGetSamplerParameterIuivEXT(GLuint sampler, GLenum pname, GLuint *params)
 {
+    static __typeof__(&glGetSamplerParameterIuivEXT) real;
+    if (!real)
+        real = (__typeof__(&glGetSamplerParameterIuivEXT))ps5_gl_resolve("glGetSamplerParameterIuivEXT");
+    if (real) {
+        real(sampler, pname, params);
+        return;
+    }
 }
 
 void glTexBufferEXT(GLenum target, GLenum internalformat, GLuint buffer)
 {
+    static __typeof__(&glTexBufferEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexBufferEXT))ps5_gl_resolve("glTexBufferEXT");
+    if (real) {
+        real(target, internalformat, buffer);
+        return;
+    }
 }
 
 void glTexBufferRangeEXT(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)
 {
+    static __typeof__(&glTexBufferRangeEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexBufferRangeEXT))ps5_gl_resolve("glTexBufferRangeEXT");
+    if (real) {
+        real(target, internalformat, buffer, offset, size);
+        return;
+    }
 }
 
 void glTexStorage1DEXT(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width)
 {
+    static __typeof__(&glTexStorage1DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage1DEXT))ps5_gl_resolve("glTexStorage1DEXT");
+    if (real) {
+        real(target, levels, internalformat, width);
+        return;
+    }
 }
 
 void glTexStorage2DEXT(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glTexStorage2DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage2DEXT))ps5_gl_resolve("glTexStorage2DEXT");
+    if (real) {
+        real(target, levels, internalformat, width, height);
+        return;
+    }
 }
 
 void glTexStorage3DEXT(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
 {
+    static __typeof__(&glTexStorage3DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorage3DEXT))ps5_gl_resolve("glTexStorage3DEXT");
+    if (real) {
+        real(target, levels, internalformat, width, height, depth);
+        return;
+    }
 }
 
 void glTextureStorage1DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width)
 {
+    static __typeof__(&glTextureStorage1DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorage1DEXT))ps5_gl_resolve("glTextureStorage1DEXT");
+    if (real) {
+        real(texture, target, levels, internalformat, width);
+        return;
+    }
 }
 
 void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glTextureStorage2DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorage2DEXT))ps5_gl_resolve("glTextureStorage2DEXT");
+    if (real) {
+        real(texture, target, levels, internalformat, width, height);
+        return;
+    }
 }
 
 void glTextureStorage3DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
 {
+    static __typeof__(&glTextureStorage3DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureStorage3DEXT))ps5_gl_resolve("glTextureStorage3DEXT");
+    if (real) {
+        real(texture, target, levels, internalformat, width, height, depth);
+        return;
+    }
 }
 
 void glTexStorageAttribs2DEXT(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, const GLint* attrib_list)
 {
+    static __typeof__(&glTexStorageAttribs2DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageAttribs2DEXT))ps5_gl_resolve("glTexStorageAttribs2DEXT");
+    if (real) {
+        real(target, levels, internalformat, width, height, attrib_list);
+        return;
+    }
 }
 
 void glTexStorageAttribs3DEXT(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, const GLint* attrib_list)
 {
+    static __typeof__(&glTexStorageAttribs3DEXT) real;
+    if (!real)
+        real = (__typeof__(&glTexStorageAttribs3DEXT))ps5_gl_resolve("glTexStorageAttribs3DEXT");
+    if (real) {
+        real(target, levels, internalformat, width, height, depth, attrib_list);
+        return;
+    }
 }
 
 void glTextureViewEXT(GLuint texture, GLenum target, GLuint origtexture, GLenum internalformat, GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers)
 {
+    static __typeof__(&glTextureViewEXT) real;
+    if (!real)
+        real = (__typeof__(&glTextureViewEXT))ps5_gl_resolve("glTextureViewEXT");
+    if (real) {
+        real(texture, target, origtexture, internalformat, minlevel, numlevels, minlayer, numlayers);
+        return;
+    }
 }
 
 GLboolean glAcquireKeyedMutexWin32EXT(GLuint memory, GLuint64 key, GLuint timeout)
 {
+    static __typeof__(&glAcquireKeyedMutexWin32EXT) real;
+    if (!real)
+        real = (__typeof__(&glAcquireKeyedMutexWin32EXT))ps5_gl_resolve("glAcquireKeyedMutexWin32EXT");
+    if (real) {
+        return real(memory, key, timeout);
+    }
     return 0;
 }
 
 GLboolean glReleaseKeyedMutexWin32EXT(GLuint memory, GLuint64 key)
 {
+    static __typeof__(&glReleaseKeyedMutexWin32EXT) real;
+    if (!real)
+        real = (__typeof__(&glReleaseKeyedMutexWin32EXT))ps5_gl_resolve("glReleaseKeyedMutexWin32EXT");
+    if (real) {
+        return real(memory, key);
+    }
     return 0;
 }
 
 void glWindowRectanglesEXT(GLenum mode, GLsizei count, const GLint *box)
 {
+    static __typeof__(&glWindowRectanglesEXT) real;
+    if (!real)
+        real = (__typeof__(&glWindowRectanglesEXT))ps5_gl_resolve("glWindowRectanglesEXT");
+    if (real) {
+        real(mode, count, box);
+        return;
+    }
 }
 
 GLuint64 glGetTextureHandleIMG(GLuint texture)
 {
+    static __typeof__(&glGetTextureHandleIMG) real;
+    if (!real)
+        real = (__typeof__(&glGetTextureHandleIMG))ps5_gl_resolve("glGetTextureHandleIMG");
+    if (real) {
+        return real(texture);
+    }
     return (GLuint64)0;
 }
 
 GLuint64 glGetTextureSamplerHandleIMG(GLuint texture, GLuint sampler)
 {
+    static __typeof__(&glGetTextureSamplerHandleIMG) real;
+    if (!real)
+        real = (__typeof__(&glGetTextureSamplerHandleIMG))ps5_gl_resolve("glGetTextureSamplerHandleIMG");
+    if (real) {
+        return real(texture, sampler);
+    }
     return (GLuint64)0;
 }
 
 void glUniformHandleui64IMG(GLint location, GLuint64 value)
 {
+    static __typeof__(&glUniformHandleui64IMG) real;
+    if (!real)
+        real = (__typeof__(&glUniformHandleui64IMG))ps5_gl_resolve("glUniformHandleui64IMG");
+    if (real) {
+        real(location, value);
+        return;
+    }
 }
 
 void glUniformHandleui64vIMG(GLint location, GLsizei count, const GLuint64 *value)
 {
+    static __typeof__(&glUniformHandleui64vIMG) real;
+    if (!real)
+        real = (__typeof__(&glUniformHandleui64vIMG))ps5_gl_resolve("glUniformHandleui64vIMG");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glProgramUniformHandleui64IMG(GLuint program, GLint location, GLuint64 value)
 {
+    static __typeof__(&glProgramUniformHandleui64IMG) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformHandleui64IMG))ps5_gl_resolve("glProgramUniformHandleui64IMG");
+    if (real) {
+        real(program, location, value);
+        return;
+    }
 }
 
 void glProgramUniformHandleui64vIMG(GLuint program, GLint location, GLsizei count, const GLuint64 *values)
 {
+    static __typeof__(&glProgramUniformHandleui64vIMG) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformHandleui64vIMG))ps5_gl_resolve("glProgramUniformHandleui64vIMG");
+    if (real) {
+        real(program, location, count, values);
+        return;
+    }
 }
 
 void glFramebufferTexture2DDownsampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint xscale, GLint yscale)
 {
+    static __typeof__(&glFramebufferTexture2DDownsampleIMG) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTexture2DDownsampleIMG))ps5_gl_resolve("glFramebufferTexture2DDownsampleIMG");
+    if (real) {
+        real(target, attachment, textarget, texture, level, xscale, yscale);
+        return;
+    }
 }
 
 void glFramebufferTextureLayerDownsampleIMG(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer, GLint xscale, GLint yscale)
 {
+    static __typeof__(&glFramebufferTextureLayerDownsampleIMG) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureLayerDownsampleIMG))ps5_gl_resolve("glFramebufferTextureLayerDownsampleIMG");
+    if (real) {
+        real(target, attachment, texture, level, layer, xscale, yscale);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleIMG(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleIMG) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleIMG))ps5_gl_resolve("glRenderbufferStorageMultisampleIMG");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glFramebufferTexture2DMultisampleIMG(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples)
 {
+    static __typeof__(&glFramebufferTexture2DMultisampleIMG) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTexture2DMultisampleIMG))ps5_gl_resolve("glFramebufferTexture2DMultisampleIMG");
+    if (real) {
+        real(target, attachment, textarget, texture, level, samples);
+        return;
+    }
 }
 
 void glApplyFramebufferAttachmentCMAAINTEL(void)
 {
+    static __typeof__(&glApplyFramebufferAttachmentCMAAINTEL) real;
+    if (!real)
+        real = (__typeof__(&glApplyFramebufferAttachmentCMAAINTEL))ps5_gl_resolve("glApplyFramebufferAttachmentCMAAINTEL");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glBeginPerfQueryINTEL(GLuint queryHandle)
 {
+    static __typeof__(&glBeginPerfQueryINTEL) real;
+    if (!real)
+        real = (__typeof__(&glBeginPerfQueryINTEL))ps5_gl_resolve("glBeginPerfQueryINTEL");
+    if (real) {
+        real(queryHandle);
+        return;
+    }
 }
 
 void glCreatePerfQueryINTEL(GLuint queryId, GLuint *queryHandle)
 {
+    static __typeof__(&glCreatePerfQueryINTEL) real;
+    if (!real)
+        real = (__typeof__(&glCreatePerfQueryINTEL))ps5_gl_resolve("glCreatePerfQueryINTEL");
+    if (real) {
+        real(queryId, queryHandle);
+        return;
+    }
 }
 
 void glDeletePerfQueryINTEL(GLuint queryHandle)
 {
+    static __typeof__(&glDeletePerfQueryINTEL) real;
+    if (!real)
+        real = (__typeof__(&glDeletePerfQueryINTEL))ps5_gl_resolve("glDeletePerfQueryINTEL");
+    if (real) {
+        real(queryHandle);
+        return;
+    }
 }
 
 void glEndPerfQueryINTEL(GLuint queryHandle)
 {
+    static __typeof__(&glEndPerfQueryINTEL) real;
+    if (!real)
+        real = (__typeof__(&glEndPerfQueryINTEL))ps5_gl_resolve("glEndPerfQueryINTEL");
+    if (real) {
+        real(queryHandle);
+        return;
+    }
 }
 
 void glGetFirstPerfQueryIdINTEL(GLuint *queryId)
 {
+    static __typeof__(&glGetFirstPerfQueryIdINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetFirstPerfQueryIdINTEL))ps5_gl_resolve("glGetFirstPerfQueryIdINTEL");
+    if (real) {
+        real(queryId);
+        return;
+    }
 }
 
 void glGetNextPerfQueryIdINTEL(GLuint queryId, GLuint *nextQueryId)
 {
+    static __typeof__(&glGetNextPerfQueryIdINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetNextPerfQueryIdINTEL))ps5_gl_resolve("glGetNextPerfQueryIdINTEL");
+    if (real) {
+        real(queryId, nextQueryId);
+        return;
+    }
 }
 
 void glGetPerfCounterInfoINTEL(GLuint queryId, GLuint counterId, GLuint counterNameLength, GLchar *counterName, GLuint counterDescLength, GLchar *counterDesc, GLuint *counterOffset, GLuint *counterDataSize, GLuint *counterTypeEnum, GLuint *counterDataTypeEnum, GLuint64 *rawCounterMaxValue)
 {
+    static __typeof__(&glGetPerfCounterInfoINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfCounterInfoINTEL))ps5_gl_resolve("glGetPerfCounterInfoINTEL");
+    if (real) {
+        real(queryId, counterId, counterNameLength, counterName, counterDescLength, counterDesc, counterOffset, counterDataSize, counterTypeEnum, counterDataTypeEnum, rawCounterMaxValue);
+        return;
+    }
 }
 
 void glGetPerfQueryDataINTEL(GLuint queryHandle, GLuint flags, GLsizei dataSize, void *data, GLuint *bytesWritten)
 {
+    static __typeof__(&glGetPerfQueryDataINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfQueryDataINTEL))ps5_gl_resolve("glGetPerfQueryDataINTEL");
+    if (real) {
+        real(queryHandle, flags, dataSize, data, bytesWritten);
+        return;
+    }
 }
 
 void glGetPerfQueryIdByNameINTEL(GLchar *queryName, GLuint *queryId)
 {
+    static __typeof__(&glGetPerfQueryIdByNameINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfQueryIdByNameINTEL))ps5_gl_resolve("glGetPerfQueryIdByNameINTEL");
+    if (real) {
+        real(queryName, queryId);
+        return;
+    }
 }
 
 void glGetPerfQueryInfoINTEL(GLuint queryId, GLuint queryNameLength, GLchar *queryName, GLuint *dataSize, GLuint *noCounters, GLuint *noInstances, GLuint *capsMask)
 {
+    static __typeof__(&glGetPerfQueryInfoINTEL) real;
+    if (!real)
+        real = (__typeof__(&glGetPerfQueryInfoINTEL))ps5_gl_resolve("glGetPerfQueryInfoINTEL");
+    if (real) {
+        real(queryId, queryNameLength, queryName, dataSize, noCounters, noInstances, capsMask);
+        return;
+    }
 }
 
 void glFramebufferParameteriMESA(GLenum target, GLenum pname, GLint param)
 {
+    static __typeof__(&glFramebufferParameteriMESA) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferParameteriMESA))ps5_gl_resolve("glFramebufferParameteriMESA");
+    if (real) {
+        real(target, pname, param);
+        return;
+    }
 }
 
 void glGetFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetFramebufferParameterivMESA) real;
+    if (!real)
+        real = (__typeof__(&glGetFramebufferParameterivMESA))ps5_gl_resolve("glGetFramebufferParameterivMESA");
+    if (real) {
+        real(target, pname, params);
+        return;
+    }
 }
 
 GLuint64 glGetTextureHandleNV(GLuint texture)
 {
+    static __typeof__(&glGetTextureHandleNV) real;
+    if (!real)
+        real = (__typeof__(&glGetTextureHandleNV))ps5_gl_resolve("glGetTextureHandleNV");
+    if (real) {
+        return real(texture);
+    }
     return (GLuint64)0;
 }
 
 GLuint64 glGetTextureSamplerHandleNV(GLuint texture, GLuint sampler)
 {
+    static __typeof__(&glGetTextureSamplerHandleNV) real;
+    if (!real)
+        real = (__typeof__(&glGetTextureSamplerHandleNV))ps5_gl_resolve("glGetTextureSamplerHandleNV");
+    if (real) {
+        return real(texture, sampler);
+    }
     return (GLuint64)0;
 }
 
 void glMakeTextureHandleResidentNV(GLuint64 handle)
 {
+    static __typeof__(&glMakeTextureHandleResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glMakeTextureHandleResidentNV))ps5_gl_resolve("glMakeTextureHandleResidentNV");
+    if (real) {
+        real(handle);
+        return;
+    }
 }
 
 void glMakeTextureHandleNonResidentNV(GLuint64 handle)
 {
+    static __typeof__(&glMakeTextureHandleNonResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glMakeTextureHandleNonResidentNV))ps5_gl_resolve("glMakeTextureHandleNonResidentNV");
+    if (real) {
+        real(handle);
+        return;
+    }
 }
 
 GLuint64 glGetImageHandleNV(GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum format)
 {
+    static __typeof__(&glGetImageHandleNV) real;
+    if (!real)
+        real = (__typeof__(&glGetImageHandleNV))ps5_gl_resolve("glGetImageHandleNV");
+    if (real) {
+        return real(texture, level, layered, layer, format);
+    }
     return (GLuint64)0;
 }
 
 void glMakeImageHandleResidentNV(GLuint64 handle, GLenum access)
 {
+    static __typeof__(&glMakeImageHandleResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glMakeImageHandleResidentNV))ps5_gl_resolve("glMakeImageHandleResidentNV");
+    if (real) {
+        real(handle, access);
+        return;
+    }
 }
 
 void glMakeImageHandleNonResidentNV(GLuint64 handle)
 {
+    static __typeof__(&glMakeImageHandleNonResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glMakeImageHandleNonResidentNV))ps5_gl_resolve("glMakeImageHandleNonResidentNV");
+    if (real) {
+        real(handle);
+        return;
+    }
 }
 
 void glUniformHandleui64NV(GLint location, GLuint64 value)
 {
+    static __typeof__(&glUniformHandleui64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniformHandleui64NV))ps5_gl_resolve("glUniformHandleui64NV");
+    if (real) {
+        real(location, value);
+        return;
+    }
 }
 
 void glUniformHandleui64vNV(GLint location, GLsizei count, const GLuint64 *value)
 {
+    static __typeof__(&glUniformHandleui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformHandleui64vNV))ps5_gl_resolve("glUniformHandleui64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glProgramUniformHandleui64NV(GLuint program, GLint location, GLuint64 value)
 {
+    static __typeof__(&glProgramUniformHandleui64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformHandleui64NV))ps5_gl_resolve("glProgramUniformHandleui64NV");
+    if (real) {
+        real(program, location, value);
+        return;
+    }
 }
 
 void glProgramUniformHandleui64vNV(GLuint program, GLint location, GLsizei count, const GLuint64 *values)
 {
+    static __typeof__(&glProgramUniformHandleui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniformHandleui64vNV))ps5_gl_resolve("glProgramUniformHandleui64vNV");
+    if (real) {
+        real(program, location, count, values);
+        return;
+    }
 }
 
 GLboolean glIsTextureHandleResidentNV(GLuint64 handle)
 {
+    static __typeof__(&glIsTextureHandleResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glIsTextureHandleResidentNV))ps5_gl_resolve("glIsTextureHandleResidentNV");
+    if (real) {
+        return real(handle);
+    }
     return 0;
 }
 
 GLboolean glIsImageHandleResidentNV(GLuint64 handle)
 {
+    static __typeof__(&glIsImageHandleResidentNV) real;
+    if (!real)
+        real = (__typeof__(&glIsImageHandleResidentNV))ps5_gl_resolve("glIsImageHandleResidentNV");
+    if (real) {
+        return real(handle);
+    }
     return 0;
 }
 
 void glBlendParameteriNV(GLenum pname, GLint value)
 {
+    static __typeof__(&glBlendParameteriNV) real;
+    if (!real)
+        real = (__typeof__(&glBlendParameteriNV))ps5_gl_resolve("glBlendParameteriNV");
+    if (real) {
+        real(pname, value);
+        return;
+    }
 }
 
 void glBlendBarrierNV(void)
 {
+    static __typeof__(&glBlendBarrierNV) real;
+    if (!real)
+        real = (__typeof__(&glBlendBarrierNV))ps5_gl_resolve("glBlendBarrierNV");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glViewportPositionWScaleNV(GLuint index, GLfloat xcoeff, GLfloat ycoeff)
 {
+    static __typeof__(&glViewportPositionWScaleNV) real;
+    if (!real)
+        real = (__typeof__(&glViewportPositionWScaleNV))ps5_gl_resolve("glViewportPositionWScaleNV");
+    if (real) {
+        real(index, xcoeff, ycoeff);
+        return;
+    }
 }
 
 void glBeginConditionalRenderNV(GLuint id, GLenum mode)
 {
+    static __typeof__(&glBeginConditionalRenderNV) real;
+    if (!real)
+        real = (__typeof__(&glBeginConditionalRenderNV))ps5_gl_resolve("glBeginConditionalRenderNV");
+    if (real) {
+        real(id, mode);
+        return;
+    }
 }
 
 void glEndConditionalRenderNV(void)
 {
+    static __typeof__(&glEndConditionalRenderNV) real;
+    if (!real)
+        real = (__typeof__(&glEndConditionalRenderNV))ps5_gl_resolve("glEndConditionalRenderNV");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glSubpixelPrecisionBiasNV(GLuint xbits, GLuint ybits)
 {
+    static __typeof__(&glSubpixelPrecisionBiasNV) real;
+    if (!real)
+        real = (__typeof__(&glSubpixelPrecisionBiasNV))ps5_gl_resolve("glSubpixelPrecisionBiasNV");
+    if (real) {
+        real(xbits, ybits);
+        return;
+    }
 }
 
 void glConservativeRasterParameteriNV(GLenum pname, GLint param)
 {
+    static __typeof__(&glConservativeRasterParameteriNV) real;
+    if (!real)
+        real = (__typeof__(&glConservativeRasterParameteriNV))ps5_gl_resolve("glConservativeRasterParameteriNV");
+    if (real) {
+        real(pname, param);
+        return;
+    }
 }
 
 void glCopyBufferSubDataNV(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
 {
+    static __typeof__(&glCopyBufferSubDataNV) real;
+    if (!real)
+        real = (__typeof__(&glCopyBufferSubDataNV))ps5_gl_resolve("glCopyBufferSubDataNV");
+    if (real) {
+        real(readTarget, writeTarget, readOffset, writeOffset, size);
+        return;
+    }
 }
 
 void glCoverageMaskNV(GLboolean mask)
 {
+    static __typeof__(&glCoverageMaskNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverageMaskNV))ps5_gl_resolve("glCoverageMaskNV");
+    if (real) {
+        real(mask);
+        return;
+    }
 }
 
 void glCoverageOperationNV(GLenum operation)
 {
+    static __typeof__(&glCoverageOperationNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverageOperationNV))ps5_gl_resolve("glCoverageOperationNV");
+    if (real) {
+        real(operation);
+        return;
+    }
 }
 
 void glDrawBuffersNV(GLsizei n, const GLenum *bufs)
 {
+    static __typeof__(&glDrawBuffersNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawBuffersNV))ps5_gl_resolve("glDrawBuffersNV");
+    if (real) {
+        real(n, bufs);
+        return;
+    }
 }
 
 void glDrawArraysInstancedNV(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
 {
+    static __typeof__(&glDrawArraysInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawArraysInstancedNV))ps5_gl_resolve("glDrawArraysInstancedNV");
+    if (real) {
+        real(mode, first, count, primcount);
+        return;
+    }
 }
 
 void glDrawElementsInstancedNV(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei primcount)
 {
+    static __typeof__(&glDrawElementsInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawElementsInstancedNV))ps5_gl_resolve("glDrawElementsInstancedNV");
+    if (real) {
+        real(mode, count, type, indices, primcount);
+        return;
+    }
 }
 
 void glDrawVkImageNV(GLuint64 vkImage, GLuint sampler, GLfloat x0, GLfloat y0, GLfloat x1, GLfloat y1, GLfloat z, GLfloat s0, GLfloat t0, GLfloat s1, GLfloat t1)
 {
+    static __typeof__(&glDrawVkImageNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawVkImageNV))ps5_gl_resolve("glDrawVkImageNV");
+    if (real) {
+        real(vkImage, sampler, x0, y0, x1, y1, z, s0, t0, s1, t1);
+        return;
+    }
 }
 
 GLVULKANPROCNV glGetVkProcAddrNV(const GLchar *name)
 {
+    static __typeof__(&glGetVkProcAddrNV) real;
+    if (!real)
+        real = (__typeof__(&glGetVkProcAddrNV))ps5_gl_resolve("glGetVkProcAddrNV");
+    if (real) {
+        return real(name);
+    }
     return (GLVULKANPROCNV)0;
 }
 
 void glWaitVkSemaphoreNV(GLuint64 vkSemaphore)
 {
+    static __typeof__(&glWaitVkSemaphoreNV) real;
+    if (!real)
+        real = (__typeof__(&glWaitVkSemaphoreNV))ps5_gl_resolve("glWaitVkSemaphoreNV");
+    if (real) {
+        real(vkSemaphore);
+        return;
+    }
 }
 
 void glSignalVkSemaphoreNV(GLuint64 vkSemaphore)
 {
+    static __typeof__(&glSignalVkSemaphoreNV) real;
+    if (!real)
+        real = (__typeof__(&glSignalVkSemaphoreNV))ps5_gl_resolve("glSignalVkSemaphoreNV");
+    if (real) {
+        real(vkSemaphore);
+        return;
+    }
 }
 
 void glSignalVkFenceNV(GLuint64 vkFence)
 {
+    static __typeof__(&glSignalVkFenceNV) real;
+    if (!real)
+        real = (__typeof__(&glSignalVkFenceNV))ps5_gl_resolve("glSignalVkFenceNV");
+    if (real) {
+        real(vkFence);
+        return;
+    }
 }
 
 void glDeleteFencesNV(GLsizei n, const GLuint *fences)
 {
+    static __typeof__(&glDeleteFencesNV) real;
+    if (!real)
+        real = (__typeof__(&glDeleteFencesNV))ps5_gl_resolve("glDeleteFencesNV");
+    if (real) {
+        real(n, fences);
+        return;
+    }
 }
 
 void glGenFencesNV(GLsizei n, GLuint *fences)
 {
+    static __typeof__(&glGenFencesNV) real;
+    if (!real)
+        real = (__typeof__(&glGenFencesNV))ps5_gl_resolve("glGenFencesNV");
+    if (real) {
+        real(n, fences);
+        return;
+    }
 }
 
 GLboolean glIsFenceNV(GLuint fence)
 {
+    static __typeof__(&glIsFenceNV) real;
+    if (!real)
+        real = (__typeof__(&glIsFenceNV))ps5_gl_resolve("glIsFenceNV");
+    if (real) {
+        return real(fence);
+    }
     return 0;
 }
 
 GLboolean glTestFenceNV(GLuint fence)
 {
+    static __typeof__(&glTestFenceNV) real;
+    if (!real)
+        real = (__typeof__(&glTestFenceNV))ps5_gl_resolve("glTestFenceNV");
+    if (real) {
+        return real(fence);
+    }
     return 0;
 }
 
 void glGetFenceivNV(GLuint fence, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetFenceivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetFenceivNV))ps5_gl_resolve("glGetFenceivNV");
+    if (real) {
+        real(fence, pname, params);
+        return;
+    }
 }
 
 void glFinishFenceNV(GLuint fence)
 {
+    static __typeof__(&glFinishFenceNV) real;
+    if (!real)
+        real = (__typeof__(&glFinishFenceNV))ps5_gl_resolve("glFinishFenceNV");
+    if (real) {
+        real(fence);
+        return;
+    }
 }
 
 void glSetFenceNV(GLuint fence, GLenum condition)
 {
+    static __typeof__(&glSetFenceNV) real;
+    if (!real)
+        real = (__typeof__(&glSetFenceNV))ps5_gl_resolve("glSetFenceNV");
+    if (real) {
+        real(fence, condition);
+        return;
+    }
 }
 
 void glFragmentCoverageColorNV(GLuint color)
 {
+    static __typeof__(&glFragmentCoverageColorNV) real;
+    if (!real)
+        real = (__typeof__(&glFragmentCoverageColorNV))ps5_gl_resolve("glFragmentCoverageColorNV");
+    if (real) {
+        real(color);
+        return;
+    }
 }
 
 void glBlitFramebufferNV(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
+    static __typeof__(&glBlitFramebufferNV) real;
+    if (!real)
+        real = (__typeof__(&glBlitFramebufferNV))ps5_gl_resolve("glBlitFramebufferNV");
+    if (real) {
+        real(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+        return;
+    }
 }
 
 void glCoverageModulationTableNV(GLsizei n, const GLfloat *v)
 {
+    static __typeof__(&glCoverageModulationTableNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverageModulationTableNV))ps5_gl_resolve("glCoverageModulationTableNV");
+    if (real) {
+        real(n, v);
+        return;
+    }
 }
 
 void glGetCoverageModulationTableNV(GLsizei bufSize, GLfloat *v)
 {
+    static __typeof__(&glGetCoverageModulationTableNV) real;
+    if (!real)
+        real = (__typeof__(&glGetCoverageModulationTableNV))ps5_gl_resolve("glGetCoverageModulationTableNV");
+    if (real) {
+        real(bufSize, v);
+        return;
+    }
 }
 
 void glCoverageModulationNV(GLenum components)
 {
+    static __typeof__(&glCoverageModulationNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverageModulationNV))ps5_gl_resolve("glCoverageModulationNV");
+    if (real) {
+        real(components);
+        return;
+    }
 }
 
 void glRenderbufferStorageMultisampleNV(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glRenderbufferStorageMultisampleNV) real;
+    if (!real)
+        real = (__typeof__(&glRenderbufferStorageMultisampleNV))ps5_gl_resolve("glRenderbufferStorageMultisampleNV");
+    if (real) {
+        real(target, samples, internalformat, width, height);
+        return;
+    }
 }
 
 void glUniform1i64NV(GLint location, GLint64EXT x)
 {
+    static __typeof__(&glUniform1i64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform1i64NV))ps5_gl_resolve("glUniform1i64NV");
+    if (real) {
+        real(location, x);
+        return;
+    }
 }
 
 void glUniform2i64NV(GLint location, GLint64EXT x, GLint64EXT y)
 {
+    static __typeof__(&glUniform2i64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform2i64NV))ps5_gl_resolve("glUniform2i64NV");
+    if (real) {
+        real(location, x, y);
+        return;
+    }
 }
 
 void glUniform3i64NV(GLint location, GLint64EXT x, GLint64EXT y, GLint64EXT z)
 {
+    static __typeof__(&glUniform3i64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform3i64NV))ps5_gl_resolve("glUniform3i64NV");
+    if (real) {
+        real(location, x, y, z);
+        return;
+    }
 }
 
 void glUniform4i64NV(GLint location, GLint64EXT x, GLint64EXT y, GLint64EXT z, GLint64EXT w)
 {
+    static __typeof__(&glUniform4i64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform4i64NV))ps5_gl_resolve("glUniform4i64NV");
+    if (real) {
+        real(location, x, y, z, w);
+        return;
+    }
 }
 
 void glUniform1i64vNV(GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glUniform1i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform1i64vNV))ps5_gl_resolve("glUniform1i64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform2i64vNV(GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glUniform2i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform2i64vNV))ps5_gl_resolve("glUniform2i64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform3i64vNV(GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glUniform3i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform3i64vNV))ps5_gl_resolve("glUniform3i64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform4i64vNV(GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glUniform4i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform4i64vNV))ps5_gl_resolve("glUniform4i64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform1ui64NV(GLint location, GLuint64EXT x)
 {
+    static __typeof__(&glUniform1ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform1ui64NV))ps5_gl_resolve("glUniform1ui64NV");
+    if (real) {
+        real(location, x);
+        return;
+    }
 }
 
 void glUniform2ui64NV(GLint location, GLuint64EXT x, GLuint64EXT y)
 {
+    static __typeof__(&glUniform2ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform2ui64NV))ps5_gl_resolve("glUniform2ui64NV");
+    if (real) {
+        real(location, x, y);
+        return;
+    }
 }
 
 void glUniform3ui64NV(GLint location, GLuint64EXT x, GLuint64EXT y, GLuint64EXT z)
 {
+    static __typeof__(&glUniform3ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform3ui64NV))ps5_gl_resolve("glUniform3ui64NV");
+    if (real) {
+        real(location, x, y, z);
+        return;
+    }
 }
 
 void glUniform4ui64NV(GLint location, GLuint64EXT x, GLuint64EXT y, GLuint64EXT z, GLuint64EXT w)
 {
+    static __typeof__(&glUniform4ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glUniform4ui64NV))ps5_gl_resolve("glUniform4ui64NV");
+    if (real) {
+        real(location, x, y, z, w);
+        return;
+    }
 }
 
 void glUniform1ui64vNV(GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glUniform1ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform1ui64vNV))ps5_gl_resolve("glUniform1ui64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform2ui64vNV(GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glUniform2ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform2ui64vNV))ps5_gl_resolve("glUniform2ui64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform3ui64vNV(GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glUniform3ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform3ui64vNV))ps5_gl_resolve("glUniform3ui64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glUniform4ui64vNV(GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glUniform4ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glUniform4ui64vNV))ps5_gl_resolve("glUniform4ui64vNV");
+    if (real) {
+        real(location, count, value);
+        return;
+    }
 }
 
 void glGetUniformi64vNV(GLuint program, GLint location, GLint64EXT *params)
 {
+    static __typeof__(&glGetUniformi64vNV) real;
+    if (!real)
+        real = (__typeof__(&glGetUniformi64vNV))ps5_gl_resolve("glGetUniformi64vNV");
+    if (real) {
+        real(program, location, params);
+        return;
+    }
 }
 
 void glProgramUniform1i64NV(GLuint program, GLint location, GLint64EXT x)
 {
+    static __typeof__(&glProgramUniform1i64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1i64NV))ps5_gl_resolve("glProgramUniform1i64NV");
+    if (real) {
+        real(program, location, x);
+        return;
+    }
 }
 
 void glProgramUniform2i64NV(GLuint program, GLint location, GLint64EXT x, GLint64EXT y)
 {
+    static __typeof__(&glProgramUniform2i64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2i64NV))ps5_gl_resolve("glProgramUniform2i64NV");
+    if (real) {
+        real(program, location, x, y);
+        return;
+    }
 }
 
 void glProgramUniform3i64NV(GLuint program, GLint location, GLint64EXT x, GLint64EXT y, GLint64EXT z)
 {
+    static __typeof__(&glProgramUniform3i64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3i64NV))ps5_gl_resolve("glProgramUniform3i64NV");
+    if (real) {
+        real(program, location, x, y, z);
+        return;
+    }
 }
 
 void glProgramUniform4i64NV(GLuint program, GLint location, GLint64EXT x, GLint64EXT y, GLint64EXT z, GLint64EXT w)
 {
+    static __typeof__(&glProgramUniform4i64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4i64NV))ps5_gl_resolve("glProgramUniform4i64NV");
+    if (real) {
+        real(program, location, x, y, z, w);
+        return;
+    }
 }
 
 void glProgramUniform1i64vNV(GLuint program, GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glProgramUniform1i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1i64vNV))ps5_gl_resolve("glProgramUniform1i64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform2i64vNV(GLuint program, GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glProgramUniform2i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2i64vNV))ps5_gl_resolve("glProgramUniform2i64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform3i64vNV(GLuint program, GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glProgramUniform3i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3i64vNV))ps5_gl_resolve("glProgramUniform3i64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform4i64vNV(GLuint program, GLint location, GLsizei count, const GLint64EXT *value)
 {
+    static __typeof__(&glProgramUniform4i64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4i64vNV))ps5_gl_resolve("glProgramUniform4i64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform1ui64NV(GLuint program, GLint location, GLuint64EXT x)
 {
+    static __typeof__(&glProgramUniform1ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1ui64NV))ps5_gl_resolve("glProgramUniform1ui64NV");
+    if (real) {
+        real(program, location, x);
+        return;
+    }
 }
 
 void glProgramUniform2ui64NV(GLuint program, GLint location, GLuint64EXT x, GLuint64EXT y)
 {
+    static __typeof__(&glProgramUniform2ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2ui64NV))ps5_gl_resolve("glProgramUniform2ui64NV");
+    if (real) {
+        real(program, location, x, y);
+        return;
+    }
 }
 
 void glProgramUniform3ui64NV(GLuint program, GLint location, GLuint64EXT x, GLuint64EXT y, GLuint64EXT z)
 {
+    static __typeof__(&glProgramUniform3ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3ui64NV))ps5_gl_resolve("glProgramUniform3ui64NV");
+    if (real) {
+        real(program, location, x, y, z);
+        return;
+    }
 }
 
 void glProgramUniform4ui64NV(GLuint program, GLint location, GLuint64EXT x, GLuint64EXT y, GLuint64EXT z, GLuint64EXT w)
 {
+    static __typeof__(&glProgramUniform4ui64NV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4ui64NV))ps5_gl_resolve("glProgramUniform4ui64NV");
+    if (real) {
+        real(program, location, x, y, z, w);
+        return;
+    }
 }
 
 void glProgramUniform1ui64vNV(GLuint program, GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glProgramUniform1ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform1ui64vNV))ps5_gl_resolve("glProgramUniform1ui64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform2ui64vNV(GLuint program, GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glProgramUniform2ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform2ui64vNV))ps5_gl_resolve("glProgramUniform2ui64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform3ui64vNV(GLuint program, GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glProgramUniform3ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform3ui64vNV))ps5_gl_resolve("glProgramUniform3ui64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glProgramUniform4ui64vNV(GLuint program, GLint location, GLsizei count, const GLuint64EXT *value)
 {
+    static __typeof__(&glProgramUniform4ui64vNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramUniform4ui64vNV))ps5_gl_resolve("glProgramUniform4ui64vNV");
+    if (real) {
+        real(program, location, count, value);
+        return;
+    }
 }
 
 void glVertexAttribDivisorNV(GLuint index, GLuint divisor)
 {
+    static __typeof__(&glVertexAttribDivisorNV) real;
+    if (!real)
+        real = (__typeof__(&glVertexAttribDivisorNV))ps5_gl_resolve("glVertexAttribDivisorNV");
+    if (real) {
+        real(index, divisor);
+        return;
+    }
 }
 
 void glGetInternalformatSampleivNV(GLenum target, GLenum internalformat, GLsizei samples, GLenum pname, GLsizei count, GLint *params)
 {
+    static __typeof__(&glGetInternalformatSampleivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetInternalformatSampleivNV))ps5_gl_resolve("glGetInternalformatSampleivNV");
+    if (real) {
+        real(target, internalformat, samples, pname, count, params);
+        return;
+    }
 }
 
 void glGetMemoryObjectDetachedResourcesuivNV(GLuint memory, GLenum pname, GLint first, GLsizei count, GLuint *params)
 {
+    static __typeof__(&glGetMemoryObjectDetachedResourcesuivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetMemoryObjectDetachedResourcesuivNV))ps5_gl_resolve("glGetMemoryObjectDetachedResourcesuivNV");
+    if (real) {
+        real(memory, pname, first, count, params);
+        return;
+    }
 }
 
 void glResetMemoryObjectParameterNV(GLuint memory, GLenum pname)
 {
+    static __typeof__(&glResetMemoryObjectParameterNV) real;
+    if (!real)
+        real = (__typeof__(&glResetMemoryObjectParameterNV))ps5_gl_resolve("glResetMemoryObjectParameterNV");
+    if (real) {
+        real(memory, pname);
+        return;
+    }
 }
 
 void glTexAttachMemoryNV(GLenum target, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTexAttachMemoryNV) real;
+    if (!real)
+        real = (__typeof__(&glTexAttachMemoryNV))ps5_gl_resolve("glTexAttachMemoryNV");
+    if (real) {
+        real(target, memory, offset);
+        return;
+    }
 }
 
 void glBufferAttachMemoryNV(GLenum target, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glBufferAttachMemoryNV) real;
+    if (!real)
+        real = (__typeof__(&glBufferAttachMemoryNV))ps5_gl_resolve("glBufferAttachMemoryNV");
+    if (real) {
+        real(target, memory, offset);
+        return;
+    }
 }
 
 void glTextureAttachMemoryNV(GLuint texture, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glTextureAttachMemoryNV) real;
+    if (!real)
+        real = (__typeof__(&glTextureAttachMemoryNV))ps5_gl_resolve("glTextureAttachMemoryNV");
+    if (real) {
+        real(texture, memory, offset);
+        return;
+    }
 }
 
 void glNamedBufferAttachMemoryNV(GLuint buffer, GLuint memory, GLuint64 offset)
 {
+    static __typeof__(&glNamedBufferAttachMemoryNV) real;
+    if (!real)
+        real = (__typeof__(&glNamedBufferAttachMemoryNV))ps5_gl_resolve("glNamedBufferAttachMemoryNV");
+    if (real) {
+        real(buffer, memory, offset);
+        return;
+    }
 }
 
 void glBufferPageCommitmentMemNV(GLenum target, GLintptr offset, GLsizeiptr size, GLuint memory, GLuint64 memOffset, GLboolean commit)
 {
+    static __typeof__(&glBufferPageCommitmentMemNV) real;
+    if (!real)
+        real = (__typeof__(&glBufferPageCommitmentMemNV))ps5_gl_resolve("glBufferPageCommitmentMemNV");
+    if (real) {
+        real(target, offset, size, memory, memOffset, commit);
+        return;
+    }
 }
 
 void glTexPageCommitmentMemNV(GLenum target, GLint layer, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLuint memory, GLuint64 offset, GLboolean commit)
 {
+    static __typeof__(&glTexPageCommitmentMemNV) real;
+    if (!real)
+        real = (__typeof__(&glTexPageCommitmentMemNV))ps5_gl_resolve("glTexPageCommitmentMemNV");
+    if (real) {
+        real(target, layer, level, xoffset, yoffset, zoffset, width, height, depth, memory, offset, commit);
+        return;
+    }
 }
 
 void glNamedBufferPageCommitmentMemNV(GLuint buffer, GLintptr offset, GLsizeiptr size, GLuint memory, GLuint64 memOffset, GLboolean commit)
 {
+    static __typeof__(&glNamedBufferPageCommitmentMemNV) real;
+    if (!real)
+        real = (__typeof__(&glNamedBufferPageCommitmentMemNV))ps5_gl_resolve("glNamedBufferPageCommitmentMemNV");
+    if (real) {
+        real(buffer, offset, size, memory, memOffset, commit);
+        return;
+    }
 }
 
 void glTexturePageCommitmentMemNV(GLuint texture, GLint layer, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLuint memory, GLuint64 offset, GLboolean commit)
 {
+    static __typeof__(&glTexturePageCommitmentMemNV) real;
+    if (!real)
+        real = (__typeof__(&glTexturePageCommitmentMemNV))ps5_gl_resolve("glTexturePageCommitmentMemNV");
+    if (real) {
+        real(texture, layer, level, xoffset, yoffset, zoffset, width, height, depth, memory, offset, commit);
+        return;
+    }
 }
 
 void glDrawMeshTasksNV(GLuint first, GLuint count)
 {
+    static __typeof__(&glDrawMeshTasksNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawMeshTasksNV))ps5_gl_resolve("glDrawMeshTasksNV");
+    if (real) {
+        real(first, count);
+        return;
+    }
 }
 
 void glDrawMeshTasksIndirectNV(GLintptr indirect)
 {
+    static __typeof__(&glDrawMeshTasksIndirectNV) real;
+    if (!real)
+        real = (__typeof__(&glDrawMeshTasksIndirectNV))ps5_gl_resolve("glDrawMeshTasksIndirectNV");
+    if (real) {
+        real(indirect);
+        return;
+    }
 }
 
 void glMultiDrawMeshTasksIndirectNV(GLintptr indirect, GLsizei drawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawMeshTasksIndirectNV) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawMeshTasksIndirectNV))ps5_gl_resolve("glMultiDrawMeshTasksIndirectNV");
+    if (real) {
+        real(indirect, drawcount, stride);
+        return;
+    }
 }
 
 void glMultiDrawMeshTasksIndirectCountNV(GLintptr indirect, GLintptr drawcount, GLsizei maxdrawcount, GLsizei stride)
 {
+    static __typeof__(&glMultiDrawMeshTasksIndirectCountNV) real;
+    if (!real)
+        real = (__typeof__(&glMultiDrawMeshTasksIndirectCountNV))ps5_gl_resolve("glMultiDrawMeshTasksIndirectCountNV");
+    if (real) {
+        real(indirect, drawcount, maxdrawcount, stride);
+        return;
+    }
 }
 
 void glUniformMatrix2x3fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix2x3fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix2x3fvNV))ps5_gl_resolve("glUniformMatrix2x3fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix3x2fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix3x2fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix3x2fvNV))ps5_gl_resolve("glUniformMatrix3x2fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix2x4fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix2x4fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix2x4fvNV))ps5_gl_resolve("glUniformMatrix2x4fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix4x2fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix4x2fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix4x2fvNV))ps5_gl_resolve("glUniformMatrix4x2fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix3x4fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix3x4fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix3x4fvNV))ps5_gl_resolve("glUniformMatrix3x4fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 void glUniformMatrix4x3fvNV(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 {
+    static __typeof__(&glUniformMatrix4x3fvNV) real;
+    if (!real)
+        real = (__typeof__(&glUniformMatrix4x3fvNV))ps5_gl_resolve("glUniformMatrix4x3fvNV");
+    if (real) {
+        real(location, count, transpose, value);
+        return;
+    }
 }
 
 GLuint glGenPathsNV(GLsizei range)
 {
+    static __typeof__(&glGenPathsNV) real;
+    if (!real)
+        real = (__typeof__(&glGenPathsNV))ps5_gl_resolve("glGenPathsNV");
+    if (real) {
+        return real(range);
+    }
     return (GLuint)0;
 }
 
 void glDeletePathsNV(GLuint path, GLsizei range)
 {
+    static __typeof__(&glDeletePathsNV) real;
+    if (!real)
+        real = (__typeof__(&glDeletePathsNV))ps5_gl_resolve("glDeletePathsNV");
+    if (real) {
+        real(path, range);
+        return;
+    }
 }
 
 GLboolean glIsPathNV(GLuint path)
 {
+    static __typeof__(&glIsPathNV) real;
+    if (!real)
+        real = (__typeof__(&glIsPathNV))ps5_gl_resolve("glIsPathNV");
+    if (real) {
+        return real(path);
+    }
     return 0;
 }
 
 void glPathCommandsNV(GLuint path, GLsizei numCommands, const GLubyte *commands, GLsizei numCoords, GLenum coordType, const void *coords)
 {
+    static __typeof__(&glPathCommandsNV) real;
+    if (!real)
+        real = (__typeof__(&glPathCommandsNV))ps5_gl_resolve("glPathCommandsNV");
+    if (real) {
+        real(path, numCommands, commands, numCoords, coordType, coords);
+        return;
+    }
 }
 
 void glPathCoordsNV(GLuint path, GLsizei numCoords, GLenum coordType, const void *coords)
 {
+    static __typeof__(&glPathCoordsNV) real;
+    if (!real)
+        real = (__typeof__(&glPathCoordsNV))ps5_gl_resolve("glPathCoordsNV");
+    if (real) {
+        real(path, numCoords, coordType, coords);
+        return;
+    }
 }
 
 void glPathSubCommandsNV(GLuint path, GLsizei commandStart, GLsizei commandsToDelete, GLsizei numCommands, const GLubyte *commands, GLsizei numCoords, GLenum coordType, const void *coords)
 {
+    static __typeof__(&glPathSubCommandsNV) real;
+    if (!real)
+        real = (__typeof__(&glPathSubCommandsNV))ps5_gl_resolve("glPathSubCommandsNV");
+    if (real) {
+        real(path, commandStart, commandsToDelete, numCommands, commands, numCoords, coordType, coords);
+        return;
+    }
 }
 
 void glPathSubCoordsNV(GLuint path, GLsizei coordStart, GLsizei numCoords, GLenum coordType, const void *coords)
 {
+    static __typeof__(&glPathSubCoordsNV) real;
+    if (!real)
+        real = (__typeof__(&glPathSubCoordsNV))ps5_gl_resolve("glPathSubCoordsNV");
+    if (real) {
+        real(path, coordStart, numCoords, coordType, coords);
+        return;
+    }
 }
 
 void glPathStringNV(GLuint path, GLenum format, GLsizei length, const void *pathString)
 {
+    static __typeof__(&glPathStringNV) real;
+    if (!real)
+        real = (__typeof__(&glPathStringNV))ps5_gl_resolve("glPathStringNV");
+    if (real) {
+        real(path, format, length, pathString);
+        return;
+    }
 }
 
 void glPathGlyphsNV(GLuint firstPathName, GLenum fontTarget, const void *fontName, GLbitfield fontStyle, GLsizei numGlyphs, GLenum type, const void *charcodes, GLenum handleMissingGlyphs, GLuint pathParameterTemplate, GLfloat emScale)
 {
+    static __typeof__(&glPathGlyphsNV) real;
+    if (!real)
+        real = (__typeof__(&glPathGlyphsNV))ps5_gl_resolve("glPathGlyphsNV");
+    if (real) {
+        real(firstPathName, fontTarget, fontName, fontStyle, numGlyphs, type, charcodes, handleMissingGlyphs, pathParameterTemplate, emScale);
+        return;
+    }
 }
 
 void glPathGlyphRangeNV(GLuint firstPathName, GLenum fontTarget, const void *fontName, GLbitfield fontStyle, GLuint firstGlyph, GLsizei numGlyphs, GLenum handleMissingGlyphs, GLuint pathParameterTemplate, GLfloat emScale)
 {
+    static __typeof__(&glPathGlyphRangeNV) real;
+    if (!real)
+        real = (__typeof__(&glPathGlyphRangeNV))ps5_gl_resolve("glPathGlyphRangeNV");
+    if (real) {
+        real(firstPathName, fontTarget, fontName, fontStyle, firstGlyph, numGlyphs, handleMissingGlyphs, pathParameterTemplate, emScale);
+        return;
+    }
 }
 
 void glWeightPathsNV(GLuint resultPath, GLsizei numPaths, const GLuint *paths, const GLfloat *weights)
 {
+    static __typeof__(&glWeightPathsNV) real;
+    if (!real)
+        real = (__typeof__(&glWeightPathsNV))ps5_gl_resolve("glWeightPathsNV");
+    if (real) {
+        real(resultPath, numPaths, paths, weights);
+        return;
+    }
 }
 
 void glCopyPathNV(GLuint resultPath, GLuint srcPath)
 {
+    static __typeof__(&glCopyPathNV) real;
+    if (!real)
+        real = (__typeof__(&glCopyPathNV))ps5_gl_resolve("glCopyPathNV");
+    if (real) {
+        real(resultPath, srcPath);
+        return;
+    }
 }
 
 void glInterpolatePathsNV(GLuint resultPath, GLuint pathA, GLuint pathB, GLfloat weight)
 {
+    static __typeof__(&glInterpolatePathsNV) real;
+    if (!real)
+        real = (__typeof__(&glInterpolatePathsNV))ps5_gl_resolve("glInterpolatePathsNV");
+    if (real) {
+        real(resultPath, pathA, pathB, weight);
+        return;
+    }
 }
 
 void glTransformPathNV(GLuint resultPath, GLuint srcPath, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glTransformPathNV) real;
+    if (!real)
+        real = (__typeof__(&glTransformPathNV))ps5_gl_resolve("glTransformPathNV");
+    if (real) {
+        real(resultPath, srcPath, transformType, transformValues);
+        return;
+    }
 }
 
 void glPathParameterivNV(GLuint path, GLenum pname, const GLint *value)
 {
+    static __typeof__(&glPathParameterivNV) real;
+    if (!real)
+        real = (__typeof__(&glPathParameterivNV))ps5_gl_resolve("glPathParameterivNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glPathParameteriNV(GLuint path, GLenum pname, GLint value)
 {
+    static __typeof__(&glPathParameteriNV) real;
+    if (!real)
+        real = (__typeof__(&glPathParameteriNV))ps5_gl_resolve("glPathParameteriNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glPathParameterfvNV(GLuint path, GLenum pname, const GLfloat *value)
 {
+    static __typeof__(&glPathParameterfvNV) real;
+    if (!real)
+        real = (__typeof__(&glPathParameterfvNV))ps5_gl_resolve("glPathParameterfvNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glPathParameterfNV(GLuint path, GLenum pname, GLfloat value)
 {
+    static __typeof__(&glPathParameterfNV) real;
+    if (!real)
+        real = (__typeof__(&glPathParameterfNV))ps5_gl_resolve("glPathParameterfNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glPathDashArrayNV(GLuint path, GLsizei dashCount, const GLfloat *dashArray)
 {
+    static __typeof__(&glPathDashArrayNV) real;
+    if (!real)
+        real = (__typeof__(&glPathDashArrayNV))ps5_gl_resolve("glPathDashArrayNV");
+    if (real) {
+        real(path, dashCount, dashArray);
+        return;
+    }
 }
 
 void glPathStencilFuncNV(GLenum func, GLint ref, GLuint mask)
 {
+    static __typeof__(&glPathStencilFuncNV) real;
+    if (!real)
+        real = (__typeof__(&glPathStencilFuncNV))ps5_gl_resolve("glPathStencilFuncNV");
+    if (real) {
+        real(func, ref, mask);
+        return;
+    }
 }
 
 void glPathStencilDepthOffsetNV(GLfloat factor, GLfloat units)
 {
+    static __typeof__(&glPathStencilDepthOffsetNV) real;
+    if (!real)
+        real = (__typeof__(&glPathStencilDepthOffsetNV))ps5_gl_resolve("glPathStencilDepthOffsetNV");
+    if (real) {
+        real(factor, units);
+        return;
+    }
 }
 
 void glStencilFillPathNV(GLuint path, GLenum fillMode, GLuint mask)
 {
+    static __typeof__(&glStencilFillPathNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilFillPathNV))ps5_gl_resolve("glStencilFillPathNV");
+    if (real) {
+        real(path, fillMode, mask);
+        return;
+    }
 }
 
 void glStencilStrokePathNV(GLuint path, GLint reference, GLuint mask)
 {
+    static __typeof__(&glStencilStrokePathNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilStrokePathNV))ps5_gl_resolve("glStencilStrokePathNV");
+    if (real) {
+        real(path, reference, mask);
+        return;
+    }
 }
 
 void glStencilFillPathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLenum fillMode, GLuint mask, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glStencilFillPathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilFillPathInstancedNV))ps5_gl_resolve("glStencilFillPathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, fillMode, mask, transformType, transformValues);
+        return;
+    }
 }
 
 void glStencilStrokePathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLint reference, GLuint mask, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glStencilStrokePathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilStrokePathInstancedNV))ps5_gl_resolve("glStencilStrokePathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, reference, mask, transformType, transformValues);
+        return;
+    }
 }
 
 void glPathCoverDepthFuncNV(GLenum func)
 {
+    static __typeof__(&glPathCoverDepthFuncNV) real;
+    if (!real)
+        real = (__typeof__(&glPathCoverDepthFuncNV))ps5_gl_resolve("glPathCoverDepthFuncNV");
+    if (real) {
+        real(func);
+        return;
+    }
 }
 
 void glCoverFillPathNV(GLuint path, GLenum coverMode)
 {
+    static __typeof__(&glCoverFillPathNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverFillPathNV))ps5_gl_resolve("glCoverFillPathNV");
+    if (real) {
+        real(path, coverMode);
+        return;
+    }
 }
 
 void glCoverStrokePathNV(GLuint path, GLenum coverMode)
 {
+    static __typeof__(&glCoverStrokePathNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverStrokePathNV))ps5_gl_resolve("glCoverStrokePathNV");
+    if (real) {
+        real(path, coverMode);
+        return;
+    }
 }
 
 void glCoverFillPathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLenum coverMode, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glCoverFillPathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverFillPathInstancedNV))ps5_gl_resolve("glCoverFillPathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, coverMode, transformType, transformValues);
+        return;
+    }
 }
 
 void glCoverStrokePathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLenum coverMode, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glCoverStrokePathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glCoverStrokePathInstancedNV))ps5_gl_resolve("glCoverStrokePathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, coverMode, transformType, transformValues);
+        return;
+    }
 }
 
 void glGetPathParameterivNV(GLuint path, GLenum pname, GLint *value)
 {
+    static __typeof__(&glGetPathParameterivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathParameterivNV))ps5_gl_resolve("glGetPathParameterivNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glGetPathParameterfvNV(GLuint path, GLenum pname, GLfloat *value)
 {
+    static __typeof__(&glGetPathParameterfvNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathParameterfvNV))ps5_gl_resolve("glGetPathParameterfvNV");
+    if (real) {
+        real(path, pname, value);
+        return;
+    }
 }
 
 void glGetPathCommandsNV(GLuint path, GLubyte *commands)
 {
+    static __typeof__(&glGetPathCommandsNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathCommandsNV))ps5_gl_resolve("glGetPathCommandsNV");
+    if (real) {
+        real(path, commands);
+        return;
+    }
 }
 
 void glGetPathCoordsNV(GLuint path, GLfloat *coords)
 {
+    static __typeof__(&glGetPathCoordsNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathCoordsNV))ps5_gl_resolve("glGetPathCoordsNV");
+    if (real) {
+        real(path, coords);
+        return;
+    }
 }
 
 void glGetPathDashArrayNV(GLuint path, GLfloat *dashArray)
 {
+    static __typeof__(&glGetPathDashArrayNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathDashArrayNV))ps5_gl_resolve("glGetPathDashArrayNV");
+    if (real) {
+        real(path, dashArray);
+        return;
+    }
 }
 
 void glGetPathMetricsNV(GLbitfield metricQueryMask, GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLsizei stride, GLfloat *metrics)
 {
+    static __typeof__(&glGetPathMetricsNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathMetricsNV))ps5_gl_resolve("glGetPathMetricsNV");
+    if (real) {
+        real(metricQueryMask, numPaths, pathNameType, paths, pathBase, stride, metrics);
+        return;
+    }
 }
 
 void glGetPathMetricRangeNV(GLbitfield metricQueryMask, GLuint firstPathName, GLsizei numPaths, GLsizei stride, GLfloat *metrics)
 {
+    static __typeof__(&glGetPathMetricRangeNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathMetricRangeNV))ps5_gl_resolve("glGetPathMetricRangeNV");
+    if (real) {
+        real(metricQueryMask, firstPathName, numPaths, stride, metrics);
+        return;
+    }
 }
 
 void glGetPathSpacingNV(GLenum pathListMode, GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLfloat advanceScale, GLfloat kerningScale, GLenum transformType, GLfloat *returnedSpacing)
 {
+    static __typeof__(&glGetPathSpacingNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathSpacingNV))ps5_gl_resolve("glGetPathSpacingNV");
+    if (real) {
+        real(pathListMode, numPaths, pathNameType, paths, pathBase, advanceScale, kerningScale, transformType, returnedSpacing);
+        return;
+    }
 }
 
 GLboolean glIsPointInFillPathNV(GLuint path, GLuint mask, GLfloat x, GLfloat y)
 {
+    static __typeof__(&glIsPointInFillPathNV) real;
+    if (!real)
+        real = (__typeof__(&glIsPointInFillPathNV))ps5_gl_resolve("glIsPointInFillPathNV");
+    if (real) {
+        return real(path, mask, x, y);
+    }
     return 0;
 }
 
 GLboolean glIsPointInStrokePathNV(GLuint path, GLfloat x, GLfloat y)
 {
+    static __typeof__(&glIsPointInStrokePathNV) real;
+    if (!real)
+        real = (__typeof__(&glIsPointInStrokePathNV))ps5_gl_resolve("glIsPointInStrokePathNV");
+    if (real) {
+        return real(path, x, y);
+    }
     return 0;
 }
 
 GLfloat glGetPathLengthNV(GLuint path, GLsizei startSegment, GLsizei numSegments)
 {
+    static __typeof__(&glGetPathLengthNV) real;
+    if (!real)
+        real = (__typeof__(&glGetPathLengthNV))ps5_gl_resolve("glGetPathLengthNV");
+    if (real) {
+        return real(path, startSegment, numSegments);
+    }
     return (GLfloat)0;
 }
 
 GLboolean glPointAlongPathNV(GLuint path, GLsizei startSegment, GLsizei numSegments, GLfloat distance, GLfloat *x, GLfloat *y, GLfloat *tangentX, GLfloat *tangentY)
 {
+    static __typeof__(&glPointAlongPathNV) real;
+    if (!real)
+        real = (__typeof__(&glPointAlongPathNV))ps5_gl_resolve("glPointAlongPathNV");
+    if (real) {
+        return real(path, startSegment, numSegments, distance, x, y, tangentX, tangentY);
+    }
     return 0;
 }
 
 void glMatrixLoad3x2fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixLoad3x2fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoad3x2fNV))ps5_gl_resolve("glMatrixLoad3x2fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glMatrixLoad3x3fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixLoad3x3fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoad3x3fNV))ps5_gl_resolve("glMatrixLoad3x3fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glMatrixLoadTranspose3x3fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixLoadTranspose3x3fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoadTranspose3x3fNV))ps5_gl_resolve("glMatrixLoadTranspose3x3fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glMatrixMult3x2fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixMult3x2fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMult3x2fNV))ps5_gl_resolve("glMatrixMult3x2fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glMatrixMult3x3fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixMult3x3fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMult3x3fNV))ps5_gl_resolve("glMatrixMult3x3fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glMatrixMultTranspose3x3fNV(GLenum matrixMode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixMultTranspose3x3fNV) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMultTranspose3x3fNV))ps5_gl_resolve("glMatrixMultTranspose3x3fNV");
+    if (real) {
+        real(matrixMode, m);
+        return;
+    }
 }
 
 void glStencilThenCoverFillPathNV(GLuint path, GLenum fillMode, GLuint mask, GLenum coverMode)
 {
+    static __typeof__(&glStencilThenCoverFillPathNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilThenCoverFillPathNV))ps5_gl_resolve("glStencilThenCoverFillPathNV");
+    if (real) {
+        real(path, fillMode, mask, coverMode);
+        return;
+    }
 }
 
 void glStencilThenCoverStrokePathNV(GLuint path, GLint reference, GLuint mask, GLenum coverMode)
 {
+    static __typeof__(&glStencilThenCoverStrokePathNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilThenCoverStrokePathNV))ps5_gl_resolve("glStencilThenCoverStrokePathNV");
+    if (real) {
+        real(path, reference, mask, coverMode);
+        return;
+    }
 }
 
 void glStencilThenCoverFillPathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLenum fillMode, GLuint mask, GLenum coverMode, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glStencilThenCoverFillPathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilThenCoverFillPathInstancedNV))ps5_gl_resolve("glStencilThenCoverFillPathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode, transformType, transformValues);
+        return;
+    }
 }
 
 void glStencilThenCoverStrokePathInstancedNV(GLsizei numPaths, GLenum pathNameType, const void *paths, GLuint pathBase, GLint reference, GLuint mask, GLenum coverMode, GLenum transformType, const GLfloat *transformValues)
 {
+    static __typeof__(&glStencilThenCoverStrokePathInstancedNV) real;
+    if (!real)
+        real = (__typeof__(&glStencilThenCoverStrokePathInstancedNV))ps5_gl_resolve("glStencilThenCoverStrokePathInstancedNV");
+    if (real) {
+        real(numPaths, pathNameType, paths, pathBase, reference, mask, coverMode, transformType, transformValues);
+        return;
+    }
 }
 
 GLenum glPathGlyphIndexRangeNV(GLenum fontTarget, const void *fontName, GLbitfield fontStyle, GLuint pathParameterTemplate, GLfloat emScale, GLuint *baseAndCount)
 {
+    static __typeof__(&glPathGlyphIndexRangeNV) real;
+    if (!real)
+        real = (__typeof__(&glPathGlyphIndexRangeNV))ps5_gl_resolve("glPathGlyphIndexRangeNV");
+    if (real) {
+        return real(fontTarget, fontName, fontStyle, pathParameterTemplate, emScale, baseAndCount);
+    }
     return (GLenum)0;
 }
 
 GLenum glPathGlyphIndexArrayNV(GLuint firstPathName, GLenum fontTarget, const void *fontName, GLbitfield fontStyle, GLuint firstGlyphIndex, GLsizei numGlyphs, GLuint pathParameterTemplate, GLfloat emScale)
 {
+    static __typeof__(&glPathGlyphIndexArrayNV) real;
+    if (!real)
+        real = (__typeof__(&glPathGlyphIndexArrayNV))ps5_gl_resolve("glPathGlyphIndexArrayNV");
+    if (real) {
+        return real(firstPathName, fontTarget, fontName, fontStyle, firstGlyphIndex, numGlyphs, pathParameterTemplate, emScale);
+    }
     return (GLenum)0;
 }
 
 GLenum glPathMemoryGlyphIndexArrayNV(GLuint firstPathName, GLenum fontTarget, GLsizeiptr fontSize, const void *fontData, GLsizei faceIndex, GLuint firstGlyphIndex, GLsizei numGlyphs, GLuint pathParameterTemplate, GLfloat emScale)
 {
+    static __typeof__(&glPathMemoryGlyphIndexArrayNV) real;
+    if (!real)
+        real = (__typeof__(&glPathMemoryGlyphIndexArrayNV))ps5_gl_resolve("glPathMemoryGlyphIndexArrayNV");
+    if (real) {
+        return real(firstPathName, fontTarget, fontSize, fontData, faceIndex, firstGlyphIndex, numGlyphs, pathParameterTemplate, emScale);
+    }
     return (GLenum)0;
 }
 
 void glProgramPathFragmentInputGenNV(GLuint program, GLint location, GLenum genMode, GLint components, const GLfloat *coeffs)
 {
+    static __typeof__(&glProgramPathFragmentInputGenNV) real;
+    if (!real)
+        real = (__typeof__(&glProgramPathFragmentInputGenNV))ps5_gl_resolve("glProgramPathFragmentInputGenNV");
+    if (real) {
+        real(program, location, genMode, components, coeffs);
+        return;
+    }
 }
 
 void glGetProgramResourcefvNV(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei count, GLsizei *length, GLfloat *params)
 {
+    static __typeof__(&glGetProgramResourcefvNV) real;
+    if (!real)
+        real = (__typeof__(&glGetProgramResourcefvNV))ps5_gl_resolve("glGetProgramResourcefvNV");
+    if (real) {
+        real(program, programInterface, index, propCount, props, count, length, params);
+        return;
+    }
 }
 
 void glMatrixFrustumEXT(GLenum mode, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
+    static __typeof__(&glMatrixFrustumEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixFrustumEXT))ps5_gl_resolve("glMatrixFrustumEXT");
+    if (real) {
+        real(mode, left, right, bottom, top, zNear, zFar);
+        return;
+    }
 }
 
 void glMatrixLoadIdentityEXT(GLenum mode)
 {
+    static __typeof__(&glMatrixLoadIdentityEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoadIdentityEXT))ps5_gl_resolve("glMatrixLoadIdentityEXT");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glMatrixLoadTransposefEXT(GLenum mode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixLoadTransposefEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoadTransposefEXT))ps5_gl_resolve("glMatrixLoadTransposefEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixLoadTransposedEXT(GLenum mode, const GLdouble *m)
 {
+    static __typeof__(&glMatrixLoadTransposedEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoadTransposedEXT))ps5_gl_resolve("glMatrixLoadTransposedEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixLoadfEXT(GLenum mode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixLoadfEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoadfEXT))ps5_gl_resolve("glMatrixLoadfEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixLoaddEXT(GLenum mode, const GLdouble *m)
 {
+    static __typeof__(&glMatrixLoaddEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixLoaddEXT))ps5_gl_resolve("glMatrixLoaddEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixMultTransposefEXT(GLenum mode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixMultTransposefEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMultTransposefEXT))ps5_gl_resolve("glMatrixMultTransposefEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixMultTransposedEXT(GLenum mode, const GLdouble *m)
 {
+    static __typeof__(&glMatrixMultTransposedEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMultTransposedEXT))ps5_gl_resolve("glMatrixMultTransposedEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixMultfEXT(GLenum mode, const GLfloat *m)
 {
+    static __typeof__(&glMatrixMultfEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMultfEXT))ps5_gl_resolve("glMatrixMultfEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixMultdEXT(GLenum mode, const GLdouble *m)
 {
+    static __typeof__(&glMatrixMultdEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixMultdEXT))ps5_gl_resolve("glMatrixMultdEXT");
+    if (real) {
+        real(mode, m);
+        return;
+    }
 }
 
 void glMatrixOrthoEXT(GLenum mode, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
+    static __typeof__(&glMatrixOrthoEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixOrthoEXT))ps5_gl_resolve("glMatrixOrthoEXT");
+    if (real) {
+        real(mode, left, right, bottom, top, zNear, zFar);
+        return;
+    }
 }
 
 void glMatrixPopEXT(GLenum mode)
 {
+    static __typeof__(&glMatrixPopEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixPopEXT))ps5_gl_resolve("glMatrixPopEXT");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glMatrixPushEXT(GLenum mode)
 {
+    static __typeof__(&glMatrixPushEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixPushEXT))ps5_gl_resolve("glMatrixPushEXT");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glMatrixRotatefEXT(GLenum mode, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
+    static __typeof__(&glMatrixRotatefEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixRotatefEXT))ps5_gl_resolve("glMatrixRotatefEXT");
+    if (real) {
+        real(mode, angle, x, y, z);
+        return;
+    }
 }
 
 void glMatrixRotatedEXT(GLenum mode, GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 {
+    static __typeof__(&glMatrixRotatedEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixRotatedEXT))ps5_gl_resolve("glMatrixRotatedEXT");
+    if (real) {
+        real(mode, angle, x, y, z);
+        return;
+    }
 }
 
 void glMatrixScalefEXT(GLenum mode, GLfloat x, GLfloat y, GLfloat z)
 {
+    static __typeof__(&glMatrixScalefEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixScalefEXT))ps5_gl_resolve("glMatrixScalefEXT");
+    if (real) {
+        real(mode, x, y, z);
+        return;
+    }
 }
 
 void glMatrixScaledEXT(GLenum mode, GLdouble x, GLdouble y, GLdouble z)
 {
+    static __typeof__(&glMatrixScaledEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixScaledEXT))ps5_gl_resolve("glMatrixScaledEXT");
+    if (real) {
+        real(mode, x, y, z);
+        return;
+    }
 }
 
 void glMatrixTranslatefEXT(GLenum mode, GLfloat x, GLfloat y, GLfloat z)
 {
+    static __typeof__(&glMatrixTranslatefEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixTranslatefEXT))ps5_gl_resolve("glMatrixTranslatefEXT");
+    if (real) {
+        real(mode, x, y, z);
+        return;
+    }
 }
 
 void glMatrixTranslatedEXT(GLenum mode, GLdouble x, GLdouble y, GLdouble z)
 {
+    static __typeof__(&glMatrixTranslatedEXT) real;
+    if (!real)
+        real = (__typeof__(&glMatrixTranslatedEXT))ps5_gl_resolve("glMatrixTranslatedEXT");
+    if (real) {
+        real(mode, x, y, z);
+        return;
+    }
 }
 
 void glPolygonModeNV(GLenum face, GLenum mode)
 {
+    static __typeof__(&glPolygonModeNV) real;
+    if (!real)
+        real = (__typeof__(&glPolygonModeNV))ps5_gl_resolve("glPolygonModeNV");
+    if (real) {
+        real(face, mode);
+        return;
+    }
 }
 
 void glReadBufferNV(GLenum mode)
 {
+    static __typeof__(&glReadBufferNV) real;
+    if (!real)
+        real = (__typeof__(&glReadBufferNV))ps5_gl_resolve("glReadBufferNV");
+    if (real) {
+        real(mode);
+        return;
+    }
 }
 
 void glFramebufferSampleLocationsfvNV(GLenum target, GLuint start, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glFramebufferSampleLocationsfvNV) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferSampleLocationsfvNV))ps5_gl_resolve("glFramebufferSampleLocationsfvNV");
+    if (real) {
+        real(target, start, count, v);
+        return;
+    }
 }
 
 void glNamedFramebufferSampleLocationsfvNV(GLuint framebuffer, GLuint start, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glNamedFramebufferSampleLocationsfvNV) real;
+    if (!real)
+        real = (__typeof__(&glNamedFramebufferSampleLocationsfvNV))ps5_gl_resolve("glNamedFramebufferSampleLocationsfvNV");
+    if (real) {
+        real(framebuffer, start, count, v);
+        return;
+    }
 }
 
 void glResolveDepthValuesNV(void)
 {
+    static __typeof__(&glResolveDepthValuesNV) real;
+    if (!real)
+        real = (__typeof__(&glResolveDepthValuesNV))ps5_gl_resolve("glResolveDepthValuesNV");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glScissorExclusiveNV(GLint x, GLint y, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glScissorExclusiveNV) real;
+    if (!real)
+        real = (__typeof__(&glScissorExclusiveNV))ps5_gl_resolve("glScissorExclusiveNV");
+    if (real) {
+        real(x, y, width, height);
+        return;
+    }
 }
 
 void glScissorExclusiveArrayvNV(GLuint first, GLsizei count, const GLint *v)
 {
+    static __typeof__(&glScissorExclusiveArrayvNV) real;
+    if (!real)
+        real = (__typeof__(&glScissorExclusiveArrayvNV))ps5_gl_resolve("glScissorExclusiveArrayvNV");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glBindShadingRateImageNV(GLuint texture)
 {
+    static __typeof__(&glBindShadingRateImageNV) real;
+    if (!real)
+        real = (__typeof__(&glBindShadingRateImageNV))ps5_gl_resolve("glBindShadingRateImageNV");
+    if (real) {
+        real(texture);
+        return;
+    }
 }
 
 void glGetShadingRateImagePaletteNV(GLuint viewport, GLuint entry, GLenum *rate)
 {
+    static __typeof__(&glGetShadingRateImagePaletteNV) real;
+    if (!real)
+        real = (__typeof__(&glGetShadingRateImagePaletteNV))ps5_gl_resolve("glGetShadingRateImagePaletteNV");
+    if (real) {
+        real(viewport, entry, rate);
+        return;
+    }
 }
 
 void glGetShadingRateSampleLocationivNV(GLenum rate, GLuint samples, GLuint index, GLint *location)
 {
+    static __typeof__(&glGetShadingRateSampleLocationivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetShadingRateSampleLocationivNV))ps5_gl_resolve("glGetShadingRateSampleLocationivNV");
+    if (real) {
+        real(rate, samples, index, location);
+        return;
+    }
 }
 
 void glShadingRateImageBarrierNV(GLboolean synchronize)
 {
+    static __typeof__(&glShadingRateImageBarrierNV) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateImageBarrierNV))ps5_gl_resolve("glShadingRateImageBarrierNV");
+    if (real) {
+        real(synchronize);
+        return;
+    }
 }
 
 void glShadingRateImagePaletteNV(GLuint viewport, GLuint first, GLsizei count, const GLenum *rates)
 {
+    static __typeof__(&glShadingRateImagePaletteNV) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateImagePaletteNV))ps5_gl_resolve("glShadingRateImagePaletteNV");
+    if (real) {
+        real(viewport, first, count, rates);
+        return;
+    }
 }
 
 void glShadingRateSampleOrderNV(GLenum order)
 {
+    static __typeof__(&glShadingRateSampleOrderNV) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateSampleOrderNV))ps5_gl_resolve("glShadingRateSampleOrderNV");
+    if (real) {
+        real(order);
+        return;
+    }
 }
 
 void glShadingRateSampleOrderCustomNV(GLenum rate, GLuint samples, const GLint *locations)
 {
+    static __typeof__(&glShadingRateSampleOrderCustomNV) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateSampleOrderCustomNV))ps5_gl_resolve("glShadingRateSampleOrderCustomNV");
+    if (real) {
+        real(rate, samples, locations);
+        return;
+    }
 }
 
 void glTextureBarrierNV(void)
 {
+    static __typeof__(&glTextureBarrierNV) real;
+    if (!real)
+        real = (__typeof__(&glTextureBarrierNV))ps5_gl_resolve("glTextureBarrierNV");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glCreateSemaphoresNV(GLsizei n, GLuint *semaphores)
 {
+    static __typeof__(&glCreateSemaphoresNV) real;
+    if (!real)
+        real = (__typeof__(&glCreateSemaphoresNV))ps5_gl_resolve("glCreateSemaphoresNV");
+    if (real) {
+        real(n, semaphores);
+        return;
+    }
 }
 
 void glSemaphoreParameterivNV(GLuint semaphore, GLenum pname, const GLint *params)
 {
+    static __typeof__(&glSemaphoreParameterivNV) real;
+    if (!real)
+        real = (__typeof__(&glSemaphoreParameterivNV))ps5_gl_resolve("glSemaphoreParameterivNV");
+    if (real) {
+        real(semaphore, pname, params);
+        return;
+    }
 }
 
 void glGetSemaphoreParameterivNV(GLuint semaphore, GLenum pname, GLint *params)
 {
+    static __typeof__(&glGetSemaphoreParameterivNV) real;
+    if (!real)
+        real = (__typeof__(&glGetSemaphoreParameterivNV))ps5_gl_resolve("glGetSemaphoreParameterivNV");
+    if (real) {
+        real(semaphore, pname, params);
+        return;
+    }
 }
 
 void glViewportArrayvNV(GLuint first, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glViewportArrayvNV) real;
+    if (!real)
+        real = (__typeof__(&glViewportArrayvNV))ps5_gl_resolve("glViewportArrayvNV");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glViewportIndexedfNV(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
+    static __typeof__(&glViewportIndexedfNV) real;
+    if (!real)
+        real = (__typeof__(&glViewportIndexedfNV))ps5_gl_resolve("glViewportIndexedfNV");
+    if (real) {
+        real(index, x, y, w, h);
+        return;
+    }
 }
 
 void glViewportIndexedfvNV(GLuint index, const GLfloat *v)
 {
+    static __typeof__(&glViewportIndexedfvNV) real;
+    if (!real)
+        real = (__typeof__(&glViewportIndexedfvNV))ps5_gl_resolve("glViewportIndexedfvNV");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glScissorArrayvNV(GLuint first, GLsizei count, const GLint *v)
 {
+    static __typeof__(&glScissorArrayvNV) real;
+    if (!real)
+        real = (__typeof__(&glScissorArrayvNV))ps5_gl_resolve("glScissorArrayvNV");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glScissorIndexedNV(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 {
+    static __typeof__(&glScissorIndexedNV) real;
+    if (!real)
+        real = (__typeof__(&glScissorIndexedNV))ps5_gl_resolve("glScissorIndexedNV");
+    if (real) {
+        real(index, left, bottom, width, height);
+        return;
+    }
 }
 
 void glScissorIndexedvNV(GLuint index, const GLint *v)
 {
+    static __typeof__(&glScissorIndexedvNV) real;
+    if (!real)
+        real = (__typeof__(&glScissorIndexedvNV))ps5_gl_resolve("glScissorIndexedvNV");
+    if (real) {
+        real(index, v);
+        return;
+    }
 }
 
 void glDepthRangeArrayfvNV(GLuint first, GLsizei count, const GLfloat *v)
 {
+    static __typeof__(&glDepthRangeArrayfvNV) real;
+    if (!real)
+        real = (__typeof__(&glDepthRangeArrayfvNV))ps5_gl_resolve("glDepthRangeArrayfvNV");
+    if (real) {
+        real(first, count, v);
+        return;
+    }
 }
 
 void glDepthRangeIndexedfNV(GLuint index, GLfloat n, GLfloat f)
 {
+    static __typeof__(&glDepthRangeIndexedfNV) real;
+    if (!real)
+        real = (__typeof__(&glDepthRangeIndexedfNV))ps5_gl_resolve("glDepthRangeIndexedfNV");
+    if (real) {
+        real(index, n, f);
+        return;
+    }
 }
 
 void glGetFloati_vNV(GLenum target, GLuint index, GLfloat *data)
 {
+    static __typeof__(&glGetFloati_vNV) real;
+    if (!real)
+        real = (__typeof__(&glGetFloati_vNV))ps5_gl_resolve("glGetFloati_vNV");
+    if (real) {
+        real(target, index, data);
+        return;
+    }
 }
 
 void glEnableiNV(GLenum target, GLuint index)
 {
+    static __typeof__(&glEnableiNV) real;
+    if (!real)
+        real = (__typeof__(&glEnableiNV))ps5_gl_resolve("glEnableiNV");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 void glDisableiNV(GLenum target, GLuint index)
 {
+    static __typeof__(&glDisableiNV) real;
+    if (!real)
+        real = (__typeof__(&glDisableiNV))ps5_gl_resolve("glDisableiNV");
+    if (real) {
+        real(target, index);
+        return;
+    }
 }
 
 GLboolean glIsEnablediNV(GLenum target, GLuint index)
 {
+    static __typeof__(&glIsEnablediNV) real;
+    if (!real)
+        real = (__typeof__(&glIsEnablediNV))ps5_gl_resolve("glIsEnablediNV");
+    if (real) {
+        return real(target, index);
+    }
     return 0;
 }
 
 void glViewportSwizzleNV(GLuint index, GLenum swizzlex, GLenum swizzley, GLenum swizzlez, GLenum swizzlew)
 {
+    static __typeof__(&glViewportSwizzleNV) real;
+    if (!real)
+        real = (__typeof__(&glViewportSwizzleNV))ps5_gl_resolve("glViewportSwizzleNV");
+    if (real) {
+        real(index, swizzlex, swizzley, swizzlez, swizzlew);
+        return;
+    }
 }
 
 void glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews)
 {
+    static __typeof__(&glFramebufferTextureMultiviewOVR) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureMultiviewOVR))ps5_gl_resolve("glFramebufferTextureMultiviewOVR");
+    if (real) {
+        real(target, attachment, texture, level, baseViewIndex, numViews);
+        return;
+    }
 }
 
 void glNamedFramebufferTextureMultiviewOVR(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews)
 {
+    static __typeof__(&glNamedFramebufferTextureMultiviewOVR) real;
+    if (!real)
+        real = (__typeof__(&glNamedFramebufferTextureMultiviewOVR))ps5_gl_resolve("glNamedFramebufferTextureMultiviewOVR");
+    if (real) {
+        real(framebuffer, attachment, texture, level, baseViewIndex, numViews);
+        return;
+    }
 }
 
 void glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews)
 {
+    static __typeof__(&glFramebufferTextureMultisampleMultiviewOVR) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferTextureMultisampleMultiviewOVR))ps5_gl_resolve("glFramebufferTextureMultisampleMultiviewOVR");
+    if (real) {
+        real(target, attachment, texture, level, samples, baseViewIndex, numViews);
+        return;
+    }
 }
 
 void glAlphaFuncQCOM(GLenum func, GLclampf ref)
 {
+    static __typeof__(&glAlphaFuncQCOM) real;
+    if (!real)
+        real = (__typeof__(&glAlphaFuncQCOM))ps5_gl_resolve("glAlphaFuncQCOM");
+    if (real) {
+        real(func, ref);
+        return;
+    }
 }
 
 void glGetDriverControlsQCOM(GLint *num, GLsizei size, GLuint *driverControls)
 {
+    static __typeof__(&glGetDriverControlsQCOM) real;
+    if (!real)
+        real = (__typeof__(&glGetDriverControlsQCOM))ps5_gl_resolve("glGetDriverControlsQCOM");
+    if (real) {
+        real(num, size, driverControls);
+        return;
+    }
 }
 
 void glGetDriverControlStringQCOM(GLuint driverControl, GLsizei bufSize, GLsizei *length, GLchar *driverControlString)
 {
+    static __typeof__(&glGetDriverControlStringQCOM) real;
+    if (!real)
+        real = (__typeof__(&glGetDriverControlStringQCOM))ps5_gl_resolve("glGetDriverControlStringQCOM");
+    if (real) {
+        real(driverControl, bufSize, length, driverControlString);
+        return;
+    }
 }
 
 void glEnableDriverControlQCOM(GLuint driverControl)
 {
+    static __typeof__(&glEnableDriverControlQCOM) real;
+    if (!real)
+        real = (__typeof__(&glEnableDriverControlQCOM))ps5_gl_resolve("glEnableDriverControlQCOM");
+    if (real) {
+        real(driverControl);
+        return;
+    }
 }
 
 void glDisableDriverControlQCOM(GLuint driverControl)
 {
+    static __typeof__(&glDisableDriverControlQCOM) real;
+    if (!real)
+        real = (__typeof__(&glDisableDriverControlQCOM))ps5_gl_resolve("glDisableDriverControlQCOM");
+    if (real) {
+        real(driverControl);
+        return;
+    }
 }
 
 void glExtGetTexturesQCOM(GLuint *textures, GLint maxTextures, GLint *numTextures)
 {
+    static __typeof__(&glExtGetTexturesQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetTexturesQCOM))ps5_gl_resolve("glExtGetTexturesQCOM");
+    if (real) {
+        real(textures, maxTextures, numTextures);
+        return;
+    }
 }
 
 void glExtGetBuffersQCOM(GLuint *buffers, GLint maxBuffers, GLint *numBuffers)
 {
+    static __typeof__(&glExtGetBuffersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetBuffersQCOM))ps5_gl_resolve("glExtGetBuffersQCOM");
+    if (real) {
+        real(buffers, maxBuffers, numBuffers);
+        return;
+    }
 }
 
 void glExtGetRenderbuffersQCOM(GLuint *renderbuffers, GLint maxRenderbuffers, GLint *numRenderbuffers)
 {
+    static __typeof__(&glExtGetRenderbuffersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetRenderbuffersQCOM))ps5_gl_resolve("glExtGetRenderbuffersQCOM");
+    if (real) {
+        real(renderbuffers, maxRenderbuffers, numRenderbuffers);
+        return;
+    }
 }
 
 void glExtGetFramebuffersQCOM(GLuint *framebuffers, GLint maxFramebuffers, GLint *numFramebuffers)
 {
+    static __typeof__(&glExtGetFramebuffersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetFramebuffersQCOM))ps5_gl_resolve("glExtGetFramebuffersQCOM");
+    if (real) {
+        real(framebuffers, maxFramebuffers, numFramebuffers);
+        return;
+    }
 }
 
 void glExtGetTexLevelParameterivQCOM(GLuint texture, GLenum face, GLint level, GLenum pname, GLint *params)
 {
+    static __typeof__(&glExtGetTexLevelParameterivQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetTexLevelParameterivQCOM))ps5_gl_resolve("glExtGetTexLevelParameterivQCOM");
+    if (real) {
+        real(texture, face, level, pname, params);
+        return;
+    }
 }
 
 void glExtTexObjectStateOverrideiQCOM(GLenum target, GLenum pname, GLint param)
 {
+    static __typeof__(&glExtTexObjectStateOverrideiQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtTexObjectStateOverrideiQCOM))ps5_gl_resolve("glExtTexObjectStateOverrideiQCOM");
+    if (real) {
+        real(target, pname, param);
+        return;
+    }
 }
 
 void glExtGetTexSubImageQCOM(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, void *texels)
 {
+    static __typeof__(&glExtGetTexSubImageQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetTexSubImageQCOM))ps5_gl_resolve("glExtGetTexSubImageQCOM");
+    if (real) {
+        real(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, texels);
+        return;
+    }
 }
 
 void glExtGetBufferPointervQCOM(GLenum target, void **params)
 {
+    static __typeof__(&glExtGetBufferPointervQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetBufferPointervQCOM))ps5_gl_resolve("glExtGetBufferPointervQCOM");
+    if (real) {
+        real(target, params);
+        return;
+    }
 }
 
 void glExtGetShadersQCOM(GLuint *shaders, GLint maxShaders, GLint *numShaders)
 {
+    static __typeof__(&glExtGetShadersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetShadersQCOM))ps5_gl_resolve("glExtGetShadersQCOM");
+    if (real) {
+        real(shaders, maxShaders, numShaders);
+        return;
+    }
 }
 
 void glExtGetProgramsQCOM(GLuint *programs, GLint maxPrograms, GLint *numPrograms)
 {
+    static __typeof__(&glExtGetProgramsQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetProgramsQCOM))ps5_gl_resolve("glExtGetProgramsQCOM");
+    if (real) {
+        real(programs, maxPrograms, numPrograms);
+        return;
+    }
 }
 
 GLboolean glExtIsProgramBinaryQCOM(GLuint program)
 {
+    static __typeof__(&glExtIsProgramBinaryQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtIsProgramBinaryQCOM))ps5_gl_resolve("glExtIsProgramBinaryQCOM");
+    if (real) {
+        return real(program);
+    }
     return 0;
 }
 
 void glExtGetProgramBinarySourceQCOM(GLuint program, GLenum shadertype, GLchar *source, GLint *length)
 {
+    static __typeof__(&glExtGetProgramBinarySourceQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtGetProgramBinarySourceQCOM))ps5_gl_resolve("glExtGetProgramBinarySourceQCOM");
+    if (real) {
+        real(program, shadertype, source, length);
+        return;
+    }
 }
 
 void glExtrapolateTex2DQCOM(GLuint src1, GLuint src2, GLuint output, GLfloat scaleFactor)
 {
+    static __typeof__(&glExtrapolateTex2DQCOM) real;
+    if (!real)
+        real = (__typeof__(&glExtrapolateTex2DQCOM))ps5_gl_resolve("glExtrapolateTex2DQCOM");
+    if (real) {
+        real(src1, src2, output, scaleFactor);
+        return;
+    }
 }
 
 void glFramebufferFoveationConfigQCOM(GLuint framebuffer, GLuint numLayers, GLuint focalPointsPerLayer, GLuint requestedFeatures, GLuint *providedFeatures)
 {
+    static __typeof__(&glFramebufferFoveationConfigQCOM) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferFoveationConfigQCOM))ps5_gl_resolve("glFramebufferFoveationConfigQCOM");
+    if (real) {
+        real(framebuffer, numLayers, focalPointsPerLayer, requestedFeatures, providedFeatures);
+        return;
+    }
 }
 
 void glFramebufferFoveationParametersQCOM(GLuint framebuffer, GLuint layer, GLuint focalPoint, GLfloat focalX, GLfloat focalY, GLfloat gainX, GLfloat gainY, GLfloat foveaArea)
 {
+    static __typeof__(&glFramebufferFoveationParametersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferFoveationParametersQCOM))ps5_gl_resolve("glFramebufferFoveationParametersQCOM");
+    if (real) {
+        real(framebuffer, layer, focalPoint, focalX, focalY, gainX, gainY, foveaArea);
+        return;
+    }
 }
 
 void glTexEstimateMotionQCOM(GLuint ref, GLuint target, GLuint output)
 {
+    static __typeof__(&glTexEstimateMotionQCOM) real;
+    if (!real)
+        real = (__typeof__(&glTexEstimateMotionQCOM))ps5_gl_resolve("glTexEstimateMotionQCOM");
+    if (real) {
+        real(ref, target, output);
+        return;
+    }
 }
 
 void glTexEstimateMotionRegionsQCOM(GLuint ref, GLuint target, GLuint output, GLuint mask)
 {
+    static __typeof__(&glTexEstimateMotionRegionsQCOM) real;
+    if (!real)
+        real = (__typeof__(&glTexEstimateMotionRegionsQCOM))ps5_gl_resolve("glTexEstimateMotionRegionsQCOM");
+    if (real) {
+        real(ref, target, output, mask);
+        return;
+    }
 }
 
 void glFramebufferFetchBarrierQCOM(void)
 {
+    static __typeof__(&glFramebufferFetchBarrierQCOM) real;
+    if (!real)
+        real = (__typeof__(&glFramebufferFetchBarrierQCOM))ps5_gl_resolve("glFramebufferFetchBarrierQCOM");
+    if (real) {
+        real();
+        return;
+    }
 }
 
 void glShadingRateQCOM(GLenum rate)
 {
+    static __typeof__(&glShadingRateQCOM) real;
+    if (!real)
+        real = (__typeof__(&glShadingRateQCOM))ps5_gl_resolve("glShadingRateQCOM");
+    if (real) {
+        real(rate);
+        return;
+    }
 }
 
 void glTextureFoveationParametersQCOM(GLuint texture, GLuint layer, GLuint focalPoint, GLfloat focalX, GLfloat focalY, GLfloat gainX, GLfloat gainY, GLfloat foveaArea)
 {
+    static __typeof__(&glTextureFoveationParametersQCOM) real;
+    if (!real)
+        real = (__typeof__(&glTextureFoveationParametersQCOM))ps5_gl_resolve("glTextureFoveationParametersQCOM");
+    if (real) {
+        real(texture, layer, focalPoint, focalX, focalY, gainX, gainY, foveaArea);
+        return;
+    }
 }
 
 void glStartTilingQCOM(GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask)
 {
+    static __typeof__(&glStartTilingQCOM) real;
+    if (!real)
+        real = (__typeof__(&glStartTilingQCOM))ps5_gl_resolve("glStartTilingQCOM");
+    if (real) {
+        real(x, y, width, height, preserveMask);
+        return;
+    }
 }
 
 void glEndTilingQCOM(GLbitfield preserveMask)
 {
+    static __typeof__(&glEndTilingQCOM) real;
+    if (!real)
+        real = (__typeof__(&glEndTilingQCOM))ps5_gl_resolve("glEndTilingQCOM");
+    if (real) {
+        real(preserveMask);
+        return;
+    }
 }
-

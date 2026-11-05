@@ -507,6 +507,12 @@ int main(int argc, char** argv) {
       if (stat((std::string(kPs5DataDir) + "/gpu").c_str(), &st) == 0) {
         const int g = ps5_glslim_selftest();
         log_printf("main: GPU self-test %s (glslim.txt)", g == 0 ? "passed" : "FAILED");
+        // WebKit makes its GL display only after a self-test that really
+        // drew (a second process can get an empty grant whose init still
+        // "succeeds"); otherwise it stays on the raster path.
+        if (g == 0) {
+          setenv("PROSPEROWEB_GPU_READY", "1", 1);
+        }
       }
     }
     start_cpu_monitor();

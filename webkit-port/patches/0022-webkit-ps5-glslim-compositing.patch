@@ -1,0 +1,694 @@
+PS5: GPU compositing on Sony's GLES library (libSceGLSlimVSH)
+
+Applies after every earlier patch (it also touches files of 0013).
+The shell starts GLSlim in the WebProcess (src/ps5/glslim) and sets
+PROSPEROWEB_GPU_READY=1; WebProcessPlayStation then makes a shared display
+on it. GLContext uses pbuffer contexts (GLSlim cannot make a surfaceless one
+current) and ends frames with the shell's frame end. TextureMapper's programs
+come from the console's own precompiled binaries (no GLSL compiler). The
+compositor draws into an FBO; each frame is read back and sent to the UI
+process as an ordinary Update, which it acknowledges with DisplayDidRefresh,
+so the UI process and WKPagePaint are unchanged.
+
+diff --git a/Source/WebCore/platform/graphics/egl/GLContext.cpp b/Source/WebCore/platform/graphics/egl/GLContext.cpp
+index 6b748ca..2082cb8 100644
+--- a/Source/WebCore/platform/graphics/egl/GLContext.cpp
++++ b/Source/WebCore/platform/graphics/egl/GLContext.cpp
+@@ -38,6 +38,13 @@
+ #include <GLES2/gl2ext.h>
+ #endif
+ 
++#if defined(PS5_HOMEBREW)
++// PS5 (Sony's GLES library, libSceGLSlimVSH): eglSwapBuffers is the frame
++// boundary, and the frame only reaches the GPU with the shell's frame end
++// (src/ps5/glslim: swap, flush, wait for the frame's GPU label).
++extern "C" long ps5_glslim_frame_end(void* display, void* surface) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
+ WTF_MAKE_TZONE_ALLOCATED_IMPL(GLContext);
+@@ -219,7 +226,11 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
+         return nullptr;
+     }
+ 
++#if defined(PS5_HOMEBREW)
++    static const int pbufferAttributes[] = { EGL_WIDTH, 64, EGL_HEIGHT, 64, EGL_NONE }; // the size proven on the console
++#else
+     static const int pbufferAttributes[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
++#endif
+     EGLSurface surface = eglCreatePbufferSurface(eglDisplay, config, pbufferAttributes);
+     if (surface == EGL_NO_SURFACE) {
+         RELEASE_LOG_INFO(Compositing, "Cannot create EGL Pbuffer surface: %s\n", lastErrorString());
+@@ -232,6 +243,12 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
+ 
+ std::unique_ptr<GLContext> GLContext::createOffscreenContext(GLDisplay& display, Target target, EGLContext sharingContext)
+ {
++#if defined(PS5_HOMEBREW)
++    // Sony's GLES library makes a context current only with a surface
++    // (surfaceless: EGL_BAD_MATCH), and its swap is the frame boundary.
++    UNUSED_PARAM(target);
++    return createPbufferContext(display, sharingContext);
++#else
+     if (auto context = createSurfacelessContext(display, target, sharingContext))
+         return context;
+ 
+@@ -259,6 +276,7 @@ std::unique_ptr<GLContext> GLContext::createOffscreenContext(GLDisplay& display,
+ 
+     RELEASE_LOG_INFO(Compositing, "Could not create Pbuffer context: %s.", lastErrorString());
+     return nullptr;
++#endif
+ }
+ 
+ std::unique_ptr<GLContext> GLContext::create(GLDisplay& display, Target target, GLContext* sharingGLContext, GLNativeWindowType window)
+@@ -575,8 +593,15 @@ void GLContext::swapBuffers()
+     if (m_surface == EGL_NO_SURFACE)
+         return;
+ 
+-    if (auto display = m_display.get())
++    if (auto display = m_display.get()) {
++#if defined(PS5_HOMEBREW)
++        if (ps5_glslim_frame_end) {
++            ps5_glslim_frame_end(display->eglDisplay(), m_surface);
++            return;
++        }
++#endif
+         eglSwapBuffers(display->eglDisplay(), m_surface);
++    }
+ }
+ 
+ GCGLContext GLContext::platformContext() const
+diff --git a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h
+index f4510ce..fa1d740 100644
+--- a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h
++++ b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.h
+@@ -135,6 +135,12 @@ public:
+ 
+ private:
+     TextureMapperShaderProgram(const String& vertexShaderSource, const String& fragmentShaderSource);
++#if defined(PS5_HOMEBREW)
++    // Sony's GLES library has no shader compiler: programs come from the
++    // console's own precompiled TextureMapper binaries (see the .cpp).
++    TextureMapperShaderProgram(std::span<const uint8_t> vertexBinary, std::span<const uint8_t> fragmentBinary);
++    static RefPtr<TextureMapperShaderProgram> createFromBinaries(Options);
++#endif
+ 
+     GLuint m_vertexShader;
+     GLuint m_fragmentShader;
+diff --git a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
+index 9cc95ad..bc10fdb 100644
+--- a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
++++ b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
+@@ -28,6 +28,11 @@
+ #include "Logging.h"
+ #include <wtf/text/StringBuilder.h>
+ 
++#if defined(PS5_HOMEBREW)
++#include <cstdio>
++#include <cstdlib>
++#endif
++
+ namespace WebCore {
+ 
+ static inline bool compositingLogEnabled()
+@@ -689,6 +694,11 @@ static const char* fragmentTemplateCommon =
+ 
+ Ref<TextureMapperShaderProgram> TextureMapperShaderProgram::create(TextureMapperShaderProgram::Options options)
+ {
++#if defined(PS5_HOMEBREW)
++    if (auto program = createFromBinaries(options))
++        return program.releaseNonNull();
++#endif
++
+ #define SET_APPLIER_FROM_OPTIONS(Applier) \
+     optionsApplierBuilder.append(\
+         (options & TextureMapperShaderProgram::Applier) ? unsafeSpan(ENABLE_APPLIER(Applier)) : unsafeSpan(DISABLE_APPLIER(Applier)))
+@@ -849,6 +859,121 @@ TextureMapperShaderProgram::TextureMapperShaderProgram(const String& vertex, con
+     LOG(Compositing, "Program log: %s\n", getProgramLog(m_id));
+ }
+ 
++#if defined(PS5_HOMEBREW)
++// PS5: Sony's GLES library (libSceGLSlimVSH) has no GLSL compiler. Its
++// glShaderBinary takes the TextureMapper programs Sony's own WebKit ships
++// precompiled (libSceNKWebKitRequirements.sprx, set 616): v<options>.vert /
++// f<options>.frag for common option sets, and an "uber" pair for the rest,
++// which reads the options from u_optionsMatrix. Their option numbers are this
++// class's Option bits. The binaries are the console's own and are not
++// distributed: they are read from $PROSPEROWEB_SHADER_DIR (default
++// /data/prosperoweb/shaders/616_texmap_<name>.bin).
++extern "C" void ps5_glslim_log(const char*, ...) __attribute__((weak));
++
++static Vector<uint8_t> readShaderBinary(const char* name)
++{
++    const char* dir = getenv("PROSPEROWEB_SHADER_DIR");
++    char path[256];
++    snprintf(path, sizeof path, "%s/616_texmap_%s.bin", dir && *dir ? dir : "/data/prosperoweb/shaders", name);
++    Vector<uint8_t> data;
++    FILE* file = fopen(path, "rb");
++    if (!file)
++        return data;
++    uint8_t buffer[4096];
++    size_t count;
++    while ((count = fread(buffer, 1, sizeof buffer, file)) > 0)
++        data.append(std::span<const uint8_t> { buffer, count });
++    fclose(file);
++    return data;
++}
++
++RefPtr<TextureMapperShaderProgram> TextureMapperShaderProgram::createFromBinaries(Options options)
++{
++    // What the uber shader can switch, in u_optionsMatrix order (libSceNKWebKit
++    // 13.60, 0x10f4f59). Slot 9 (ContrastFilter) is always 0 there.
++    static constexpr Option uberOrder[16] = {
++        TextureRGB, SolidColor, Opacity, Antialiasing, GrayscaleFilter, SepiaFilter, SaturateFilter, HueRotateFilter,
++        BrightnessFilter, ContrastFilter, InvertFilter, OpacityFilter, BlurFilter, AlphaBlur, ContentTexture, RoundedRectClip
++    };
++    unsigned bits = options.toRaw();
++    const unsigned asked = bits;
++    // A copy is a plain textured draw (u_textureColorSpaceMatrix defaults to
++    // identity below).
++    if (bits & TextureCopy)
++        bits = (bits & ~TextureCopy) | TextureRGB;
++    // Not in Sony's set: dropped (edge clamping, unpremultiplied sources,
++    // manual repeat without NPOT, the newer shadow path).
++    bits &= ~(ClampUVBounds | Premultiply | ManualRepeat | AlphaToShadow);
++
++    char vertexName[32], fragmentName[32];
++    snprintf(vertexName, sizeof vertexName, "v%u.vert", bits);
++    snprintf(fragmentName, sizeof fragmentName, "f%u.frag", bits);
++    auto vertex = readShaderBinary(vertexName);
++    auto fragment = readShaderBinary(fragmentName);
++    bool uber = vertex.isEmpty() || fragment.isEmpty();
++    unsigned uberBits = 0;
++    if (uber) {
++        vertex = readShaderBinary("uber.vert");
++        fragment = readShaderBinary("uber.frag");
++        for (unsigned i = 0; i < 16; ++i) {
++            if (i != 9)
++                uberBits |= bits & uberOrder[i];
++        }
++    }
++    if (vertex.isEmpty() || fragment.isEmpty()) {
++        if (ps5_glslim_log)
++            ps5_glslim_log("texmap: no shader binaries for options %#x (%s)", asked, uber ? "uber missing" : "exact missing");
++        return nullptr;
++    }
++
++    auto program = adoptRef(*new TextureMapperShaderProgram(vertex.span(), fragment.span()));
++    GLint linked = 0;
++    glGetProgramiv(program->m_id, GL_LINK_STATUS, &linked);
++    if (ps5_glslim_log) {
++        ps5_glslim_log("texmap: options %#x -> %s %#x, linked %d%s", asked, uber ? "uber" : "exact", uber ? uberBits : bits, linked,
++            (uber && uberBits != bits) || bits != (asked & ~TextureCopy & ~(ClampUVBounds | Premultiply | ManualRepeat | AlphaToShadow)) ? ", some options DROPPED" : "");
++    }
++    if (!linked)
++        return nullptr;
++
++    // Defaults for what TextureMapper does not set on every path.
++    glUseProgram(program->m_id);
++    static const float identity[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
++    GLint location = glGetUniformLocation(program->m_id, "u_textureColorSpaceMatrix");
++    if (location >= 0)
++        glUniformMatrix4fv(location, 1, GL_FALSE, identity);
++    location = glGetUniformLocation(program->m_id, "u_textureSpaceMatrix");
++    if (location >= 0)
++        glUniformMatrix4fv(location, 1, GL_FALSE, identity);
++    location = glGetUniformLocation(program->m_id, "u_opacity");
++    if (location >= 0)
++        glUniform1f(location, 1);
++    if (uber) {
++        float flags[16];
++        for (unsigned i = 0; i < 16; ++i)
++            flags[i] = (i != 9 && (uberBits & uberOrder[i])) ? 1.f : 0.f;
++        location = glGetUniformLocation(program->m_id, "u_optionsMatrix");
++        if (location >= 0)
++            glUniformMatrix4fv(location, 1, GL_FALSE, flags);
++    }
++    return program;
++}
++
++TextureMapperShaderProgram::TextureMapperShaderProgram(std::span<const uint8_t> vertex, std::span<const uint8_t> fragment)
++{
++    // The binary format is the shader's own type, as Sony's WebKit passes it.
++    m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
++    glShaderBinary(1, &m_vertexShader, GL_VERTEX_SHADER, vertex.data(), static_cast<GLsizei>(vertex.size()));
++    m_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
++    glShaderBinary(1, &m_fragmentShader, GL_FRAGMENT_SHADER, fragment.data(), static_cast<GLsizei>(fragment.size()));
++    m_id = glCreateProgram();
++    glAttachShader(m_id, m_vertexShader);
++    glAttachShader(m_id, m_fragmentShader);
++    glBindAttribLocation(m_id, 0, "a_vertex");
++    glLinkProgram(m_id);
++}
++#endif
++
+ TextureMapperShaderProgram::~TextureMapperShaderProgram()
+ {
+     if (!m_id)
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
+index 4291652..aac7d29 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
+@@ -82,8 +82,28 @@ public:
+ 
+     void visibilityDidChange(bool);
+     void backgroundColorDidChange();
++#if defined(PS5_HOMEBREW)
++    // Main thread: the UI process incorporated the last frame we sent.
++    void ps5DisplayDidRefresh();
++#endif
+ 
+ private:
++#if defined(PS5_HOMEBREW)
++    // PS5 (no window system): the compositor draws into an FBO; each frame is
++    // read back and sent to the UI process as an ordinary Update (a bitmap),
++    // the same message the non-composited path sends. The next frame starts
++    // when the UI process has taken it (or after a timeout).
++    void ps5EnsureFramebuffer(const WebCore::IntSize&);
++    void ps5ReadBackAndSend();
++    void ps5AckTimedOut();
++    unsigned m_ps5Framebuffer { 0 };
++    unsigned m_ps5Texture { 0 };
++    WebCore::IntSize m_ps5Size;
++    Vector<uint8_t> m_ps5Pixels;
++    RefPtr<RunLoop> m_ps5RunLoop;
++    std::unique_ptr<RunLoop::Timer> m_ps5AckTimer;
++    std::atomic<bool> m_ps5WaitingForUI { false };
++#endif
+     AcceleratedSurface(WebPage&, Function<void()>&& frameCompleteHandler);
+ 
+     void frameDone();
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
+index 28ef84d..766b8c2 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
+@@ -55,11 +55,135 @@
+ #include <wtf/UniStdExtras.h>
+ #endif
+ 
++#if defined(PS5_HOMEBREW)
++#include "DrawingAreaCoordinatedGraphics.h"
++#include "UpdateInfo.h"
++#include <cstdlib>
++#include <wtf/MonotonicTime.h>
++extern "C" void ps5_glslim_log(const char*, ...) __attribute__((weak));
++#endif
++
+ namespace WebKit {
+ using namespace WebCore;
+ 
+ WTF_MAKE_TZONE_ALLOCATED_IMPL(AcceleratedSurface);
+ 
++#if defined(PS5_HOMEBREW)
++static constexpr Seconds ps5AckTimeout = 200_ms;
++
++void AcceleratedSurface::ps5EnsureFramebuffer(const IntSize& size)
++{
++    if (m_ps5Framebuffer && m_ps5Size == size)
++        return;
++    if (!m_ps5Framebuffer)
++        glGenFramebuffers(1, &m_ps5Framebuffer);
++    if (!m_ps5Texture)
++        glGenTextures(1, &m_ps5Texture);
++    glBindTexture(GL_TEXTURE_2D, m_ps5Texture);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
++    glBindTexture(GL_TEXTURE_2D, 0);
++    glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
++    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ps5Texture, 0);
++    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
++    m_ps5Size = size;
++    m_ps5Pixels.resize(static_cast<size_t>(size.width()) * size.height() * 4);
++    if (ps5_glslim_log)
++        ps5_glslim_log("surface: framebuffer %dx%d, status %#x, error %#x", size.width(), size.height(), status, glGetError());
++}
++
++void AcceleratedSurface::ps5ReadBackAndSend()
++{
++    // The frame is on the GPU and finished: GLContext::swapBuffers ran the
++    // shell's frame end (flush + wait for the frame's GPU label).
++    const auto size = m_ps5Size;
++    const MonotonicTime start = MonotonicTime::now();
++    glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
++    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_ps5Pixels.mutableSpan().data());
++    const MonotonicTime readDone = MonotonicTime::now();
++
++    auto bitmap = ShareableBitmap::create({ size });
++    if (!bitmap) {
++        frameDone();
++        return;
++    }
++    // GL rows are RGBA; the bitmap is Skia's N32 (BGRA in memory). The
++    // compositor drew with flipY, so row 0 is the top of the page
++    // (PROSPEROWEB_GPU_FLIP=1 reverses that if a build gets it wrong).
++    static const bool flip = [] {
++        const char* value = getenv("PROSPEROWEB_GPU_FLIP");
++        return value && *value == '1';
++    }();
++    auto destination = bitmap->mutableSpan();
++    const unsigned destinationStride = bitmap->bytesPerRow();
++    const unsigned sourceStride = size.width() * 4;
++    for (int y = 0; y < size.height(); ++y) {
++        const uint8_t* source = m_ps5Pixels.span().data() + static_cast<size_t>(flip ? size.height() - 1 - y : y) * sourceStride;
++        uint32_t* row = reinterpret_cast<uint32_t*>(destination.data() + static_cast<size_t>(y) * destinationStride);
++        const uint32_t* in = reinterpret_cast<const uint32_t*>(source);
++        for (int x = 0; x < size.width(); ++x) {
++            const uint32_t p = in[x]; // bytes R G B A
++            row[x] = (p & 0xff00ff00u) | ((p & 0xffu) << 16) | ((p >> 16) & 0xffu);
++        }
++    }
++    auto handle = bitmap->createHandle();
++    if (!handle) {
++        frameDone();
++        return;
++    }
++
++    static unsigned frames;
++    static double readMs, swizzleMs;
++    readMs += (readDone - start).milliseconds();
++    swizzleMs += (MonotonicTime::now() - readDone).milliseconds();
++    if (++frames % 120 == 1 && ps5_glslim_log) {
++        ps5_glslim_log("surface: frame %u %dx%d, readback avg %.2f ms, swizzle avg %.2f ms", frames, size.width(), size.height(),
++            readMs / frames, swizzleMs / frames);
++    }
++
++    m_ps5WaitingForUI = true;
++    if (m_ps5AckTimer)
++        m_ps5AckTimer->startOneShot(ps5AckTimeout);
++    RunLoop::mainSingleton().dispatch([this, protectedThis = Ref { *this }, handle = WTF::move(*handle), size]() mutable {
++        Ref webPage = m_webPage.get();
++        RefPtr drawingArea = webPage->drawingArea();
++        if (!drawingArea)
++            return;
++        UpdateInfo updateInfo;
++        updateInfo.viewSize = webPage->size();
++        updateInfo.deviceScaleFactor = webPage->deviceScaleFactor();
++        updateInfo.updateRectBounds = IntRect(IntPoint(), updateInfo.viewSize);
++        updateInfo.updateRects.append(updateInfo.updateRectBounds);
++        updateInfo.bitmapHandle = WTF::move(handle);
++        UNUSED_PARAM(size);
++        static_cast<DrawingAreaCoordinatedGraphics&>(*drawingArea).ps5SendCompositedUpdate(WTF::move(updateInfo));
++    });
++}
++
++void AcceleratedSurface::ps5DisplayDidRefresh()
++{
++    ASSERT(RunLoop::isMain());
++    if (!m_ps5WaitingForUI.exchange(false))
++        return;
++    if (!m_ps5RunLoop)
++        return;
++    m_ps5RunLoop->dispatch([this, protectedThis = Ref { *this }] {
++        if (m_ps5AckTimer)
++            m_ps5AckTimer->stop();
++        frameDone();
++    });
++}
++
++void AcceleratedSurface::ps5AckTimedOut()
++{
++    if (m_ps5WaitingForUI.exchange(false))
++        frameDone();
++}
++#endif
++
+ static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
+ {
+     return color[3] == WebCore::AlphaTraits<float>::opaque;
+@@ -340,6 +464,10 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+ 
+ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+ {
++#if defined(PS5_HOMEBREW)
++    m_ps5RunLoop = &runLoop;
++    m_ps5AckTimer = makeUnique<RunLoop::Timer>(runLoop, "AcceleratedSurface::PS5AckTimer"_s, this, &AcceleratedSurface::ps5AckTimedOut);
++#endif
+ #if USE(WPE_RENDERER)
+     if (m_swapChain.type() == SwapChain::Type::WPEBackend)
+         return;
+@@ -354,6 +482,10 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+ void AcceleratedSurface::willDestroyCompositingRunLoop()
+ {
+     m_frameCompleteHandler = nullptr;
++#if defined(PS5_HOMEBREW)
++    m_ps5AckTimer = nullptr;
++    m_ps5RunLoop = nullptr;
++#endif
+ 
+ #if USE(WPE_RENDERER)
+     if (m_swapChain.type() == SwapChain::Type::WPEBackend)
+@@ -366,6 +498,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+ void AcceleratedSurface::willDestroyGLContext()
+ {
+     m_swapChain.reset();
++#if defined(PS5_HOMEBREW)
++    if (m_ps5Framebuffer)
++        glDeleteFramebuffers(1, &m_ps5Framebuffer);
++    if (m_ps5Texture)
++        glDeleteTextures(1, &m_ps5Texture);
++    m_ps5Framebuffer = m_ps5Texture = 0;
++    m_ps5Size = { };
++#endif
+ }
+ 
+ uint64_t AcceleratedSurface::surfaceID() const
+@@ -384,6 +524,12 @@ uint64_t AcceleratedSurface::window() const
+ 
+ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+ {
++#if defined(PS5_HOMEBREW)
++    ps5EnsureFramebuffer(size);
++    glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
++    glViewport(0, 0, size.width(), size.height());
++    return;
++#else
+     bool sizeDidChange = m_swapChain.resize(size);
+ 
+     m_target = m_swapChain.nextTarget();
+@@ -392,6 +538,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+ 
+     if (sizeDidChange)
+         glViewport(0, 0, size.width(), size.height());
++#endif
+ }
+ 
+ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
+@@ -410,6 +557,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+ 
+ void AcceleratedSurface::didRenderFrame()
+ {
++#if defined(PS5_HOMEBREW)
++    if (m_ps5Framebuffer) {
++        ps5ReadBackAndSend();
++        return;
++    }
++#endif
+     if (!m_target)
+         return;
+ 
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h
+index 50b6451..9108ed8 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h
+@@ -71,6 +71,9 @@ public:
+     int maxTextureSize() const { return m_maxTextureSize; }
+ 
+     void backgroundColorDidChange();
++#if defined(PS5_HOMEBREW)
++    void ps5DisplayDidRefresh();
++#endif
+ 
+     void setSize(const WebCore::IntSize&, float);
+     uint32_t requestComposition();
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.cpp
+index 7f0cfd5..8f189fc 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.cpp
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.cpp
+@@ -201,6 +201,15 @@ void ThreadedCompositor::backgroundColorDidChange()
+     m_surface->backgroundColorDidChange();
+ }
+ 
++#if defined(PS5_HOMEBREW)
++void ThreadedCompositor::ps5DisplayDidRefresh()
++{
++    ASSERT(RunLoop::isMain());
++    if (m_surface)
++        m_surface->ps5DisplayDidRefresh();
++}
++#endif
++
+ void ThreadedCompositor::setSize(const IntSize& size, float deviceScaleFactor)
+ {
+     ASSERT(RunLoop::isMain());
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.h
+index d26c9bb..4b41e3c 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.h
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.h
+@@ -109,6 +109,11 @@ public:
+ 
+     void willRenderFrame();
+     void didRenderFrame();
++#if defined(PS5_HOMEBREW)
++    // The UI process took the last composited frame (it arrived as an
++    // Update): the compositor may render the next one.
++    void ps5DisplayDidRefresh();
++#endif
+ #if HAVE(DISPLAY_LINK)
+     void didComposite(uint32_t);
+ #endif
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.cpp
+index bbc7c4a..cac87d3 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.cpp
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/LayerTreeHostPlayStation.cpp
+@@ -466,6 +466,13 @@ void LayerTreeHost::willRenderFrame()
+         drawingArea->willStartRenderingUpdateDisplay();
+ }
+ 
++#if defined(PS5_HOMEBREW)
++void LayerTreeHost::ps5DisplayDidRefresh()
++{
++    m_compositor->ps5DisplayDidRefresh();
++}
++#endif
++
+ void LayerTreeHost::didRenderFrame()
+ {
+     if (RefPtr drawingArea = m_webPage.drawingArea())
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.h
+index ee23dc5..79ecc35 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.h
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.h
+@@ -49,6 +49,13 @@ public:
+ 
+     virtual ~DrawingAreaCoordinatedGraphics();
+ 
++#if defined(PS5_HOMEBREW)
++    // A frame the GPU compositor drew and read back (AcceleratedSurface on
++    // PS5): sent as an ordinary Update, so the UI process never leaves its
++    // bitmap path. Its DisplayDidRefresh paces the compositor.
++    void ps5SendCompositedUpdate(UpdateInfo&&);
++#endif
++
+ private:
+     DrawingAreaCoordinatedGraphics(WebPage&, const WebPageCreationParameters&);
+ 
+diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.cpp
+index e52a293..f6e8aae 100644
+--- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.cpp
++++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.cpp
+@@ -394,12 +394,26 @@ void DrawingAreaCoordinatedGraphics::updateGeometry(const IntSize& size, Complet
+     completionHandler();
+ }
+ 
++#if defined(PS5_HOMEBREW)
++void DrawingAreaCoordinatedGraphics::ps5SendCompositedUpdate(UpdateInfo&& updateInfo)
++{
++    if (!m_layerTreeHost)
++        return;
++    send(Messages::DrawingAreaProxy::Update(0, WTF::move(updateInfo)));
++}
++#endif
++
+ void DrawingAreaCoordinatedGraphics::displayDidRefresh(MonotonicTime)
+ {
+     // We might get didUpdate messages from the UI process even after we've
+     // entered accelerated compositing mode. Ignore them.
+-    if (m_layerTreeHost)
++    if (m_layerTreeHost) {
++#if defined(PS5_HOMEBREW)
++        // PS5: the composited frames travel as Updates; this is their ack.
++        m_layerTreeHost->ps5DisplayDidRefresh();
++#endif
+         return;
++    }
+ 
+     m_isWaitingForDidUpdate = false;
+ 
+@@ -505,6 +519,11 @@ void DrawingAreaCoordinatedGraphics::enterAcceleratedCompositingMode(GraphicsLay
+ 
+ void DrawingAreaCoordinatedGraphics::sendEnterAcceleratedCompositingModeIfNeeded()
+ {
++#if defined(PS5_HOMEBREW)
++    // PS5: the UI process stays on its bitmap path; composited frames reach
++    // it as Updates (ps5SendCompositedUpdate).
++    m_shouldSendEnterAcceleratedCompositingMode = false;
++#else
+     if (m_compositingAccordingToProxyMessages)
+         return;
+ 
+@@ -515,6 +534,7 @@ void DrawingAreaCoordinatedGraphics::sendEnterAcceleratedCompositingModeIfNeeded
+ 
+     send(Messages::DrawingAreaProxy::EnterAcceleratedCompositingMode(0, m_layerTreeHost->layerTreeContext()));
+     m_compositingAccordingToProxyMessages = true;
++#endif
+ }
+ 
+ void DrawingAreaCoordinatedGraphics::exitAcceleratedCompositingMode()
+diff --git a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp b/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
+index 6b675aa..70b8d45 100644
+--- a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
++++ b/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
+@@ -36,12 +36,38 @@
+ #endif
+ 
+ #if defined(PS5_HOMEBREW)
++#include <EGL/egl.h>
++#include <WebCore/GLDisplay.h>
+ #include <WebCore/PlatformDisplay.h>
+ #include <WebCore/ProcessCapabilities.h>
++#include <cstdlib>
+ #endif
+ 
+ namespace WebKit {
+ 
++#if defined(PS5_HOMEBREW)
++// Sony's GLES library (libSceGLSlimVSH), started by the shell before WebKit
++// (src/ps5/glslim, PROSPEROWEB_GPU_READY=1): an offscreen display for the
++// compositor. GLContext makes pbuffer contexts on it.
++class PlatformDisplayPS5 final : public WebCore::PlatformDisplay {
++public:
++    static std::unique_ptr<PlatformDisplayPS5> create()
++    {
++        auto glDisplay = WebCore::GLDisplay::create(eglGetDisplay(EGL_DEFAULT_DISPLAY));
++        if (!glDisplay)
++            return nullptr;
++        return std::unique_ptr<PlatformDisplayPS5>(new PlatformDisplayPS5(glDisplay.releaseNonNull()));
++    }
++
++private:
++    explicit PlatformDisplayPS5(Ref<WebCore::GLDisplay>&& glDisplay)
++        : PlatformDisplay(WTF::move(glDisplay))
++    {
++    }
++    Type type() const override { return Type::Surfaceless; }
++};
++#endif
++
+ void WebProcess::platformInitializeWebProcess(WebProcessCreationParameters& parameters)
+ {
+ #if USE(WPE_RENDERER)
+@@ -49,9 +75,18 @@ void WebProcess::platformInitializeWebProcess(WebProcessCreationParameters& para
+         WebCore::PlatformDisplay::setSharedDisplay(WebCore::PlatformDisplayLibWPE::create(parameters.hostClientFileDescriptor.release()));
+ #endif
+ #if defined(PS5_HOMEBREW)
+-    // No GL display: keep tiles and image buffers in system memory.
+-    if (!WebCore::PlatformDisplay::sharedDisplayIfExists())
+-        WebCore::ProcessCapabilities::setCanUseAcceleratedBuffers(false);
++    // GPU compositing on Sony's GLES library when the shell started it.
++    if (!WebCore::PlatformDisplay::sharedDisplayIfExists()) {
++        const char* ready = getenv("PROSPEROWEB_GPU_READY");
++        if (ready && *ready == '1') {
++            if (auto display = PlatformDisplayPS5::create())
++                WebCore::PlatformDisplay::setSharedDisplay(WTF::move(display));
++        }
++    }
++    // Layers are painted by Skia on the CPU either way (GLSlim has no shader
++    // compiler for Skia's GPU backend): tiles and image buffers stay in
++    // system memory and are uploaded as textures.
++    WebCore::ProcessCapabilities::setCanUseAcceleratedBuffers(false);
+ #endif
+     applyProcessCreationParameters(WTF::move(parameters.auxiliaryProcessParameters));
+ }

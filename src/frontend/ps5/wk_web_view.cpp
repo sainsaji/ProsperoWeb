@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <chrono>
 
+#include <sys/stat.h>
+
 #include <nlohmann/json.hpp>
 
 #include <WebKit/WKArray.h>
@@ -459,8 +461,16 @@ WkWebView::WkWebView(WKContextRef context, WKWebsiteDataStoreRef data_store,
 
   preferences_ = WKPreferencesCreate();
   WKPreferencesSetFullScreenEnabled(preferences_, fullscreen_enabled);
-  // Phase 1 is the non-accelerated raster path (WKPagePaint + SDL framebuffer).
-  WKPreferencesSetAcceleratedCompositingEnabled(preferences_, false);
+  // Raster path (WKPagePaint) by default. With /data/prosperoweb/gpu the
+  // WebProcess composites layers on the GPU (src/ps5/glslim) and its frames
+  // still arrive here as ordinary bitmaps; if its GPU start fails it stays on
+  // the raster path by itself (no shared display, patch 0013).
+  {
+    struct stat gpu_flag;
+    const bool gpu = stat("/data/prosperoweb/gpu", &gpu_flag) == 0;
+    WKPreferencesSetAcceleratedCompositingEnabled(preferences_, gpu);
+    log_printf("view %s: GPU compositing %s", name_.c_str(), gpu ? "requested" : "off");
+  }
   // PROSPEROWEB_CONSOLE_LOG=1: the WebProcess writes the page's console
   // messages to its stderr (stderr-<role>.txt with PROSPEROWEB_CHILD_STDERR).
   if (const char* console = std::getenv("PROSPEROWEB_CONSOLE_LOG"); console && !std::strcmp(console, "1")) {
