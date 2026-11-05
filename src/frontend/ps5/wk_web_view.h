@@ -145,6 +145,10 @@ class WkWebView {
   // Returns and clears the pending damage: every needs_display rect since
   // the last call, coalesced into a few rects (display::Region).
   display::Region take_dirty();
+  // WKPageSetPageZoomFactor: CSS pixels drawn at `factor` view pixels each
+  // (EVO #237 draws a 2x view into a 1x rect on its 4K output).
+  void set_page_zoom(double factor);
+
   // True when no damage is pending (take_dirty would return an empty region).
   bool dirty_empty() const { return dirty_.empty(); }
 

@@ -43,6 +43,10 @@ constexpr std::size_t kDamageTopRects = 4;
 // at most one frame per kIdleFrameMs (10/s).
 constexpr int kIdleAfterMs = 2000;
 constexpr int kIdleFrameMs = 100;
+// The largest view (and so the shared buffers), and the largest page scale.
+constexpr int kMaxW = 3840;
+constexpr int kMaxH = 2160;
+constexpr int kMaxScale = 2;
 
 }  // namespace
 
@@ -184,8 +188,12 @@ int EvoHost::run() {
 
   storage_ = std::make_unique<core::FileStorage>(kBaseDir);
   config_ = Ps5Config::load(*storage_);
-  cap_w_ = width_ = std::clamp(config_.width, 320, 3840);
-  cap_h_ = height_ = std::clamp(config_.height, 180, 2160);
+  width_ = std::clamp(config_.width, 320, kMaxW);
+  height_ = std::clamp(config_.height, 180, kMaxH);
+  // The buffers are made once, so they take the most a RESIZE can ask for:
+  // EVO's 2x page on its 3840x2160 output.
+  cap_w_ = kMaxW;
+  cap_h_ = kMaxH;
   if (!make_buffers()) {
     return 3;
   }
@@ -356,10 +364,12 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
     case EVOB_POINTER: {
       evob_pointer e{};
       if (!p.body(&e)) break;
+      // EVO speaks UI pixels; the view is scale_ times larger.
+      const int x = e.x * scale_, y = e.y * scale_;
       if (e.action == EVOB_PTR_MOVE) {
-        view_->pointer_move(e.x, e.y);
+        view_->pointer_move(x, y);
       } else if (e.button >= 1 && e.button <= 3) {
-        view_->pointer_button(e.x, e.y, static_cast<shell::MouseButton>(e.button),
+        view_->pointer_button(x, y, static_cast<shell::MouseButton>(e.button),
                               e.action == EVOB_PTR_DOWN);
       }
       break;
@@ -367,7 +377,7 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
     case EVOB_SCROLL: {
       evob_scroll s{};
       if (p.body(&s)) {
-        view_->scroll(s.x, s.y, s.dx, s.dy);
+        view_->scroll(s.x * scale_, s.y * scale_, s.dx * scale_, s.dy * scale_);
       }
       break;
     }
@@ -382,9 +392,12 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
       view_->insert_text(std::string(p.text()));
       break;
     case EVOB_RESIZE: {
+      // An older EVO sends width and height only: scale 1.
       evob_size s{};
-      if (p.body(&s)) {
-        resize(static_cast<int>(s.width), static_cast<int>(s.height));
+      if (p.len >= EVOB_SIZE_V1_BYTES) {
+        std::memcpy(&s, p.payload, std::min<std::size_t>(p.len, sizeof s));
+        resize(static_cast<int>(s.width), static_cast<int>(s.height),
+               static_cast<int>(s.scale));
       }
       break;
     }
@@ -412,10 +425,15 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
   }
 }
 
-void EvoHost::resize(int width, int height) {
-  width = std::clamp(width, 1, cap_w_);
-  height = std::clamp(height, 1, cap_h_);
-  if (width == width_ && height == height_) {
+void EvoHost::resize(int width, int height, int scale) {
+  scale = std::clamp(scale, 1, kMaxScale);
+  // The view must fit the buffers: drop to scale 1 for a page too big for 2x.
+  if (width * scale > cap_w_ || height * scale > cap_h_) {
+    scale = 1;
+  }
+  width = std::clamp(width * scale, 1, cap_w_);
+  height = std::clamp(height * scale, 1, cap_h_);
+  if (width == width_ && height == height_ && scale == scale_) {
     send_hello(false);  // EVO asked; answer with the same size
     return;
   }
@@ -425,7 +443,11 @@ void EvoHost::resize(int width, int height) {
   frames_.reset(width_, height_);
   force_full_ = true;
   view_->set_size(width_, height_);
-  log_printf("evo-host: page size %dx%d", width_, height_);
+  if (scale != scale_) {
+    scale_ = scale;
+    view_->web().set_page_zoom(static_cast<double>(scale_));
+  }
+  log_printf("evo-host: page size %dx%d (scale %d)", width_, height_, scale_);
   send_hello(false);
 }
 

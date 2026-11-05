@@ -793,6 +793,11 @@ void WkWebView::paint(unsigned char* argb, int width, int height,
   }
 }
 
+void WkWebView::set_page_zoom(double factor) {
+  WKPageSetPageZoomFactor(page_, factor);
+  log_printf("view %s: page zoom %.2f", name_.c_str(), factor);
+}
+
 display::Region WkWebView::take_dirty() {
   display::Region d = dirty_;
   dirty_.clear();

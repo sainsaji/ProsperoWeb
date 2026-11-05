@@ -79,7 +79,8 @@ class EvoHost final : public shell::EngineViewClient {
   static void frame_trampoline(void* self);
   void frame();
   void handle(const std::vector<std::uint8_t>& pkt);
-  void resize(int width, int height);
+  // width x height in EVO's UI pixels; the view is `scale` times that.
+  void resize(int width, int height, int scale);
   void paint_and_publish();
   void begin_exit(const char* why);
 
@@ -91,10 +92,11 @@ class EvoHost final : public shell::EngineViewClient {
   std::unique_ptr<shell::EngineView> view_holder_;
   Ps5EngineView* view_ = nullptr;
 
-  // The shared buffers: made once at the start size (the most a RESIZE can
-  // ask for), RGBA8 premultiplied, stride cap_w_ * 4.
-  int cap_w_ = 1920;
-  int cap_h_ = 1080;
+  // The shared buffers: made once at 3840x2160 (the most a RESIZE can ask
+  // for), RGBA8 premultiplied, stride cap_w_ * 4.
+  int cap_w_ = 3840;
+  int cap_h_ = 2160;
+  int scale_ = 1;  // view pixels per EVO UI pixel (and the page zoom)
   int shm_fd_[2] = {-1, -1};
   std::uint32_t* shm_[2] = {nullptr, nullptr};
   std::size_t shm_bytes_ = 0;
