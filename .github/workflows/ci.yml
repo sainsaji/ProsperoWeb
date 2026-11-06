@@ -120,8 +120,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Free disk space
-        run: scripts/ci/timed.sh "Free disk" scripts/ci/free-disk.sh
+      # Runs in the background while apt and the SDK install go on (they need
+      # little disk); "Wait for the disk cleanup" joins it before WebKit is
+      # fetched. It took 2m46s as a foreground step.
+      - name: Free disk space (background)
+        run: |
+          setsid nohup scripts/ci/timed.sh "Free disk" scripts/ci/free-disk.sh > "${RUNNER_TEMP}/free-disk.log" 2>&1 &
+          echo $! > "${RUNNER_TEMP}/free-disk.pid"
 
       - name: Install packages
         run: |
@@ -199,6 +204,13 @@ jobs:
           key: ${{ steps.deps-cache.outputs.cache-primary-key }}
 
       # --- WebKit ---------------------------------------------------------------
+      - name: Wait for the disk cleanup
+        run: |
+          pid="$(cat "${RUNNER_TEMP}/free-disk.pid")"
+          while kill -0 "${pid}" 2>/dev/null; do sleep 2; done
+          cat "${RUNNER_TEMP}/free-disk.log"
+          df -h /
+
       - name: Fetch WebKit and apply the patch set
         run: scripts/ci/timed.sh "WebKit fetch" scripts/ps5/fetch-webkit.sh
 
