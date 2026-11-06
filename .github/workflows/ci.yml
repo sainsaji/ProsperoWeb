@@ -94,7 +94,6 @@ jobs:
 
   ps5:
     name: PS5 build and package
-    needs: host
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     outputs:
@@ -288,7 +287,7 @@ jobs:
 
       - name: Native title
         id: native
-        if: hashFiles('scripts/ps5/native/make-title.sh') != ''
+        if: hashFiles('scripts/ps5/native/make-title.sh') != '' && github.ref_name != 'feat/evo-host'
         run: |
           # The 3840x2160 background is rendered, not committed.
           if [[ ! -f build-dist/assets/background-3840x2160.png ]]; then
