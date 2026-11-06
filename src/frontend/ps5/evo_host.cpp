@@ -495,10 +495,22 @@ void EvoHost::resize(int width, int height, int scale) {
   // GPU compositing (/data/prosperoweb/gpu) runs in Sony's 48 MB GLES grant:
   // a 2x page (3584x1888 target plus its tiles) does not fit and its layers
   // come out blank, so the page is composited at 1x and EVO scales it up.
-  // Mesa (/data/prosperoweb/mesa) starts at 1x too, until 2x is measured.
+  // Mesa (/data/prosperoweb/mesa) starts at 1x too, unless the file has the
+  // word "scale2".
   static const bool gpu = [] {
     struct stat flag;
-    return stat("/data/prosperoweb/gpu", &flag) == 0 || stat("/data/prosperoweb/mesa", &flag) == 0;
+    if (stat("/data/prosperoweb/gpu", &flag) == 0) {
+      return true;
+    }
+    const int fd = open("/data/prosperoweb/mesa", O_RDONLY);
+    if (fd < 0) {
+      return false;
+    }
+    char text[256] = {};
+    const ssize_t n = read(fd, text, sizeof text - 1);
+    close(fd);
+    text[n > 0 ? n : 0] = 0;
+    return std::strstr(text, "scale2") == nullptr;
   }();
   if (gpu) {
     scale = 1;
