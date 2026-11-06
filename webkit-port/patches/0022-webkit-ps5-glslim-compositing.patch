@@ -306,7 +306,7 @@ index 9cc95ad..ac3ff66 100644
  {
      if (!m_id)
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
-index 4291652..e515441 100644
+index 4291652..6dc620b 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
 @@ -32,6 +32,7 @@
@@ -317,7 +317,7 @@ index 4291652..e515441 100644
  #include <wtf/RunLoop.h>
  #include <wtf/TZoneMalloc.h>
  #include <wtf/ThreadSafeRefCounted.h>
-@@ -82,8 +83,51 @@ public:
+@@ -82,8 +83,61 @@ public:
  
      void visibilityDidChange(bool);
      void backgroundColorDidChange();
@@ -348,6 +348,15 @@ index 4291652..e515441 100644
 +    // so only what changed is sent (Mesa, unless "nodiff").
 +    Vector<uint8_t> m_ps5Previous;
 +    bool m_ps5HavePrevious { false };
++    // Whole-frame fast path (Mesa): when most of the page changes each frame
++    // the diff finds nothing to save, so the frame is flipped on the GPU and
++    // read back as BGRA straight into the bitmap that is sent. Every few
++    // frames the diff path runs again to see whether the damage got small.
++    unsigned m_ps5FlipFramebuffer { 0 };
++    unsigned m_ps5FlipTexture { 0 };
++    bool m_ps5WholeMode { false };
++    unsigned m_ps5ProbeCounter { 0 };
++    bool m_ps5FastOk { false };
 +    MonotonicTime m_ps5FrameStart;
 +    RefPtr<RunLoop> m_ps5RunLoop;
 +    std::unique_ptr<RunLoop::Timer> m_ps5AckTimer;
@@ -358,6 +367,7 @@ index 4291652..e515441 100644
 +        unsigned frames { 0 };
 +        unsigned sent { 0 };
 +        unsigned unchanged { 0 };
++        unsigned fast { 0 };
 +        unsigned paced { 0 };
 +        double sentPixels { 0 };
 +        double readMs { 0 };
@@ -370,10 +380,10 @@ index 4291652..e515441 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..721815c 100644
+index 28ef84d..5682ff3 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,300 @@
+@@ -55,11 +55,387 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -387,6 +397,7 @@ index 28ef84d..721815c 100644
 +extern "C" void ps5_glslim_log(const char*, ...) __attribute__((weak));
 +extern "C" void ps5_mesa_log(const char*, ...) __attribute__((weak));
 +extern "C" int ps5_mesa_active(void) __attribute__((weak));
++extern "C" void* ps5_mesa_proc(const char*) __attribute__((weak));
 +#endif
 +
  namespace WebKit {
@@ -407,6 +418,7 @@ index 28ef84d..721815c 100644
 +// two frames in ms (0: none). Read once.
 +struct PS5MesaOptions {
 +    bool diff { true };
++    bool fast { true };
 +    unsigned paceMs { 16 };
 +};
 +
@@ -423,6 +435,8 @@ index 28ef84d..721815c 100644
 +        }
 +        if (strstr(text, "nodiff"))
 +            o.diff = false;
++        if (strstr(text, "nofast"))
++            o.fast = false;
 +        if (const char* pace = strstr(text, "pace="))
 +            o.paceMs = static_cast<unsigned>(strtoul(pace + 5, nullptr, 10));
 +        return o;
@@ -490,6 +504,28 @@ index 28ef84d..721815c 100644
 +    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ps5Texture, 0);
 +    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 +    m_ps5Size = size;
++    m_ps5FastOk = false;
++    m_ps5WholeMode = false;
++    m_ps5ProbeCounter = 0;
++    if (ps5MesaActive() && ps5MesaOptions().fast && ps5_mesa_proc && ps5_mesa_proc("glBlitFramebuffer")) {
++        const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
++        if (ext && strstr(ext, "GL_EXT_read_format_bgra")) {
++            if (!m_ps5FlipFramebuffer)
++                glGenFramebuffers(1, &m_ps5FlipFramebuffer);
++            if (!m_ps5FlipTexture)
++                glGenTextures(1, &m_ps5FlipTexture);
++            glBindTexture(GL_TEXTURE_2D, m_ps5FlipTexture);
++            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
++            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
++            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
++            glBindTexture(GL_TEXTURE_2D, 0);
++            glBindFramebuffer(GL_FRAMEBUFFER, m_ps5FlipFramebuffer);
++            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ps5FlipTexture, 0);
++            m_ps5FastOk = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
++            glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
++        }
++        PS5_SURFACE_LOG("surface: whole-frame fast path %s", m_ps5FastOk ? "on" : "unavailable");
++    }
 +    m_ps5Pixels.resize(static_cast<size_t>(size.width()) * size.height() * 4);
 +    m_ps5Previous.resize(m_ps5Pixels.size());
 +    m_ps5HavePrevious = false;
@@ -523,9 +559,9 @@ index 28ef84d..721815c 100644
 +    if (now - s.since < 5_s)
 +        return;
 +    const double frames = std::max(1u, s.frames);
-+    PS5_SURFACE_LOG("surface: %.0fs %dx%d: %u frames, %u sent (avg %.1f kpx), %u unchanged, %u paced | avg ms: render %.2f readback %.2f diff %.2f copy %.2f",
++    PS5_SURFACE_LOG("surface: %.0fs %dx%d: %u frames, %u sent (avg %.1f kpx), %u unchanged, %u paced, %u whole-fast | avg ms: render %.2f readback %.2f diff %.2f copy %.2f",
 +        (now - s.since).seconds(), m_ps5Size.width(), m_ps5Size.height(), s.frames, s.sent, s.sent ? s.sentPixels / s.sent / 1000 : 0.0,
-+        s.unchanged, s.paced, s.renderMs / frames, s.readMs / frames, s.diffMs / frames, s.copyMs / frames);
++        s.unchanged, s.paced, s.fast, s.renderMs / frames, s.readMs / frames, s.diffMs / frames, s.copyMs / frames);
 +    s = { };
 +    s.since = now;
 +}
@@ -538,6 +574,58 @@ index 28ef84d..721815c 100644
 +    const MonotonicTime start = MonotonicTime::now();
 +    m_ps5Stats.frames++;
 +    m_ps5Stats.renderMs += (start - m_ps5FrameStart).milliseconds();
++
++    // Whole-frame fast path: no CPU diff, no CPU swizzle, no second copy.
++    // Every 8th frame (and the one after) goes the diff way to re-measure.
++    if (m_ps5FastOk && m_ps5WholeMode && (m_ps5ProbeCounter++ % 8) >= 2) {
++        auto fastBitmap = ShareableBitmap::create({ size });
++        if (fastBitmap && fastBitmap->bytesPerRow() == static_cast<unsigned>(size.width()) * 4) {
++            typedef void (*BlitFn)(int, int, int, int, int, int, int, int, unsigned, unsigned);
++            static const BlitFn blit = reinterpret_cast<BlitFn>(ps5_mesa_proc("glBlitFramebuffer"));
++            // GL_READ_FRAMEBUFFER 0x8CA8, GL_DRAW_FRAMEBUFFER 0x8CA9, COLOR_BUFFER_BIT 0x4000, NEAREST 0x2600
++            glBindFramebuffer(0x8CA8, m_ps5Framebuffer);
++            glBindFramebuffer(0x8CA9, m_ps5FlipFramebuffer);
++            blit(0, 0, size.width(), size.height(), 0, size.height(), size.width(), 0, 0x4000, 0x2600);
++            glBindFramebuffer(GL_FRAMEBUFFER, m_ps5FlipFramebuffer);
++            glReadPixels(0, 0, size.width(), size.height(), 0x80E1 /* GL_BGRA_EXT */, GL_UNSIGNED_BYTE, fastBitmap->mutableSpan().data());
++            glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
++            if (glGetError() == GL_NO_ERROR) {
++                const MonotonicTime fastDone = MonotonicTime::now();
++                m_ps5Stats.readMs += (fastDone - start).milliseconds();
++                if (auto fastHandle = fastBitmap->createHandle()) {
++                    m_ps5HavePrevious = false;
++                    m_ps5Stats.sent++;
++                    m_ps5Stats.fast++;
++                    m_ps5Stats.sentPixels += static_cast<double>(size.width()) * size.height();
++                    ps5LogStats(fastDone);
++                    const IntRect whole(IntPoint(), size);
++                    Vector<IntRect> wholeRects;
++                    wholeRects.append(whole);
++                    m_ps5WaitingForUI = true;
++                    if (m_ps5AckTimer)
++                        m_ps5AckTimer->startOneShot(ps5AckTimeout);
++                    RunLoop::mainSingleton().dispatch([this, protectedThis = Ref { *this }, handle = WTF::move(*fastHandle), whole, rects = WTF::move(wholeRects)]() mutable {
++                        Ref webPage = m_webPage.get();
++                        RefPtr drawingArea = webPage->drawingArea();
++                        if (!drawingArea)
++                            return;
++                        UpdateInfo updateInfo;
++                        updateInfo.viewSize = webPage->size();
++                        updateInfo.deviceScaleFactor = webPage->deviceScaleFactor();
++                        updateInfo.updateRectBounds = whole;
++                        for (const auto& rect : rects)
++                            updateInfo.updateRects.append(rect);
++                        updateInfo.bitmapHandle = WTF::move(handle);
++                        static_cast<DrawingAreaCoordinatedGraphics&>(*drawingArea).ps5SendCompositedUpdate(WTF::move(updateInfo));
++                    });
++                    return;
++                }
++            } else {
++                m_ps5FastOk = false; // this driver cannot do it: use the diff path from now on
++                PS5_SURFACE_LOG("surface: whole-frame fast path failed, off");
++            }
++        }
++    }
 +    glBindFramebuffer(GL_FRAMEBUFFER, m_ps5Framebuffer);
 +    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_ps5Pixels.mutableSpan().data());
 +    const MonotonicTime readDone = MonotonicTime::now();
@@ -576,6 +664,15 @@ index 28ef84d..721815c 100644
 +        rects.append(whole);
 +    const MonotonicTime diffDone = MonotonicTime::now();
 +    m_ps5Stats.diffMs += (diffDone - readDone).milliseconds();
++    if (m_ps5FastOk && diff) {
++        double changedArea = 0;
++        for (const auto& rect : rects)
++            changedArea += rect.width() * static_cast<double>(rect.height());
++        const bool mostly = changedArea > 0.5 * size.width() * size.height();
++        if (mostly != m_ps5WholeMode)
++            m_ps5ProbeCounter = 2;
++        m_ps5WholeMode = mostly;
++    }
 +
 +    if (rects.isEmpty()) {
 +        m_ps5Stats.unchanged++;
@@ -674,7 +771,7 @@ index 28ef84d..721815c 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +629,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +716,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -686,7 +783,7 @@ index 28ef84d..721815c 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +648,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +735,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -698,7 +795,7 @@ index 28ef84d..721815c 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +665,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +752,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -713,7 +810,7 @@ index 28ef84d..721815c 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +691,13 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +778,13 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -727,7 +824,7 @@ index 28ef84d..721815c 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +706,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +793,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -735,7 +832,7 @@ index 28ef84d..721815c 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +725,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +812,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
