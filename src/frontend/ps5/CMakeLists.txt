@@ -142,8 +142,11 @@ set(PROSPEROWEB_MESA_BUNDLE "${CMAKE_SOURCE_DIR}/third_party/mesa-bundle/ps5_mes
     CACHE FILEPATH "Mesa GPU bundle object (EVO Player tools/build_mesa_bundle.sh)")
 if(EXISTS "${PROSPEROWEB_MESA_BUNDLE}")
   message(STATUS "Mesa GPU bundle: ${PROSPEROWEB_MESA_BUNDLE}")
-  target_sources(prosperoweb PRIVATE "${CMAKE_SOURCE_DIR}/src/ps5/mesa/ps5_mesa.c")
-  target_link_libraries(prosperoweb PRIVATE "${PROSPEROWEB_MESA_BUNDLE}")
+  # A source object, not a link library: CMake repeats library items on the
+  # link line, and a repeated .o is a duplicate definition.
+  set_source_files_properties("${PROSPEROWEB_MESA_BUNDLE}" PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+  target_sources(prosperoweb PRIVATE "${CMAKE_SOURCE_DIR}/src/ps5/mesa/ps5_mesa.c"
+    "${PROSPEROWEB_MESA_BUNDLE}")
 else()
   message(STATUS "Mesa GPU bundle: not found (${PROSPEROWEB_MESA_BUNDLE}), WebProcess without Mesa")
 endif()
