@@ -55,6 +55,10 @@ KNOWN_WEAK_ZERO = {
     # native title simply has no GPU compositing.
     "ps5_glslim_log",
     "ps5_glslim_proc",
+    # Mesa over EVO Player's GPU broker (src/ps5/mesa), payload only; checked
+    # for null the same way.
+    "ps5_mesa_active",
+    "ps5_mesa_proc",
 }
 
 # Loaded for a native app at start-up (Stremio PS5 native/check_imports.py).
