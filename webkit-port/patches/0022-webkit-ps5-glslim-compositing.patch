@@ -1090,6 +1090,93 @@ index 4f7acf1..7b7c04d 100644
  
  } // namespace WebCore
  
+diff --git a/Source/WebCore/platform/graphics/skia/SkiaUtilities.cpp b/Source/WebCore/platform/graphics/skia/SkiaUtilities.cpp
+index de183ec..3d7ff5c 100644
+--- a/Source/WebCore/platform/graphics/skia/SkiaUtilities.cpp
++++ b/Source/WebCore/platform/graphics/skia/SkiaUtilities.cpp
+@@ -101,6 +101,12 @@ std::optional<unsigned> retrieveGLTextureID(const SkImage& image)
+ 
+ static std::unique_ptr<GLFence> createFenceAfterFlush(GrDirectContext* grContext)
+ {
++#if defined(PS5_HOMEBREW)
++    // Mesa on the PS5 (zink over the broker): wait for the GPU here instead of
++    // handing the compositor a fence it waits on from another context.
++    grContext->submit(GrSyncCpu::kYes);
++    return nullptr;
++#endif
+     auto& glDisplay = PlatformDisplay::sharedDisplay().glDisplay();
+     if (GLFence::isSupported(glDisplay)) {
+         grContext->submit(GrSyncCpu::kNo);
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
+index be1e387..40ea3f7 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
+@@ -32,8 +32,31 @@
+ #include "SkiaPaintingEngine.h"
+ #endif
+ 
++#if defined(PS5_HOMEBREW)
++#include <wtf/MonotonicTime.h>
++extern "C" void ps5_mesa_log(const char* fmt, ...) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
++#if defined(PS5_HOMEBREW)
++// What the compositor did with tile updates, logged every 5 s (mesa.txt).
++static void ps5CountTileUpdate(int kind)
++{
++    static unsigned counts[4];
++    static MonotonicTime last = MonotonicTime::now();
++    counts[kind]++;
++    auto now = MonotonicTime::now();
++    if ((now - last).seconds() >= 5 && ps5_mesa_log) {
++        ps5_mesa_log("tiles: 5s: %u whole-tile swaps, %u partial copies, %u without a texture, %u from the CPU", counts[0], counts[1], counts[2], counts[3]);
++        counts[0] = counts[1] = counts[2] = counts[3] = 0;
++        last = now;
++    }
++}
++#else
++static void ps5CountTileUpdate(int) { }
++#endif
++
+ CoordinatedBackingStoreTile::CoordinatedBackingStoreTile(float scale)
+     : m_scale(scale)
+ {
+@@ -93,7 +116,10 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+             WTFBeginSignpost(this, CopyTextureGPUToGPU);
+             auto& buffer = static_cast<CoordinatedAcceleratedTileBuffer&>(update.buffer.get());
+ 
+-            if (RefPtr texture = buffer.takeTexture()) {
++            RefPtr texture = buffer.takeTexture();
++            if (!texture)
++                ps5CountTileUpdate(2);
++            if (texture) {
+                 if (unscaledTileRect != m_rect) {
+                     m_rect = unscaledTileRect;
+                     m_texture = nullptr;
+@@ -102,11 +128,13 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+                 // Fast path: whole tile content changed -- take ownership of the incoming texture, replacing the existing tile buffer (avoiding texture copies).
+                 if (update.sourceRect.size() == update.tileRect.size()) {
+                     ASSERT(update.sourceRect.location().isZero());
++                    ps5CountTileUpdate(0);
+                     if (m_texture)
+                         m_texture->swapTexture(Ref { *texture });
+                     else
+                         m_texture = WTF::move(texture);
+                 } else {
++                    ps5CountTileUpdate(1);
+                     ensureTexture(update.tileRect.size(), buffer);
+                     m_texture->copyFromExternalTexture(texture->id(), update.sourceRect, toIntSize(update.bufferOffset));
+                 }
+@@ -119,6 +147,7 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+ #endif
+         auto& buffer = static_cast<CoordinatedUnacceleratedTileBuffer&>(update.buffer.get());
+         auto data = buffer.takeData();
++        ps5CountTileUpdate(3);
+         if (!data.isEmpty()) {
+             if (unscaledTileRect != m_rect) {
+                 m_rect = unscaledTileRect;
 diff --git a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp b/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
 index 6b675aa..9dda855 100644
 --- a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp

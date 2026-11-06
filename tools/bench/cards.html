@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProsperoWeb scroll bench</title>
+<!--
+  Offline scroll benchmark (EVO #237), with animations. article.html and cards.html are the same file (the page type comes from the file name). Serve this folder (python3 -m http.server 8123; file:// pages do not run scripts) and open it in the Web section, then drop
+  /data/prosperoweb/bench_go ("speed=800 secs=30 warm=3") on the console: the
+  host scrolls it with wheel events and every process reports its CPU for the
+  window. The page animates (spinner, marquee, shimmer, moving gradients, pulsing shadows, a canvas), so this measures painting and
+  compositing while scrolling and animating. Serve this folder over http (file:// pages do not run scripts); article.html and cards.html are the same file.
+    article.html         long text page: headings, paragraphs, floated images,
+                         tables, lists, quotes with rounded boxes and shadows
+    cards.html           store-like grid: gradient and shadowed rounded cards,
+                         icons, badges, translucent overlays
+  Text and colours come from a seeded generator, so every run draws the same.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0d1020; color: #d8dcef; font: 18px/1.55 "Noto Sans", sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; gap: 18px; align-items: center;
+    padding: 14px 28px; background: #151a33; border-bottom: 1px solid #2a3158;
+    box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+  header b { font-size: 22px; color: #fff; }
+  header span { color: #8fa0e0; }
+  main.article { max-width: 1100px; margin: 0 auto; padding: 24px 28px 600px; }
+  main.article h1 { font-size: 40px; margin: 12px 0 24px; }
+  main.article h2 { font-size: 28px; margin: 40px 0 12px; border-bottom: 1px solid #2a3158; padding-bottom: 6px; }
+  main.article p { margin: 0 0 14px; text-align: justify; }
+  main.article a { color: #7fb2ff; }
+  main.article figure { float: right; width: 300px; margin: 6px 0 14px 22px; padding: 8px;
+    background: #151a33; border: 1px solid #2a3158; border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,.45); }
+  main.article figure.l { float: left; margin: 6px 22px 14px 0; }
+  main.article figure div { height: 180px; border-radius: 6px; }
+  main.article figcaption { font-size: 14px; color: #9aa6d8; padding-top: 6px; }
+  main.article table { border-collapse: collapse; margin: 14px 0 22px; width: 100%; font-size: 16px; }
+  main.article td, main.article th { border: 1px solid #2a3158; padding: 6px 10px; text-align: left; }
+  main.article th { background: #1a2040; }
+  main.article blockquote { clear: both; margin: 18px 0; padding: 14px 20px; border-left: 5px solid #5a7cff;
+    background: linear-gradient(90deg,#1a2248,#10142b); border-radius: 0 12px 12px 0; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+  main.article ul { margin: 0 0 14px 22px; }
+  main.grid { padding: 24px 28px 600px; }
+  main.grid h2 { font-size: 26px; margin: 28px 0 14px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+  .card { position: relative; height: 230px; border-radius: 16px; overflow: hidden; padding: 14px;
+    border: 1px solid rgba(255,255,255,.12); box-shadow: 0 8px 22px rgba(0,0,0,.5); }
+  .card .ic { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+  .card .t { position: absolute; left: 14px; bottom: 40px; font-size: 20px; font-weight: 600; color: #fff; }
+  .card .s { position: absolute; left: 14px; bottom: 14px; font-size: 14px; color: #c8d0f0; }
+  .card .bd { position: absolute; right: 12px; top: 12px; padding: 3px 10px; border-radius: 999px;
+    background: rgba(0,0,0,.45); font-size: 13px; }
+  .card .gl { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.35)); }
+  /* Animations, a mix of what real pages run: transform/opacity ones the
+     compositor can do alone (spin, slide, fade, bob, shimmer, marquee) and
+     ones that repaint (moving gradients, pulsing shadows). */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(160px); } }
+  @keyframes fade { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+  @keyframes bob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.05); } }
+  @keyframes shimmer { from { transform: translateX(-130%); } to { transform: translateX(230%); } }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes bgmove { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(90,124,255,0); } 50% { box-shadow: 0 0 30px 10px rgba(90,124,255,.85); } }
+  .spinner { width: 26px; height: 26px; border-radius: 50%; border: 4px solid #2a3158; border-top-color: #7fb2ff; animation: spin .9s linear infinite; }
+  .bar { width: 220px; height: 8px; border-radius: 4px; background: #2a3158; overflow: hidden; }
+  .bar i { display: block; width: 60px; height: 8px; border-radius: 4px; background: #7fb2ff; animation: slide 1.6s ease-in-out infinite; }
+  .tick { flex: 1; overflow: hidden; white-space: nowrap; color: #8fa0e0; font-size: 15px; }
+  .tick span { display: inline-block; animation: marquee 18s linear infinite; }
+  .a-bg { background-size: 300% 100% !important; animation: bgmove 3s linear infinite; }
+  .a-bob { animation: bob 1.4s ease-in-out infinite; }
+  .a-fade { animation: fade 1.2s ease-in-out infinite; }
+  .a-pulse { animation: pulse 1.8s ease-in-out infinite; }
+  .a-shim::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: 0;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent); animation: shimmer 2.2s linear infinite; }
+  #cv { position: fixed; right: 20px; bottom: 90px; z-index: 6; width: 300px; height: 110px; border-radius: 10px;
+    background: rgba(10,14,32,.8); border: 1px solid #2a3158; }
+  #__ov { position: fixed; left: 24px; top: 90px; z-index: 99; padding: 14px 20px; border-radius: 12px;
+    background: rgba(0,0,0,.82); color: #fff; font: 600 26px/1.4 monospace; white-space: pre; display: none; }
+</style></head>
+<body>
+<header><div class="spinner"></div><b>ProsperoWeb bench</b><span id="mode"></span><div class="bar"><i></i></div><div class="tick"><span>frame render tile layer scroll paint texture memory budget queue buffer surface page engine shader cache thread latency present decode pipeline &nbsp; frame render tile layer scroll paint texture memory budget queue buffer surface page engine shader cache thread latency present decode pipeline &nbsp;</span></div></header>
+<canvas id="cv" width="300" height="110"></canvas>
+<main id="m"></main>
+<div id="__ov"></div>
+<script>
+(function () {
+  var seed = 12345;
+  function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+  var W = ("the console frame render tile layer scroll paint texture memory budget queue buffer surface page engine shader "
+    + "cache thread latency present decode pipeline compositor damage region viewport animation gradient shadow border "
+    + "radius opacity clip transform raster glyph atlas font hinting subpixel text image vector path stroke fill blend "
+    + "sample filter mipmap upload readback copy flush fence barrier descriptor binding vertex fragment uniform").split(" ");
+  function words(n) { var o = []; for (var i = 0; i < n; i++) o.push(pick(W)); var s = o.join(" "); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function hsl(h, s, l) { return "hsl(" + Math.round(h) + "," + s + "%," + l + "%)"; }
+  function grad() { var h = rnd() * 360; return "linear-gradient(" + Math.round(rnd() * 360) + "deg," + hsl(h, 70, 45) + "," + hsl(h + 60, 70, 30) + ")"; }
+  function rgrad() { var h = rnd() * 360; return "radial-gradient(circle at " + Math.round(rnd() * 100) + "% " + Math.round(rnd() * 100) + "%," + hsl(h, 80, 55) + "," + hsl(h + 80, 60, 22) + ")"; }
+  var m = document.getElementById("m"), kind = /cards/.test(location.pathname) ? "cards" : "article";
+  document.getElementById("mode").textContent = kind;
+  var h = [];
+  if (kind === "cards") {
+    m.className = "grid";
+    for (var s = 0; s < 40; s++) {
+      h.push("<h2>" + words(3) + "</h2><div class='row'>");
+      for (var c = 0; c < 12; c++) {
+        var k = s * 12 + c;
+        h.push("<div class='card" + (k % 3 === 0 ? " a-shim" : "") + (k % 6 === 1 ? " a-pulse" : "") + (k % 5 === 2 ? " a-bg" : "") + "' style='background:" + (c % 2 ? grad() : rgrad()) + "'><div class='gl'></div>"
+          + "<div class='ic" + (k % 2 ? " a-bob" : "") + "' style='background:" + grad() + "'></div><div class='bd" + (k % 4 === 0 ? " a-fade" : "") + "'>" + Math.floor(rnd() * 99) + " dl</div>"
+          + "<div class='t'>" + words(2) + "</div><div class='s'>" + words(3) + "</div></div>");
+      }
+      h.push("</div>");
+    }
+  } else {
+    m.className = "article";
+    h.push("<h1>" + words(4) + "</h1>");
+    for (var s2 = 0; s2 < 90; s2++) {
+      h.push("<h2>" + words(3) + "</h2>");
+      h.push("<figure class='" + (s2 % 2 ? "l" : "") + (s2 % 5 === 1 ? " a-bob" : "") + "'><div class='" + (s2 % 3 === 0 ? "a-bg" : "") + "' style='background:" + (s2 % 3 ? grad() : rgrad()) + "'></div><figcaption>" + words(6) + "</figcaption></figure>");
+      for (var p = 0; p < 3; p++) {
+        h.push("<p>" + words(60 + Math.floor(rnd() * 40)) + ", <a href='#'>" + words(2) + "</a> " + words(40) + ". " + words(30) + ".</p>");
+      }
+      if (s2 % 4 === 0) {
+        h.push("<blockquote class=\"" + (s2 % 8 === 0 ? "a-pulse" : "") + "\">" + words(26) + "</blockquote>");
+        h.push("<table><tr><th>" + words(1) + "</th><th>" + words(1) + "</th><th>" + words(1) + "</th></tr>");
+        for (var r = 0; r < 5; r++) h.push("<tr><td>" + words(2) + "</td><td>" + Math.floor(rnd() * 9999) + "</td><td>" + words(3) + "</td></tr>");
+        h.push("</table>");
+      }
+      if (s2 % 3 === 0) { h.push("<ul>"); for (var l = 0; l < 5; l++) h.push("<li>" + words(8) + "</li>"); h.push("</ul>"); }
+    }
+  }
+  m.innerHTML = h.join("");
+
+  // A script-driven animation, as ad and chart widgets run: 40 moving
+  // circles on a canvas, redrawn every frame.
+  (function () {
+    var cv = document.getElementById("cv"), g = cv.getContext("2d"), dots = [];
+    for (var i = 0; i < 40; i++) dots.push({ x: rnd() * 300, y: rnd() * 110, vx: (rnd() - .5) * 3, vy: (rnd() - .5) * 3, r: 4 + rnd() * 8, h: rnd() * 360 });
+    (function draw() {
+      g.clearRect(0, 0, 300, 110);
+      for (var i = 0; i < dots.length; i++) {
+        var d = dots[i]; d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > 300) d.vx = -d.vx;
+        if (d.y < 0 || d.y > 110) d.vy = -d.vy;
+        g.fillStyle = hsl(d.h, 80, 60); g.beginPath(); g.arc(d.x, d.y, d.r, 0, 6.2832); g.fill();
+      }
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+  // The host calls arm() before the warm-up, start() when the scroll begins and
+  // stop() when it ends; the page counts its own frames meanwhile.
+  var run = null, ov = document.getElementById("__ov");
+  window.__bench = {
+    arm: function () { window.scrollTo(0, 0); ov.style.display = "none"; },
+    start: function () {
+      run = { t0: performance.now(), last: performance.now(), gaps: [], y0: window.scrollY, travel: 0, lastY: window.scrollY, frames: 0 };
+      (function tick(ts) {
+        if (!run) return;
+        var g = ts - run.last; run.last = ts; run.gaps.push(g); run.frames++;
+        run.travel += Math.abs(window.scrollY - run.lastY); run.lastY = window.scrollY;
+        requestAnimationFrame(tick);
+      })(performance.now());
+    },
+    stop: function () {
+      if (!run) return;
+      var r = run; run = null;
+      var secs = (performance.now() - r.t0) / 1000;
+      var g = r.gaps.slice(1).sort(function (a, b) { return a - b; });
+      var q = function (f) { return g.length ? g[Math.min(g.length - 1, Math.floor(g.length * f))] : 0; };
+      var late = g.filter(function (x) { return x > 50; }).length;
+      var txt = "page frames " + (r.frames / secs).toFixed(1) + " fps   scrolled " + (r.travel / secs).toFixed(0) + " px/s\n"
+        + "frame gap p50 " + q(0.5).toFixed(0) + " ms  p95 " + q(0.95).toFixed(0) + " ms  worst " + (g.length ? g[g.length - 1] : 0).toFixed(0) + " ms\n"
+        + "frames over 50 ms: " + late;
+      ov.textContent = "BENCH " + kind + "\n" + txt; ov.style.display = "block";
+      document.title = "BENCH " + kind + " | " + txt.replace(/\n/g, " | ");
+      console.log("BENCH " + kind + " | " + txt.replace(/\n/g, " | "));
+    }
+  };
+})();
+</script>
+</body></html>
