@@ -1125,6 +1125,39 @@ index 43fc0cf..d94b4fb 100644
      // We always want to accelerate the canvas when Accelerated2DCanvas setting is true, even if skia CPU is enabled.
      if (parameters.purpose != RenderingPurpose::Canvas && !ProcessCapabilities::canUseAcceleratedBuffers())
          return nullptr;
+diff --git a/Source/WebCore/platform/graphics/skia/SkiaGPUAtlas.cpp b/Source/WebCore/platform/graphics/skia/SkiaGPUAtlas.cpp
+index 8909c13..678de0d 100644
+--- a/Source/WebCore/platform/graphics/skia/SkiaGPUAtlas.cpp
++++ b/Source/WebCore/platform/graphics/skia/SkiaGPUAtlas.cpp
+@@ -36,6 +36,14 @@
+ #endif
+ #include <wtf/TZoneMallocInlines.h>
+ 
++#if PLATFORM(PLAYSTATION)
++#if USE(LIBEPOXY)
++#include <epoxy/gl.h>
++#else
++#include <GLES2/gl2.h>
++#endif
++#endif
++
+ WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
+ #include <skia/core/SkColorSpace.h>
+ #include <skia/core/SkPixmap.h>
+@@ -131,6 +139,13 @@ void SkiaGPUAtlas::uploadImages()
+     }
+ 
+     m_uploadFence = GLFence::create(PlatformDisplay::sharedDisplay().glDisplay());
++#if PLATFORM(PLAYSTATION)
++    // HAVE_GL_FENCE is not set for PlayStation, so there is no fence: without this the
++    // painting threads (their own GL contexts) sample the atlas before the upload has
++    // reached the GPU, and card icons come out blank or as noise.
++    if (!m_uploadFence)
++        glFinish();
++#endif
+ }
+ 
+ void SkiaGPUAtlas::waitForUpload() const
 diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
 index be1e387..40ea3f7 100644
 --- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp

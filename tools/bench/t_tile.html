@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>tile</title>
+<style>
+body{margin:0;background:#0d1020;color:#fff;font:20px sans-serif}
+.row{display:flex;gap:18px;padding:30px}
+.tile{position:relative;width:340px;height:190px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#3a52c0,#2a1f60)}
+.tile__icon{position:absolute;left:50%;top:40%;height:48%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:22%;box-shadow:0 0 0 1px rgba(244,239,230,.2),0 0 12px 1px rgba(120,108,200,.35)}
+.tile__icon img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
+.t2 .tile__icon{aspect-ratio:auto;width:90px}
+</style></head><body>
+<div class="row">
+ <div class="tile"><div class="tile__icon"><img src="img/big0.webp" alt="" width="512" height="512" loading="lazy" decoding="async"></div></div>
+ <div class="tile"><div class="tile__icon"><img src="img/big1.webp" alt="" width="512" height="512" decoding="async"></div></div>
+ <div class="tile"><div class="tile__icon"><img src="img/big2.webp" alt="" width="512" height="512" loading="lazy"></div></div>
+ <div class="tile"><div class="tile__icon"><img src="img/big3.webp" alt="" width="512" height="512"></div></div>
+</div></body></html>
