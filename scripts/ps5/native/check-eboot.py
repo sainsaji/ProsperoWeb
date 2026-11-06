@@ -59,6 +59,7 @@ KNOWN_WEAK_ZERO = {
     # for null the same way.
     "ps5_mesa_active",
     "ps5_mesa_proc",
+    "ps5_mesa_log",
 }
 
 # Loaded for a native app at start-up (Stremio PS5 native/check_imports.py).
