@@ -530,10 +530,10 @@ index 4291652..fab6803 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..87187eb 100644
+index 28ef84d..d5541a5 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,475 @@
+@@ -55,11 +55,499 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -747,46 +747,70 @@ index 28ef84d..87187eb 100644
 +    s.since = now;
 +}
 +
-+// Diagnostic, the word "glitch" in /data/prosperoweb/mesa: the page header (the top rows) never
-+// changes, so a frame whose header differs from the last one is a bad frame. It is logged to
-+// mesa.txt and saved downscaled 4x as /data/prosperoweb/glitch_N.ppm (up to 12).
++// Diagnostic, the word "glitch" in /data/prosperoweb/mesa: a bad frame is one that looks like its
++// neighbours' opposite: the coarse look of frame N-2 equals frame N but frame N-1 differs (A, B, A).
++// Slow animation never makes that pattern. The odd frame is logged to mesa.txt and saved
++// downscaled 4x as /data/prosperoweb/glitch_N.ppm (up to 12), with the frame before it.
 +static void ps5GlitchCheck(const uint8_t* bgra, int width, int height)
 +{
-+    static uint64_t previousHash;
-+    static unsigned frameNumber, dumps;
-+    static MonotonicTime lastGood;
-+    ++frameNumber;
-+    const int rows = std::min(height, 280);
++    static uint64_t hash1, hash2;
++    static unsigned frameNumber, dumps, found;
++    static MonotonicTime started = MonotonicTime::now();
++    static Vector<uint8_t> small1, small0;
++
++    // A coarse hash: one pixel in 16, three bits per channel.
 +    uint64_t hash = 1469598103934665603ull;
-+    for (int y = 0; y < rows; y += 3) {
-+        const uint32_t* row = reinterpret_cast<const uint32_t*>(bgra + static_cast<size_t>(y) * width * 4);
-+        for (int x = 0; x < width; x += 5) {
-+            hash ^= row[x];
++    for (int y = 0; y < height; y += 16) {
++        const uint8_t* row = bgra + static_cast<size_t>(y) * width * 4;
++        for (int x = 0; x < width; x += 16) {
++            const uint32_t q = (row[x * 4] >> 5) | ((row[x * 4 + 1] >> 5) << 3) | ((row[x * 4 + 2] >> 5) << 6);
++            hash ^= q;
 +            hash *= 1099511628211ull;
 +        }
 +    }
-+    const bool changed = previousHash && hash != previousHash;
-+    if (changed && ps5_mesa_log)
-+        ps5_mesa_log("glitch: header changed at frame %u (%.0f ms since the last good frame), dump %u", frameNumber, (MonotonicTime::now() - lastGood).milliseconds(), dumps);
-+    if (changed && dumps < 12) {
-+        char path[96];
-+        snprintf(path, sizeof(path), "/data/prosperoweb/glitch_%u.ppm", dumps);
-+        if (FILE* file = fopen(path, "wb")) {
-+            fprintf(file, "P6\n%d %d\n255\n", width / 4, height / 4);
-+            for (int y = 0; y < height; y += 4) {
-+                const uint8_t* row = bgra + static_cast<size_t>(y) * width * 4;
-+                for (int x = 0; x < width; x += 4) {
-+                    const uint8_t rgb[3] = { row[x * 4 + 2], row[x * 4 + 1], row[x * 4] };
-+                    fwrite(rgb, 1, 3, file);
-+                }
++
++    // This frame, 4x downscaled, kept for the next call.
++    const size_t smallSize = static_cast<size_t>(width / 4) * (height / 4) * 3;
++    small0.resize(smallSize);
++    {
++        size_t out = 0;
++        for (int y = 0; y < height; y += 4) {
++            const uint8_t* row = bgra + static_cast<size_t>(y) * width * 4;
++            for (int x = 0; x < width; x += 4) {
++                small0[out++] = row[x * 4 + 2];
++                small0[out++] = row[x * 4 + 1];
++                small0[out++] = row[x * 4];
 +            }
-+            fclose(file);
++        }
++    }
++
++    ++frameNumber;
++    if (frameNumber > 2 && hash2 == hash && hash1 != hash) {
++        ++found;
++        if (ps5_mesa_log)
++            ps5_mesa_log("glitch: frame %u differs from its neighbours (A,B,A), found %u, %.1f s into the page", frameNumber - 1, found, (MonotonicTime::now() - started).seconds());
++        if (dumps < 12 && small1.size() == smallSize) {
++            char path[96];
++            snprintf(path, sizeof(path), "/data/prosperoweb/glitch_%u.ppm", dumps);
++            if (FILE* file = fopen(path, "wb")) {
++                fprintf(file, "P6\n%d %d\n255\n", width / 4, height / 4);
++                fwrite(small1.data(), 1, smallSize, file);
++                fclose(file);
++            }
++            snprintf(path, sizeof(path), "/data/prosperoweb/glitch_%u_next.ppm", dumps);
++            if (FILE* file = fopen(path, "wb")) {
++                fprintf(file, "P6\n%d %d\n255\n", width / 4, height / 4);
++                fwrite(small0.data(), 1, smallSize, file);
++                fclose(file);
++            }
 +            ++dumps;
 +        }
 +    }
-+    if (!changed)
-+        lastGood = MonotonicTime::now();
-+    previousHash = hash;
++    if (frameNumber % 300 == 0 && ps5_mesa_log)
++        ps5_mesa_log("glitch: %u frames checked, %u A,B,A frames", frameNumber, found);
++    hash2 = hash1;
++    hash1 = hash;
++    small1.swap(small0);
 +}
 +
 +void AcceleratedSurface::ps5ReadBackAndSend()
@@ -1009,7 +1033,7 @@ index 28ef84d..87187eb 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +804,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +828,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -1021,7 +1045,7 @@ index 28ef84d..87187eb 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +823,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +847,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -1033,7 +1057,7 @@ index 28ef84d..87187eb 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +840,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +864,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -1048,7 +1072,7 @@ index 28ef84d..87187eb 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +866,13 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +890,13 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -1062,7 +1086,7 @@ index 28ef84d..87187eb 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +881,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +905,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -1070,7 +1094,7 @@ index 28ef84d..87187eb 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +900,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +924,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
@@ -1083,7 +1107,7 @@ index 28ef84d..87187eb 100644
      if (!m_target)
          return;
  
-@@ -421,6 +917,9 @@ void AcceleratedSurface::didRenderFrame()
+@@ -421,6 +941,9 @@ void AcceleratedSurface::didRenderFrame()
  
  void AcceleratedSurface::frameDone()
  {
