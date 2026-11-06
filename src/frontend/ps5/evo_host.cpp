@@ -487,6 +487,9 @@ void EvoHost::handle(const std::vector<std::uint8_t>& pkt) {
       evob_release r{};
       if (p.body(&r)) {
         frames_.released(r.buf);
+        if (visible_ && frames_.next_buffer() >= 0) {
+          request_frame();
+        }
       }
       break;
     }

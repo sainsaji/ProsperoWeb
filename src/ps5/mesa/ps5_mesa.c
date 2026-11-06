@@ -288,7 +288,23 @@ int ps5_mesa_start(void) {
   }
   setenv("MESA_LOADER_DRIVER_OVERRIDE", "zink", 1);
   setenv("GALLIUM_THREAD", "0", 1);
-  setenv("MESA_SHADER_CACHE_DISABLE", "true", 1);
+  // Persistent shader cache: with /data/prosperoweb/shaders, Mesa caches compiled
+  // shaders across runs instead of recompiling on every first use. "noshadercache" disables it.
+  char mesa_opts[256] = {0};
+  int mfd = open(MESA_FLAG, O_RDONLY);
+  if (mfd >= 0) {
+    ssize_t mn = read(mfd, mesa_opts, sizeof(mesa_opts) - 1);
+    close(mfd);
+    mesa_opts[mn > 0 ? mn : 0] = 0;
+  }
+  if (strstr(mesa_opts, "noshadercache")) {
+    setenv("MESA_SHADER_CACHE_DISABLE", "true", 1);
+  } else {
+    mkdir("/data/prosperoweb/shaders", 0777);
+    setenv("MESA_SHADER_CACHE_DIR", "/data/prosperoweb/shaders", 1);
+    unsetenv("MESA_SHADER_CACHE_DISABLE");
+    ps5_mesa_log("start: persistent shader cache enabled at /data/prosperoweb/shaders");
+  }
   t0 = now_ms();
   const int rc = selftest();
   ps5_mesa_log("start: self-test %s (%d) in %.1f ms", rc == 0 ? "passed" : "FAILED", rc, now_ms() - t0);

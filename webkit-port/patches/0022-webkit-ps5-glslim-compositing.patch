@@ -94,11 +94,46 @@ index 6b748ca..8de3777 100644
  }
  
  GCGLContext GLContext::platformContext() const
+diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp b/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
+index 6b3597b..fd55e3e 100644
+--- a/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
++++ b/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
+@@ -93,6 +93,13 @@ static const GLenum s_pixelDataType = GL_UNSIGNED_BYTE;
+ #define GL_DEPTH24_STENCIL8 0x88F0
+ #endif
+ 
++#if defined(PS5_HOMEBREW) || PLATFORM(PLAYSTATION)
++// Defined in C (ps5_mesa.c) and PlatformDisplaySkia.cpp: they need C linkage, which a
++// declaration inside a function in a namespace cannot give.
++extern "C" int ps5_mesa_has_option(const char*) __attribute__((weak));
++extern "C" int ps5_skia_gpu(void) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
+ void BitmapTexture::determineRenderTargetAndBinding()
+@@ -474,6 +481,16 @@ void BitmapTexture::copyFromExternalTexture(GLuint sourceTextureID, const IntRec
+     glActiveTexture(boundActiveTexture);
+     glBindTexture(m_renderTarget, boundTextureOnOriginalUnit);
+     glDeleteFramebuffers(1, &copyFbo);
++
++#if PLATFORM(PLAYSTATION)
++    // Synchronize cross-context GPU read before the source texture is returned to the pool.
++    // Without GL fences, glFinish ensures the compositor finishes copying before a Skia
++    // worker thread reacquires sourceTextureID on its own context. Switch: "nofixsync".
++    if (ps5_skia_gpu && ps5_skia_gpu()) {
++        if (!(ps5_mesa_has_option && ps5_mesa_has_option("nofixsync")))
++            glFinish();
++    }
++#endif
+ }
+ 
+ #if USE(TEXTURE_MAPPER)
 diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
-index ffda579..5f497f3 100644
+index ffda579..1e61bcd 100644
 --- a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
 +++ b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.h
-@@ -57,7 +57,9 @@ public:
+@@ -57,8 +57,11 @@ public:
  
      void releaseAllTextures();
  
@@ -107,13 +142,127 @@ index ffda579..5f497f3 100644
 +    // PS5: called by the compositor thread (AcceleratedSurfacePlayStation),
 +    // which owns the only GL context the process may use.
      void releaseUnusedTexturesNow() { releaseUnusedTexturesTimerFired(); }
++    void noteFrameComplete();
  #endif
  
+ private:
+@@ -75,6 +78,9 @@ private:
+ 
+         const Ref<BitmapTexture> texture;
+         MonotonicTime lastUsedTime;
++#if defined(PS5_HOMEBREW)
++        uint32_t lastFrameNumber { 0 };
++#endif
+     };
+ 
+     void scheduleReleaseUnusedTextures();
+@@ -86,6 +92,9 @@ private:
+     Vector<Entry> m_textures WTF_GUARDED_BY_LOCK(m_lock);
+ #if USE(GBM)
+     Vector<Ref<BitmapTexture>> m_imageTextures WTF_GUARDED_BY_LOCK(m_lock);
++#endif
++#if defined(PS5_HOMEBREW)
++    uint32_t m_currentFrameNumber WTF_GUARDED_BY_LOCK(m_lock) { 1 };
+ #endif
+     RunLoop::Timer m_releaseUnusedTexturesTimer WTF_GUARDED_BY_LOCK(m_lock);
+     uint64_t m_poolSizeInBytes WTF_GUARDED_BY_LOCK(m_lock) { 0 };
 diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
-index 3007f8a..57020ee 100644
+index 3007f8a..b1402b7 100644
 --- a/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
 +++ b/Source/WebCore/platform/graphics/egl/BitmapTexturePool.cpp
-@@ -184,7 +184,13 @@ void BitmapTexturePool::releaseUnusedTexturesTimerFired()
+@@ -37,6 +37,13 @@
+ #include <wtf/glib/RunLoopSourcePriority.h>
+ #endif
+ 
++#if defined(PS5_HOMEBREW) || PLATFORM(PLAYSTATION)
++// Defined in C (ps5_mesa.c) and PlatformDisplaySkia.cpp: they need C linkage, which a
++// declaration inside a function in a namespace cannot give.
++extern "C" int ps5_mesa_has_option(const char*) __attribute__((weak));
++extern "C" int ps5_skia_gpu(void) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
+ WTF_MAKE_TZONE_ALLOCATED_IMPL(BitmapTexturePool);
+@@ -72,18 +79,49 @@ Ref<BitmapTexture> BitmapTexturePool::acquireTexture(const IntSize& size, Option
+ {
+     ASSERT(GLContextWrapper::currentContext());
+     Locker locker { m_lock };
++#if defined(PS5_HOMEBREW)
++    extern void ps5CountTileUpdate(int) __attribute__((weak));
++    const bool noFixInFlight = ps5_mesa_has_option && ps5_mesa_has_option("nofixinflight");
++#endif
+     Entry* selectedEntry = std::find_if(m_textures.begin(), m_textures.end(), [&](Entry& entry) {
+-        return entry.texture->refCount() == 1
+-            && entry.texture->size() == size
++        if (entry.texture->refCount() != 1 || entry.texture->size() != size)
++            return false;
+ #if USE(GBM)
+-            && entry.texture->flags().contains(BitmapTexture::Flags::BackedByDMABuf) == flags.contains(BitmapTexture::Flags::BackedByDMABuf)
+-            && entry.texture->flags().contains(BitmapTexture::Flags::ForceLinearBuffer) == flags.contains(BitmapTexture::Flags::ForceLinearBuffer)
+-            && entry.texture->flags().contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer) == flags.contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer)
++        if (entry.texture->flags().contains(BitmapTexture::Flags::BackedByDMABuf) != flags.contains(BitmapTexture::Flags::BackedByDMABuf)
++            || entry.texture->flags().contains(BitmapTexture::Flags::ForceLinearBuffer) != flags.contains(BitmapTexture::Flags::ForceLinearBuffer)
++            || entry.texture->flags().contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer) != flags.contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer))
++            return false;
++#endif
++        if (entry.texture->flags().contains(BitmapTexture::Flags::UseBGRALayout) != flags.contains(BitmapTexture::Flags::UseBGRALayout)
++            || entry.texture->flags().contains(BitmapTexture::Flags::NearestFiltering) != flags.contains(BitmapTexture::Flags::NearestFiltering))
++            return false;
++#if defined(PS5_HOMEBREW)
++        // Prefer textures not released in the current in-flight frame
++        if (!noFixInFlight && entry.lastFrameNumber == m_currentFrameNumber)
++            return false;
+ #endif
+-            && entry.texture->flags().contains(BitmapTexture::Flags::UseBGRALayout) == flags.contains(BitmapTexture::Flags::UseBGRALayout)
+-            && entry.texture->flags().contains(BitmapTexture::Flags::NearestFiltering) == flags.contains(BitmapTexture::Flags::NearestFiltering);
++        return true;
+     });
+ 
++#if defined(PS5_HOMEBREW)
++    // If all candidate textures were released in the current frame, reuse one but record the diagnostic.
++    if (selectedEntry == m_textures.end() && !noFixInFlight) {
++        selectedEntry = std::find_if(m_textures.begin(), m_textures.end(), [&](Entry& entry) {
++            return entry.texture->refCount() == 1
++                && entry.texture->size() == size
++#if USE(GBM)
++                && entry.texture->flags().contains(BitmapTexture::Flags::BackedByDMABuf) == flags.contains(BitmapTexture::Flags::BackedByDMABuf)
++                && entry.texture->flags().contains(BitmapTexture::Flags::ForceLinearBuffer) == flags.contains(BitmapTexture::Flags::ForceLinearBuffer)
++                && entry.texture->flags().contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer) == flags.contains(BitmapTexture::Flags::ForceVivanteSuperTiledBuffer)
++#endif
++                && entry.texture->flags().contains(BitmapTexture::Flags::UseBGRALayout) == flags.contains(BitmapTexture::Flags::UseBGRALayout)
++                && entry.texture->flags().contains(BitmapTexture::Flags::NearestFiltering) == flags.contains(BitmapTexture::Flags::NearestFiltering);
++        });
++        if (selectedEntry != m_textures.end() && ps5CountTileUpdate)
++            ps5CountTileUpdate(5); // pool texture reused while in flight
++    }
++#endif
++
+     if (selectedEntry == m_textures.end()) {
+         m_textures.append(Entry(BitmapTexture::create(size, flags)));
+         selectedEntry = &m_textures.last();
+@@ -98,9 +136,20 @@ Ref<BitmapTexture> BitmapTexturePool::acquireTexture(const IntSize& size, Option
+     scheduleReleaseUnusedTextures();
+ 
+     selectedEntry->markIsInUse();
++#if defined(PS5_HOMEBREW)
++    selectedEntry->lastFrameNumber = m_currentFrameNumber;
++#endif
+     return selectedEntry->texture;
+ }
+ 
++#if defined(PS5_HOMEBREW)
++void BitmapTexturePool::noteFrameComplete()
++{
++    Locker locker { m_lock };
++    m_currentFrameNumber++;
++}
++#endif
++
+ #if USE(GBM)
+ Ref<BitmapTexture> BitmapTexturePool::createTextureForImage(EGLImage image, const IntSize& size, OptionSet<BitmapTexture::Flags> flags)
+ {
+@@ -184,7 +233,13 @@ void BitmapTexturePool::releaseUnusedTexturesTimerFired()
  
      if (GLContextWrapper::currentContext())
          releaseTexturesIfNeeded();
@@ -306,7 +455,7 @@ index 9cc95ad..ac3ff66 100644
  {
      if (!m_id)
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
-index 4291652..6dc620b 100644
+index 4291652..fab6803 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.h
 @@ -32,6 +32,7 @@
@@ -317,7 +466,7 @@ index 4291652..6dc620b 100644
  #include <wtf/RunLoop.h>
  #include <wtf/TZoneMalloc.h>
  #include <wtf/ThreadSafeRefCounted.h>
-@@ -82,8 +83,61 @@ public:
+@@ -82,8 +83,62 @@ public:
  
      void visibilityDidChange(bool);
      void backgroundColorDidChange();
@@ -358,6 +507,7 @@ index 4291652..6dc620b 100644
 +    unsigned m_ps5ProbeCounter { 0 };
 +    bool m_ps5FastOk { false };
 +    MonotonicTime m_ps5FrameStart;
++    MonotonicTime m_ps5LastFrameDone;
 +    RefPtr<RunLoop> m_ps5RunLoop;
 +    std::unique_ptr<RunLoop::Timer> m_ps5AckTimer;
 +    std::unique_ptr<RunLoop::Timer> m_ps5PaceTimer;
@@ -380,10 +530,10 @@ index 4291652..6dc620b 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..dcaed7c 100644
+index 28ef84d..0803713 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,389 @@
+@@ -55,11 +55,430 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -398,6 +548,13 @@ index 28ef84d..dcaed7c 100644
 +extern "C" void ps5_mesa_log(const char*, ...) __attribute__((weak));
 +extern "C" int ps5_mesa_active(void) __attribute__((weak));
 +extern "C" void* ps5_mesa_proc(const char*) __attribute__((weak));
++#endif
++
++#if defined(PS5_HOMEBREW) || PLATFORM(PLAYSTATION)
++// Defined in C (ps5_mesa.c) and PlatformDisplaySkia.cpp: they need C linkage, which a
++// declaration inside a function in a namespace cannot give.
++extern "C" int ps5_mesa_has_option(const char*) __attribute__((weak));
++extern "C" int ps5_skia_gpu(void) __attribute__((weak));
 +#endif
 +
  namespace WebKit {
@@ -537,17 +694,41 @@ index 28ef84d..dcaed7c 100644
 +void AcceleratedSurface::ps5FinishFrame()
 +{
 +    const unsigned paceMs = ps5MesaActive() ? ps5MesaOptions().paceMs : 0;
-+    const Seconds left = Seconds::fromMilliseconds(paceMs) - (MonotonicTime::now() - m_ps5FrameStart);
-+    if (paceMs && m_ps5PaceTimer && left > 0_s) {
-+        m_ps5Stats.paced++;
-+        m_ps5PaceTimer->startOneShot(left);
++    if (!paceMs) {
++        m_ps5LastFrameDone = MonotonicTime::now();
++        frameDone();
 +        return;
 +    }
++
++    static const bool noFixPace = ps5_mesa_has_option && ps5_mesa_has_option("nofixpace");
++    if (noFixPace) {
++        const Seconds left = Seconds::fromMilliseconds(paceMs) - (MonotonicTime::now() - m_ps5FrameStart);
++        if (m_ps5PaceTimer && left > 0_s) {
++            m_ps5Stats.paced++;
++            m_ps5PaceTimer->startOneShot(left);
++            return;
++        }
++        m_ps5LastFrameDone = MonotonicTime::now();
++        frameDone();
++        return;
++    }
++
++    const MonotonicTime now = MonotonicTime::now();
++    const Seconds interval = Seconds::fromMilliseconds(paceMs);
++    const MonotonicTime target = m_ps5LastFrameDone ? (m_ps5LastFrameDone + interval) : now;
++    const Seconds wait = target - now;
++    if (m_ps5PaceTimer && wait > 0_s && wait <= interval) {
++        m_ps5Stats.paced++;
++        m_ps5PaceTimer->startOneShot(wait);
++        return;
++    }
++    m_ps5LastFrameDone = now;
 +    frameDone();
 +}
 +
 +void AcceleratedSurface::ps5PaceTimerFired()
 +{
++    m_ps5LastFrameDone = MonotonicTime::now();
 +    frameDone();
 +}
 +
@@ -576,8 +757,10 @@ index 28ef84d..dcaed7c 100644
 +    m_ps5Stats.renderMs += (start - m_ps5FrameStart).milliseconds();
 +
 +    // Whole-frame fast path: no CPU diff, no CPU swizzle, no second copy.
-+    // Every 8th frame (and the one after) goes the diff way to re-measure.
-+    if (m_ps5FastOk && m_ps5WholeMode && (m_ps5ProbeCounter++ % 8) >= 2) {
++    // Probing every 8 frames causes stuttering every 130ms during scrolling.
++    // Default to 64 frames unless "nofixprobe" is specified.
++    const unsigned probeInterval = (ps5_mesa_has_option && ps5_mesa_has_option("nofixprobe")) ? 8u : 64u;
++    if (m_ps5FastOk && m_ps5WholeMode && (m_ps5ProbeCounter++ % probeInterval) >= 2) {
 +        auto fastBitmap = ShareableBitmap::create({ size });
 +        if (fastBitmap && fastBitmap->bytesPerRow() == static_cast<unsigned>(size.width()) * 4) {
 +            typedef void (*BlitFn)(int, int, int, int, int, int, int, int, unsigned, unsigned);
@@ -592,6 +775,14 @@ index 28ef84d..dcaed7c 100644
 +            if (glGetError() == GL_NO_ERROR) {
 +                const MonotonicTime fastDone = MonotonicTime::now();
 +                m_ps5Stats.readMs += (fastDone - start).milliseconds();
++
++                // Periodic pool release also during sustained fast-path rendering (scrolling).
++                static MonotonicTime lastFastPoolRelease;
++                if (fastDone - lastFastPoolRelease >= 500_ms) {
++                    lastFastPoolRelease = fastDone;
++                    BitmapTexturePool::singleton().releaseUnusedTexturesNow();
++                }
++
 +                if (auto fastHandle = fastBitmap->createHandle()) {
 +                    m_ps5HavePrevious = false;
 +                    m_ps5Stats.sent++;
@@ -773,7 +964,7 @@ index 28ef84d..dcaed7c 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +718,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +759,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -785,7 +976,7 @@ index 28ef84d..dcaed7c 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +737,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +778,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -797,7 +988,7 @@ index 28ef84d..dcaed7c 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +754,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +795,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -812,7 +1003,7 @@ index 28ef84d..dcaed7c 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +780,13 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +821,13 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -826,7 +1017,7 @@ index 28ef84d..dcaed7c 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +795,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +836,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -834,7 +1025,7 @@ index 28ef84d..dcaed7c 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +814,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +855,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
@@ -847,6 +1038,16 @@ index 28ef84d..dcaed7c 100644
      if (!m_target)
          return;
  
+@@ -421,6 +872,9 @@ void AcceleratedSurface::didRenderFrame()
+ 
+ void AcceleratedSurface::frameDone()
+ {
++#if defined(PS5_HOMEBREW)
++    BitmapTexturePool::singleton().noteFrameComplete();
++#endif
+     if (m_frameCompleteHandler)
+         m_frameCompleteHandler();
+     m_target = nullptr;
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h
 index 50b6451..9108ed8 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/ThreadedCompositorPlayStation.h
@@ -986,10 +1187,10 @@ index e52a293..f6e8aae 100644
  
  void DrawingAreaCoordinatedGraphics::exitAcceleratedCompositingMode()
 diff --git a/Source/WebCore/platform/graphics/skia/PlatformDisplaySkia.cpp b/Source/WebCore/platform/graphics/skia/PlatformDisplaySkia.cpp
-index 4f7acf1..7b7c04d 100644
+index 4f7acf1..4f69d13 100644
 --- a/Source/WebCore/platform/graphics/skia/PlatformDisplaySkia.cpp
 +++ b/Source/WebCore/platform/graphics/skia/PlatformDisplaySkia.cpp
-@@ -62,6 +62,40 @@ WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
+@@ -62,6 +62,46 @@ WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
  #include <xf86drm.h>
  #endif
  
@@ -1004,21 +1205,27 @@ index 4f7acf1..7b7c04d 100644
 +extern "C" int ps5_mesa_active(void) __attribute__((weak));
 +extern "C" void ps5_mesa_log(const char* fmt, ...) __attribute__((weak));
 +
-+extern "C" int ps5_skia_gpu(void)
++extern "C" int ps5_mesa_has_option(const char* word)
 +{
-+    static const int enabled = [] {
-+        if (!(ps5_mesa_active && ps5_mesa_active()))
-+            return 0;
-+        char text[256] = { };
++    static char text[512] = { };
++    static const bool initialized = [] {
 +        FILE* file = fopen("/data/prosperoweb/mesa", "r");
 +        if (!file)
-+            return 0;
++            return false;
 +        size_t length = fread(text, 1, sizeof(text) - 1, file);
 +        fclose(file);
 +        text[length] = 0;
-+        return strstr(text, "skia") ? 1 : 0;
++        return true;
 +    }();
-+    return enabled;
++    (void)initialized;
++    return (word && strstr(text, word)) ? 1 : 0;
++}
++
++extern "C" int ps5_skia_gpu(void)
++{
++    if (!(ps5_mesa_active && ps5_mesa_active()))
++        return 0;
++    return ps5_mesa_has_option("skia");
 +}
 +#else
 +// Sony's GLES library does not dispatch to the context bound to the current
@@ -1030,7 +1237,7 @@ index 4f7acf1..7b7c04d 100644
  namespace WebCore {
  
  #if PLATFORM(GTK) || PLATFORM(WPE)
-@@ -79,7 +113,7 @@ static const unsigned s_defaultSampleCount = 4;
+@@ -79,7 +119,7 @@ static const unsigned s_defaultSampleCount = 4;
  static const unsigned s_defaultSampleCount = 0;
  #endif
  
@@ -1039,20 +1246,32 @@ index 4f7acf1..7b7c04d 100644
  static sk_sp<const GrGLInterface> skiaGLInterface()
  {
      static NeverDestroyed<sk_sp<const GrGLInterface>> grGLInterface {
-@@ -248,6 +282,12 @@ static std::optional<size_t> glyphCacheTextureMaximumBytes()
+@@ -248,6 +288,24 @@ static std::optional<size_t> glyphCacheTextureMaximumBytes()
  
  static size_t initializeMaxResourceCacheBytes(GrDirectContext* grContext)
  {
 +#if defined(PS5_HOMEBREW)
 +    // Every painting thread has a context and the GPU budget is shared with
-+    // the compositor (the broker's evo_gpu_host_mb): keep each cache small.
-+    grContext->setResourceCacheLimit(s_lowEndMaxResourceCacheBytes);
++    // the compositor (the broker's evo_gpu_host_mb).
++    // With Mesa ("skia"), default to 96 MB per thread context so card and
++    // thumbnail textures aren't constantly thrashing. "skia48" or "nofixcache"
++    // reverts to 48 MB; "skia128" allows 128 MB.
++    size_t limit = s_lowEndMaxResourceCacheBytes;
++    if (ps5_skia_gpu && ps5_skia_gpu()) {
++        if (ps5_mesa_has_option("skia128"))
++            limit = 128 * MB;
++        else if (ps5_mesa_has_option("skia48") || ps5_mesa_has_option("nofixcache"))
++            limit = 48 * MB;
++        else
++            limit = 96 * MB;
++    }
++    grContext->setResourceCacheLimit(limit);
 +    return grContext->getResourceCacheLimit();
 +#endif
      size_t memorySize = WTF::ramSize();
      if (memorySize < s_lowEndDeviceMemoryThresholdBytes)
          grContext->setResourceCacheLimit(s_lowEndMaxResourceCacheBytes);
-@@ -369,10 +409,18 @@ private:
+@@ -369,10 +427,18 @@ private:
  
  GLContext* PlatformDisplay::skiaGLContext()
  {
@@ -1067,12 +1286,12 @@ index 4f7acf1..7b7c04d 100644
          m_skiaGLContexts.add(*s_skiaGLContext);
 +#if defined(PS5_HOMEBREW)
 +        if (ps5_mesa_log)
-+            ps5_mesa_log("skia: GPU context on thread %p: %s", static_cast<void*>(&s_skiaGLContext), s_skiaGLContext->skiaGLContext() ? "ready" : "FAILED");
++            ps5_mesa_log("skia: GPU context on thread %p: %s (cache %zu MB)", static_cast<void*>(&s_skiaGLContext), s_skiaGLContext->skiaGLContext() ? "ready" : "FAILED", s_skiaGLContext->maxResourceCacheBytes() >> 20);
 +#endif
      }
      return s_skiaGLContext->skiaGLContext();
  #else
-@@ -395,7 +443,7 @@ void PlatformDisplay::makeSkiaGLContextCurrentIfExists()
+@@ -395,7 +461,7 @@ void PlatformDisplay::makeSkiaGLContextCurrentIfExists()
          glContext->makeContextCurrent();
  }
  
@@ -1081,7 +1300,7 @@ index 4f7acf1..7b7c04d 100644
  // skiaGLContext() never creates a context in this configuration (see above),
  // so there is no per-thread Skia GL state: Skia always rasterizes on the CPU.
  void PlatformDisplay::setSkiaGLContextForCurrentThread(std::unique_ptr<GLContext>&&)
-@@ -462,7 +510,7 @@ void PlatformDisplay::clearSkiaGLContext()
+@@ -462,7 +528,7 @@ void PlatformDisplay::clearSkiaGLContext()
  {
      s_skiaGLContext = nullptr;
  }
@@ -1158,11 +1377,99 @@ index 8909c13..678de0d 100644
  }
  
  void SkiaGPUAtlas::waitForUpload() const
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp
+index 0badc44..8d7287a 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp
+@@ -22,12 +22,20 @@
+ 
+ #if USE(COORDINATED_GRAPHICS) && USE(TEXTURE_MAPPER)
+ #include "BitmapTexture.h"
++#include "CoordinatedBackingStoreTile.h"
+ #include "CoordinatedTileBuffer.h"
+ #include "GraphicsLayer.h"
+ #include "TextureMapper.h"
+ #include "TextureMapperFlags.h"
+ #include <wtf/SystemTracing.h>
+ 
++#if defined(PS5_HOMEBREW) || PLATFORM(PLAYSTATION)
++// Defined in C (ps5_mesa.c) and PlatformDisplaySkia.cpp: they need C linkage, which a
++// declaration inside a function in a namespace cannot give.
++extern "C" int ps5_mesa_has_option(const char*) __attribute__((weak));
++extern "C" int ps5_skia_gpu(void) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
+ void CoordinatedBackingStore::createTile(uint32_t id)
+@@ -87,6 +95,15 @@ void CoordinatedBackingStore::paintToTextureMapper(TextureMapper& textureMapper,
+ #endif
+ 
+     for (const auto& tile : m_tiles.values()) {
++#if PLATFORM(PLAYSTATION)
++        if (!tile.canBePainted()) {
++            static const bool noFixReady = ps5_mesa_has_option && ps5_mesa_has_option("nofixready");
++            if (!noFixReady) {
++                ps5CountTileUpdate(4);
++                continue;
++            }
++        }
++#endif
+         ASSERT(tile.scale() == m_scale);
+         const auto allEdgesExposed = allTileEdgesExposed(layerRect, tile.rect()) ? TextureMapper::AllEdgesExposed::Yes : TextureMapper::AllEdgesExposed::No;
+ 
+@@ -110,8 +127,13 @@ void CoordinatedBackingStore::drawBorder(TextureMapper& textureMapper, const Col
+     ASSERT(!m_size.isZero());
+     FloatRect layerRect = { { }, m_size };
+     TransformationMatrix adjustedTransform = transform * TransformationMatrix::rectToRect(layerRect, targetRect);
+-    for (const auto& tile : m_tiles.values())
++    for (const auto& tile : m_tiles.values()) {
++#if PLATFORM(PLAYSTATION)
++        if (!tile.canBePainted())
++            continue;
++#endif
+         textureMapper.drawBorder(borderColor, borderWidth, tile.rect(), adjustedTransform);
++    }
+ }
+ 
+ void CoordinatedBackingStore::drawRepaintCounter(TextureMapper& textureMapper, int repaintCount, const Color& borderColor, const FloatRect& targetRect, const TransformationMatrix& transform)
+@@ -119,8 +141,13 @@ void CoordinatedBackingStore::drawRepaintCounter(TextureMapper& textureMapper, i
+     ASSERT(!m_size.isZero());
+     FloatRect layerRect = { { }, m_size };
+     TransformationMatrix adjustedTransform = transform * TransformationMatrix::rectToRect(layerRect, targetRect);
+-    for (const auto& tile : m_tiles.values())
++    for (const auto& tile : m_tiles.values()) {
++#if PLATFORM(PLAYSTATION)
++        if (!tile.canBePainted())
++            continue;
++#endif
+         textureMapper.drawNumber(repaintCount, borderColor, tile.rect().location(), adjustedTransform);
++    }
+ }
+ 
+ } // namespace WebCore
+diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.h b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.h
+index 74df231..84f6a37 100644
+--- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.h
++++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.h
+@@ -29,6 +29,12 @@ namespace WebCore {
+ class BitmapTexture;
+ class CoordinatedTileBuffer;
+ 
++#if defined(PS5_HOMEBREW)
++void ps5CountTileUpdate(int kind);
++#else
++inline void ps5CountTileUpdate(int) { }
++#endif
++
+ class CoordinatedBackingStoreTile {
+ public:
+     explicit CoordinatedBackingStoreTile(float scale = 1);
 diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
-index be1e387..40ea3f7 100644
+index be1e387..e1faacc 100644
 --- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
 +++ b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
-@@ -32,8 +32,31 @@
+@@ -32,8 +32,34 @@
  #include "SkiaPaintingEngine.h"
  #endif
  
@@ -1175,26 +1482,29 @@ index be1e387..40ea3f7 100644
  
 +#if defined(PS5_HOMEBREW)
 +// What the compositor did with tile updates, logged every 5 s (mesa.txt).
-+static void ps5CountTileUpdate(int kind)
++void ps5CountTileUpdate(int kind)
 +{
-+    static unsigned counts[4];
++    static unsigned counts[6];
 +    static MonotonicTime last = MonotonicTime::now();
-+    counts[kind]++;
++    if (kind >= 0 && kind < 6)
++        counts[kind]++;
 +    auto now = MonotonicTime::now();
 +    if ((now - last).seconds() >= 5 && ps5_mesa_log) {
-+        ps5_mesa_log("tiles: 5s: %u whole-tile swaps, %u partial copies, %u without a texture, %u from the CPU", counts[0], counts[1], counts[2], counts[3]);
-+        counts[0] = counts[1] = counts[2] = counts[3] = 0;
++        ps5_mesa_log("tiles: 5s: %u swaps, %u copies, %u nulltex, %u cpu, %u unready skipped, %u in-flight pool",
++            counts[0], counts[1], counts[2], counts[3], counts[4], counts[5]);
++        for (int i = 0; i < 6; ++i)
++            counts[i] = 0;
 +        last = now;
 +    }
 +}
 +#else
-+static void ps5CountTileUpdate(int) { }
++void ps5CountTileUpdate(int) { }
 +#endif
 +
  CoordinatedBackingStoreTile::CoordinatedBackingStoreTile(float scale)
      : m_scale(scale)
  {
-@@ -93,7 +116,10 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+@@ -93,7 +119,10 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
              WTFBeginSignpost(this, CopyTextureGPUToGPU);
              auto& buffer = static_cast<CoordinatedAcceleratedTileBuffer&>(update.buffer.get());
  
@@ -1206,7 +1516,7 @@ index be1e387..40ea3f7 100644
                  if (unscaledTileRect != m_rect) {
                      m_rect = unscaledTileRect;
                      m_texture = nullptr;
-@@ -102,11 +128,13 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+@@ -102,11 +131,13 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
                  // Fast path: whole tile content changed -- take ownership of the incoming texture, replacing the existing tile buffer (avoiding texture copies).
                  if (update.sourceRect.size() == update.tileRect.size()) {
                      ASSERT(update.sourceRect.location().isZero());
@@ -1220,7 +1530,7 @@ index be1e387..40ea3f7 100644
                      ensureTexture(update.tileRect.size(), buffer);
                      m_texture->copyFromExternalTexture(texture->id(), update.sourceRect, toIntSize(update.bufferOffset));
                  }
-@@ -119,6 +147,7 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
+@@ -119,6 +150,7 @@ void CoordinatedBackingStoreTile::processPendingUpdates()
  #endif
          auto& buffer = static_cast<CoordinatedUnacceleratedTileBuffer&>(update.buffer.get());
          auto data = buffer.takeData();
@@ -1228,6 +1538,45 @@ index be1e387..40ea3f7 100644
          if (!data.isEmpty()) {
              if (unscaledTileRect != m_rect) {
                  m_rect = unscaledTileRect;
+diff --git a/Source/WebCore/platform/graphics/coordinated/CoordinatedTileManager.cpp b/Source/WebCore/platform/graphics/coordinated/CoordinatedTileManager.cpp
+index f8b592e..28ae718 100644
+--- a/Source/WebCore/platform/graphics/coordinated/CoordinatedTileManager.cpp
++++ b/Source/WebCore/platform/graphics/coordinated/CoordinatedTileManager.cpp
+@@ -49,6 +49,13 @@
+ #include "FloatRect.h"
+ #endif
+ 
++#if defined(PS5_HOMEBREW) || PLATFORM(PLAYSTATION)
++// Defined in C (ps5_mesa.c) and PlatformDisplaySkia.cpp: they need C linkage, which a
++// declaration inside a function in a namespace cannot give.
++extern "C" int ps5_mesa_has_option(const char*) __attribute__((weak));
++extern "C" int ps5_skia_gpu(void) __attribute__((weak));
++#endif
++
+ namespace WebCore {
+ 
+ WTF_MAKE_TZONE_ALLOCATED_IMPL(CoordinatedTileManager);
+@@ -90,6 +97,20 @@ unsigned CoordinatedTileManager::numberOfGPUPaintingThreads()
+         // By default, use 2 GPU worker threads if there are four or more CPU cores, otherwise use 1 thread only.
+         numberOfThreads = WTF::numberOfProcessorCores() >= 4 ? 2 : 1;
+ 
++#if PLATFORM(PLAYSTATION)
++        // PS5 has 8 cores. When Skia GPU is active on Mesa, 4 painting threads
++        // prevent tile queues from backing up during and after page load.
++        // Switch "nofixworkers" or "gpuworkers=2" reverts to 2 threads.
++        if (ps5_skia_gpu && ps5_skia_gpu()) {
++            if (ps5_mesa_has_option && (ps5_mesa_has_option("nofixworkers") || ps5_mesa_has_option("gpuworkers=2")))
++                numberOfThreads = 2;
++            else if (ps5_mesa_has_option && ps5_mesa_has_option("gpuworkers=1"))
++                numberOfThreads = 1;
++            else
++                numberOfThreads = 4;
++        }
++#endif
++
+         if (const char* envString = getenv("WEBKIT_SKIA_GPU_PAINTING_THREADS")) {
+             auto newValue = parseInteger<unsigned>(StringView::fromLatin1(envString));
+             if (newValue && *newValue >= 1 && *newValue <= 4)
 diff --git a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp b/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
 index 6b675aa..9dda855 100644
 --- a/Source/WebKit/WebProcess/playstation/WebProcessPlayStation.cpp
