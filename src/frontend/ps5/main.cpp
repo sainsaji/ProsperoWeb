@@ -45,6 +45,9 @@
 // src/ps5/glslim (payload build only; the native title has no kernel access):
 // weak, so a build without it links.
 extern "C" int ps5_glslim_selftest(void) __attribute__((weak));
+// src/ps5/mesa (payload build with the Mesa bundle only): Mesa over EVO
+// Player's GPU broker.
+extern "C" int ps5_mesa_start(void) __attribute__((weak));
 
 #if PROSPEROWEB_NATIVE_TITLE
 #include <WebKit/WKRunLoop.h>
@@ -498,11 +501,26 @@ int main(int argc, char** argv) {
     // The main thread also runs the media presentation tick: above the
     // decoder threads, which inherit the default priority.
     raise_main_thread_priority();
+    // GPU compositing on Mesa (EVO #237): with /data/prosperoweb/mesa present
+    // and an endpoint from EVO (PROSPEROWEB_GPU_FD), EVO Player is the GPU
+    // owner and this process runs Mesa as its broker client. Its log is
+    // /data/prosperoweb/mesa.txt.
+    bool mesa = false;
+    if (ps5_mesa_start && std::getenv("PROSPEROWEB_GPU_FD")) {
+      struct stat st;
+      if (stat((std::string(kPs5DataDir) + "/mesa").c_str(), &st) == 0) {
+        mesa = ps5_mesa_start() == 0;
+        log_printf("main: Mesa GPU %s (mesa.txt)", mesa ? "ready" : "FAILED");
+        if (mesa) {
+          setenv("PROSPEROWEB_GPU_READY", "1", 1);
+        }
+      }
+    }
     // GPU compositing bring-up (EVO #237): with /data/prosperoweb/gpu
     // present, start Sony's GLES library here and check frames reach the GPU
     // and come back. Once started, every exit path tells the system
     // compositor Quit (ps5_glslim.c); its log is /data/prosperoweb/glslim.txt.
-    if (ps5_glslim_selftest) {
+    if (ps5_glslim_selftest && !mesa) {
       struct stat st;
       if (stat((std::string(kPs5DataDir) + "/gpu").c_str(), &st) == 0) {
         const int g = ps5_glslim_selftest();

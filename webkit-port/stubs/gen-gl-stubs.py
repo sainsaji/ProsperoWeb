@@ -6,9 +6,10 @@ Usage: gen-gl-stubs.py <sdk-include-dir> <out-dir>
 
 WebKit's PlayStation port compiles the TextureMapper / CoordinatedGraphics
 code unconditionally, so it references EGL and GLES entry points. Each one
-generated here forwards to Sony's GLES library (libSceGLSlimVSH) once the
-shell has started it in this process (src/ps5/glslim: ps5_glslim_proc(),
-linked weakly). Until then, and in processes that never start it, every call
+generated here forwards to Mesa (EGL + GLES over Zink on EVO Player's GPU
+broker, src/ps5/mesa: ps5_mesa_proc()) or to Sony's GLES library
+(libSceGLSlimVSH, src/ps5/glslim: ps5_glslim_proc()), whichever the shell
+started in this process; both are linked weakly. Until then, and in processes that never start it, every call
 fails as a stub: EGL_NO_DISPLAY, EGL_FALSE, NULL, eglGetError() ==
 EGL_NOT_INITIALIZED; GLES calls do nothing and return 0.
 """
@@ -60,10 +61,14 @@ def arg_names(args):
 
 
 PREAMBLE = """
+void* ps5_mesa_proc(const char* name) __attribute__((weak));
 void* ps5_glslim_proc(const char* name) __attribute__((weak));
 
 static void* ps5_gl_resolve(const char* name)
 {
+    void* p = ps5_mesa_proc ? ps5_mesa_proc(name) : (void*)0;
+    if (p)
+        return p;
     return ps5_glslim_proc ? ps5_glslim_proc(name) : (void*)0;
 }
 """

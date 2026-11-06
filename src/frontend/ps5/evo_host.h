@@ -85,6 +85,8 @@ class EvoHost final : public shell::EngineViewClient {
   void begin_exit(const char* why);
 
   static void spawn_progress(const char* event, void* self);
+  // EVO's GPU broker endpoint went to a WebProcess (spawn_glue): tell EVO.
+  static void gpu_client(int cookie, int pid, void* self);
 
   Ps5Config config_;
   std::unique_ptr<core::FileStorage> storage_;

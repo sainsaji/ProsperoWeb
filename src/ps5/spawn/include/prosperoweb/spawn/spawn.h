@@ -65,6 +65,17 @@ typedef void (*ps5_media_control_fn)(int fd, void* data);
 void ps5_spawn_set_media_control(ps5_media_control_fn audio, ps5_media_control_fn video,
                                  void* data);
 
+// GPU broker endpoint for the next WebProcess (EVO Player #237: EVO owns the
+// GPU and submits for the WebProcess's Mesa). The engine host stores the
+// endpoint EVO sent (fd ownership passes here; a second set replaces and
+// closes the first). The next WebProcess spawn inherits it, named by
+// PROSPEROWEB_GPU_FD in its environment, and the callback reports which pid
+// took which cookie. With /data/prosperoweb/mesa present, a WebProcess spawn
+// waits up to wait_ms for an endpoint that has not arrived yet.
+typedef void (*ps5_gpu_client_fn)(int cookie, int pid, void* data);
+void ps5_spawn_set_gpu_endpoint(int fd, int cookie);
+void ps5_spawn_set_gpu_client_cb(ps5_gpu_client_fn fn, void* data, int wait_ms);
+
 // --- Logging, provided by the executable (src/frontend/ps5/ps5_log.cpp). ---
 //
 // The spawner reports every spawn and every child-side failure through these,

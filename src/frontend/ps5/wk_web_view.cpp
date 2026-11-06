@@ -461,13 +461,15 @@ WkWebView::WkWebView(WKContextRef context, WKWebsiteDataStoreRef data_store,
 
   preferences_ = WKPreferencesCreate();
   WKPreferencesSetFullScreenEnabled(preferences_, fullscreen_enabled);
-  // Raster path (WKPagePaint) by default. With /data/prosperoweb/gpu the
-  // WebProcess composites layers on the GPU (src/ps5/glslim) and its frames
-  // still arrive here as ordinary bitmaps; if its GPU start fails it stays on
-  // the raster path by itself (no shared display, patch 0013).
+  // Raster path (WKPagePaint) by default. With /data/prosperoweb/mesa (Mesa
+  // over EVO Player's GPU broker, src/ps5/mesa) or /data/prosperoweb/gpu
+  // (Sony's GLES, src/ps5/glslim) the WebProcess composites layers on the GPU
+  // and its frames still arrive here as ordinary bitmaps; if its GPU start
+  // fails it stays on the raster path by itself (no shared display, patch 0013).
   {
     struct stat gpu_flag;
-    const bool gpu = stat("/data/prosperoweb/gpu", &gpu_flag) == 0;
+    const bool gpu = stat("/data/prosperoweb/mesa", &gpu_flag) == 0 ||
+                     stat("/data/prosperoweb/gpu", &gpu_flag) == 0;
     WKPreferencesSetAcceleratedCompositingEnabled(preferences_, gpu);
     log_printf("view %s: GPU compositing %s", name_.c_str(), gpu ? "requested" : "off");
   }

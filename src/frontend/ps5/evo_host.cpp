@@ -75,6 +75,7 @@ EvoHost::~EvoHost() {
     reader_.join();
   }
   ps5_spawn_set_progress(nullptr, nullptr);
+  ps5_spawn_set_gpu_client_cb(nullptr, nullptr, 0);
   WkWebView::set_damage_hook(nullptr, nullptr);
   for (int i = 0; i < 2; i++) {
     if (shm_[i]) {
@@ -222,6 +223,11 @@ int EvoHost::run() {
   apply_language_env(config_.language);
   WKRunLoopInitializeMain();
   ps5_spawn_set_progress(&EvoHost::spawn_progress, this);
+  // EVO sends a GPU endpoint as the first message: the reader starts before
+  // the web view, so the first WebProcess can get it (spawn waits up to 3 s
+  // for it with /data/prosperoweb/mesa present).
+  ps5_spawn_set_gpu_client_cb(&EvoHost::gpu_client, this, 3000);
+  reader_ = std::thread(&EvoHost::reader_main, this);
 
   // No gamepad bridge and no input trace: EVO owns the pad and sends only
   // pointer, wheel and key events.
@@ -237,7 +243,6 @@ int EvoHost::run() {
   running_ = true;
   WkWebView::set_damage_hook([](void* self) { static_cast<EvoHost*>(self)->request_frame(); },
                              this);
-  reader_ = std::thread(&EvoHost::reader_main, this);
   ticker_ = std::thread(&EvoHost::ticker_main, this);
   request_frame();
   WKRunLoopRunMain();
@@ -252,7 +257,48 @@ void EvoHost::reader_main() {
   std::vector<std::uint8_t> buf(EVOB_MAX_PACKET);
   const char* why = "EVO closed the channel";
   for (;;) {
-    const ssize_t n = recv(kChannelFd, buf.data(), buf.size(), 0);
+    struct iovec iov {buf.data(), buf.size()};
+    union {
+      struct cmsghdr h;
+      char space[CMSG_SPACE(sizeof(int) * EVOB_MAX_BUFS)];
+    } ctl;
+    std::memset(&ctl, 0, sizeof ctl);
+    struct msghdr m {};
+    m.msg_iov = &iov;
+    m.msg_iovlen = 1;
+    m.msg_control = ctl.space;
+    m.msg_controllen = sizeof ctl.space;
+    const ssize_t n = recvmsg(kChannelFd, &m, 0);
+    std::vector<int> fds;
+    if (n > 0) {
+      for (struct cmsghdr* c = CMSG_FIRSTHDR(&m); c; c = CMSG_NXTHDR(&m, c)) {
+        if (c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS) continue;
+        const std::size_t k = (c->cmsg_len - CMSG_LEN(0)) / sizeof(int);
+        for (std::size_t i = 0; i < k; i++) {
+          int fd;
+          std::memcpy(&fd, CMSG_DATA(c) + i * sizeof(int), sizeof fd);
+          fds.push_back(fd);
+        }
+      }
+    }
+    if (n > 0) {
+      evohost::Packet gp;
+      if (evohost::parse(buf.data(), static_cast<std::size_t>(n), &gp) &&
+          gp.type == EVOB_GPU_ENDPOINT) {
+        // Handled here, not on the main loop: the first WebProcess spawn
+        // (inside WebKit, while the main loop is busy) waits for it.
+        evob_gpu g{-1, 0};
+        gp.body(&g);
+        const int fd = fds.empty() ? -1 : fds[0];
+        for (std::size_t i = 1; i < fds.size(); i++) close(fds[i]);
+        log_printf("evo-host: GPU endpoint from EVO: fd %d cookie %d", fd, g.cookie);
+        if (fd >= 0) {
+          ps5_spawn_set_gpu_endpoint(fd, g.cookie);
+        }
+        continue;
+      }
+    }
+    for (int fd : fds) close(fd);  // no other message carries descriptors
     if (n == 0) {
       break;
     }
@@ -444,9 +490,10 @@ void EvoHost::resize(int width, int height, int scale) {
   // GPU compositing (/data/prosperoweb/gpu) runs in Sony's 48 MB GLES grant:
   // a 2x page (3584x1888 target plus its tiles) does not fit and its layers
   // come out blank, so the page is composited at 1x and EVO scales it up.
+  // Mesa (/data/prosperoweb/mesa) starts at 1x too, until 2x is measured.
   static const bool gpu = [] {
     struct stat flag;
-    return stat("/data/prosperoweb/gpu", &flag) == 0;
+    return stat("/data/prosperoweb/gpu", &flag) == 0 || stat("/data/prosperoweb/mesa", &flag) == 0;
   }();
   if (gpu) {
     scale = 1;
@@ -580,6 +627,13 @@ void EvoHost::note_damage_rects(const display::Region& dirty) {
   damage_seen_.clear();
   damage_frames_ = 0;
   throttled_skips_ = 0;
+}
+
+void EvoHost::gpu_client(int cookie, int pid, void* data) {
+  auto* self = static_cast<EvoHost*>(data);
+  const evob_gpu g{cookie, pid};
+  log_printf("evo-host: GPU endpoint cookie %d went to WebProcess pid %d", cookie, pid);
+  self->send_packet(evohost::pack(EVOB_GPU_CLIENT, &g, sizeof g));
 }
 
 void EvoHost::spawn_progress(const char* event, void* data) {

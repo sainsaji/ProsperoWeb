@@ -134,6 +134,19 @@ target_link_libraries(prosperoweb PRIVATE
   # ps5_glslim.c: sceSysmoduleLoadModuleInternal
   SceSysmodule)
 target_link_directories(prosperoweb PRIVATE ${SDL2_LIBRARY_DIRS})
+# Mesa over EVO Player's GPU broker (src/ps5/mesa, EVO #237), payload only:
+# one prebuilt object (scripts/ps5/fetch-mesa-bundle.sh) whose only exports
+# are mesa_eglGetProcAddress and ps5_gpu_client_*. Without it the WebProcess
+# keeps GLSlim and the raster path.
+set(PROSPEROWEB_MESA_BUNDLE "${CMAKE_SOURCE_DIR}/third_party/mesa-bundle/ps5_mesa_gpu.o"
+    CACHE FILEPATH "Mesa GPU bundle object (EVO Player tools/build_mesa_bundle.sh)")
+if(EXISTS "${PROSPEROWEB_MESA_BUNDLE}")
+  message(STATUS "Mesa GPU bundle: ${PROSPEROWEB_MESA_BUNDLE}")
+  target_sources(prosperoweb PRIVATE "${CMAKE_SOURCE_DIR}/src/ps5/mesa/ps5_mesa.c")
+  target_link_libraries(prosperoweb PRIVATE "${PROSPEROWEB_MESA_BUNDLE}")
+else()
+  message(STATUS "Mesa GPU bundle: not found (${PROSPEROWEB_MESA_BUNDLE}), WebProcess without Mesa")
+endif()
 # libWebKitPS5.a holds every WebKit object; drop what the browser never reaches.
 target_link_options(prosperoweb PRIVATE -Wl,--gc-sections)
 # Every thread passes through ps5_cpu_affinity.cpp (mask at start, registry

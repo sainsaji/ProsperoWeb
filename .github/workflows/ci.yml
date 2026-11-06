@@ -245,6 +245,9 @@ jobs:
       # --- Frontend and packaging ----------------------------------------------
       - name: Build the PS5 frontend
         run: |
+          # Mesa for the WebProcess (EVO Player #237); without it the build
+          # goes on with GLSlim and the raster path.
+          scripts/ci/timed.sh "Mesa bundle" scripts/ps5/fetch-mesa-bundle.sh
           cmake -S . -B build-ps5 \
             -DCMAKE_TOOLCHAIN_FILE="${PS5_PAYLOAD_SDK}/toolchain/prospero.cmake" \
             -D"${CMAKE_OPTION_PREFIX}_FRONTEND=ps5" -D"${CMAKE_OPTION_PREFIX}_BUILD_TESTS=OFF" \

@@ -15,6 +15,7 @@
 #include <atomic>
 #include <cerrno>
 #include <chrono>
+#include <condition_variable>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
@@ -350,6 +351,44 @@ std::atomic<ps5_media_control_fn> g_media_audio_cb{nullptr};
 std::atomic<ps5_media_control_fn> g_media_video_cb{nullptr};
 std::atomic<void*> g_media_cb_data{nullptr};
 
+// GPU broker endpoint (ps5_spawn_set_gpu_endpoint): one waiting for the next
+// WebProcess.
+std::mutex g_gpu_mu;
+std::condition_variable g_gpu_cv;
+int g_gpu_fd = -1;
+int g_gpu_cookie = -1;
+ps5_gpu_client_fn g_gpu_cb = nullptr;
+void* g_gpu_cb_data = nullptr;
+int g_gpu_wait_ms = 0;
+
+// The waiting endpoint, or -1 (after waiting up to g_gpu_wait_ms when the
+// Mesa flag is set). The caller owns the fd.
+int take_gpu_endpoint(int* cookie) {
+  std::unique_lock<std::mutex> lock(g_gpu_mu);
+  if (g_gpu_fd < 0 && g_gpu_wait_ms > 0) {
+    struct stat st;
+    if (stat("/data/prosperoweb/mesa", &st) == 0) {
+      g_gpu_cv.wait_for(lock, std::chrono::milliseconds(g_gpu_wait_ms),
+                        [] { return g_gpu_fd >= 0; });
+    }
+  }
+  const int fd = g_gpu_fd;
+  *cookie = g_gpu_cookie;
+  g_gpu_fd = -1;
+  g_gpu_cookie = -1;
+  return fd;
+}
+
+void give_back_gpu_endpoint(int fd, int cookie) {
+  std::lock_guard<std::mutex> lock(g_gpu_mu);
+  if (g_gpu_fd >= 0) {
+    close(fd);  // a newer one arrived meanwhile
+    return;
+  }
+  g_gpu_fd = fd;
+  g_gpu_cookie = cookie;
+}
+
 // One AF_UNIX SOCK_SEQPACKET control socket handed to a WebProcess: the UI
 // end goes to a media server, the child end is injected as an inherited fd.
 struct ControlPair {
@@ -563,6 +602,44 @@ int spawn_via_broker(const char* const* argv, const int* fds, int nfds) {
     }
   }
 
+  // EVO's GPU broker endpoint (#237): the WebProcess's Mesa binds it.
+  int gpu_cookie = -1;
+  int gpu_fd = -1;
+  if (std::strcmp(role, "WebProcess") == 0 &&
+      static_cast<int>(all_fds.size()) < kBrokerMaxFds) {
+    gpu_fd = take_gpu_endpoint(&gpu_cookie);
+    if (gpu_fd >= 0) {
+      const int child = 3 + static_cast<int>(all_fds.size());
+      env.push_back("PROSPEROWEB_GPU_FD=" + std::to_string(child));
+      all_fds.push_back(gpu_fd);
+      ps5_log_printf("spawn: role=%s GPU endpoint (cookie %d) at child fd %d", role, gpu_cookie,
+                     child);
+    }
+  }
+  auto gpu_spawned = [&](int pid) {
+    if (gpu_fd < 0) {
+      return;
+    }
+    close(gpu_fd);
+    gpu_fd = -1;
+    ps5_gpu_client_fn cb;
+    void* data;
+    {
+      std::lock_guard<std::mutex> lock(g_gpu_mu);
+      cb = g_gpu_cb;
+      data = g_gpu_cb_data;
+    }
+    if (cb) {
+      cb(gpu_cookie, pid, data);
+    }
+  };
+  auto gpu_failed = [&] {
+    if (gpu_fd >= 0) {
+      give_back_gpu_endpoint(gpu_fd, gpu_cookie);
+      gpu_fd = -1;
+    }
+  };
+
   json jenv = json::array();
   for (const auto& entry : env) {
     jenv.push_back(entry);
@@ -625,11 +702,13 @@ int spawn_via_broker(const char* const* argv, const int* fds, int nfds) {
       if (broker_get_bool(reply, "ok", false)) {
         const int pid = static_cast<int>(broker_get_int(reply, "pid", -1));
         deliver_control();
+        gpu_spawned(pid);
         ps5_log_printf("spawn: role=%s pid=%d via broker (%s) in %lldms", role, pid,
                        tcp ? "tcp, rdup" : "unix, SCM_RIGHTS", ms_since(t0));
         return pid;
       }
       discard_control();
+      gpu_failed();
       const int err = static_cast<int>(broker_get_int(reply, "errno", 0));
       ps5_log_printf("spawn: role=%s FAILED via broker at %s: errno %d (%s) %s", role,
                      broker_get_string(reply, "stage", "?").c_str(), err,
@@ -648,12 +727,15 @@ int spawn_via_broker(const char* const* argv, const int* fds, int nfds) {
     if (pid > 0) {
       g_direct_pids.insert(pid);
       deliver_control();
+      gpu_spawned(pid);
     } else {
       discard_control();
+      gpu_failed();
     }
     return pid;
   }
   discard_control();
+  gpu_failed();
   ps5_log_printf("spawn: role=%s FAILED: no spawn broker (in-process spawning from the "
                  "big app panics the console; PROSPEROWEB_SPAWN_FALLBACK=direct forces it)",
                  role);
@@ -790,6 +872,25 @@ extern "C" void ps5_spawn_set_media_control(ps5_media_control_fn audio, ps5_medi
   g_media_cb_data.store(data, std::memory_order_release);
   g_media_audio_cb.store(audio, std::memory_order_release);
   g_media_video_cb.store(video, std::memory_order_release);
+}
+
+extern "C" void ps5_spawn_set_gpu_endpoint(int fd, int cookie) {
+  {
+    std::lock_guard<std::mutex> lock(g_gpu_mu);
+    if (g_gpu_fd >= 0) {
+      close(g_gpu_fd);
+    }
+    g_gpu_fd = fd;
+    g_gpu_cookie = cookie;
+  }
+  g_gpu_cv.notify_all();
+}
+
+extern "C" void ps5_spawn_set_gpu_client_cb(ps5_gpu_client_fn fn, void* data, int wait_ms) {
+  std::lock_guard<std::mutex> lock(g_gpu_mu);
+  g_gpu_cb = fn;
+  g_gpu_cb_data = data;
+  g_gpu_wait_ms = wait_ms;
 }
 
 extern "C" int ps5_terminate_process(int pid) {

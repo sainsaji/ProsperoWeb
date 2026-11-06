@@ -5,10 +5,14 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+void* ps5_mesa_proc(const char* name) __attribute__((weak));
 void* ps5_glslim_proc(const char* name) __attribute__((weak));
 
 static void* ps5_gl_resolve(const char* name)
 {
+    void* p = ps5_mesa_proc ? ps5_mesa_proc(name) : (void*)0;
+    if (p)
+        return p;
     return ps5_glslim_proc ? ps5_glslim_proc(name) : (void*)0;
 }
 

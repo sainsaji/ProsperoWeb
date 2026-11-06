@@ -13,11 +13,15 @@ touches GL (GLSlim aborts when a second context is made current on another
 thread): BitmapTexturePool's timer no longer borrows the sharing context,
 and the compositor thread releases unused pool textures itself.
 
+With Mesa instead (src/ps5/mesa, EVO Player as the GPU owner,
+ps5_mesa_active()): surfaceless contexts, no frame end, and TextureMapper's
+own GLSL is compiled; the FBO, readback and Update path is shared.
+
 diff --git a/Source/WebCore/platform/graphics/egl/GLContext.cpp b/Source/WebCore/platform/graphics/egl/GLContext.cpp
-index 6b748ca..2082cb8 100644
+index 6b748ca..8de3777 100644
 --- a/Source/WebCore/platform/graphics/egl/GLContext.cpp
 +++ b/Source/WebCore/platform/graphics/egl/GLContext.cpp
-@@ -38,6 +38,13 @@
+@@ -38,6 +38,15 @@
  #include <GLES2/gl2ext.h>
  #endif
  
@@ -26,12 +30,14 @@ index 6b748ca..2082cb8 100644
 +// boundary, and the frame only reaches the GPU with the shell's frame end
 +// (src/ps5/glslim: swap, flush, wait for the frame's GPU label).
 +extern "C" long ps5_glslim_frame_end(void* display, void* surface) __attribute__((weak));
++// Mesa over EVO Player's GPU broker (src/ps5/mesa): plain EGL, no frame end.
++extern "C" int ps5_mesa_active(void) __attribute__((weak));
 +#endif
 +
  namespace WebCore {
  
  WTF_MAKE_TZONE_ALLOCATED_IMPL(GLContext);
-@@ -219,7 +226,11 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
+@@ -219,7 +228,11 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
          return nullptr;
      }
  
@@ -43,11 +49,18 @@ index 6b748ca..2082cb8 100644
      EGLSurface surface = eglCreatePbufferSurface(eglDisplay, config, pbufferAttributes);
      if (surface == EGL_NO_SURFACE) {
          RELEASE_LOG_INFO(Compositing, "Cannot create EGL Pbuffer surface: %s\n", lastErrorString());
-@@ -232,6 +243,12 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
+@@ -232,6 +245,19 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
  
  std::unique_ptr<GLContext> GLContext::createOffscreenContext(GLDisplay& display, Target target, EGLContext sharingContext)
  {
 +#if defined(PS5_HOMEBREW)
++    // Mesa (src/ps5/mesa) makes surfaceless contexts like any EGL 1.5.
++    if (ps5_mesa_active && ps5_mesa_active()) {
++        if (auto context = createSurfacelessContext(display, target, sharingContext))
++            return context;
++        RELEASE_LOG_INFO(Compositing, "Mesa: no surfaceless context (%s), trying a pbuffer.", lastErrorString());
++        return createPbufferContext(display, sharingContext);
++    }
 +    // Sony's GLES library makes a context current only with a surface
 +    // (surfaceless: EGL_BAD_MATCH), and its swap is the frame boundary.
 +    UNUSED_PARAM(target);
@@ -56,7 +69,7 @@ index 6b748ca..2082cb8 100644
      if (auto context = createSurfacelessContext(display, target, sharingContext))
          return context;
  
-@@ -259,6 +276,7 @@ std::unique_ptr<GLContext> GLContext::createOffscreenContext(GLDisplay& display,
+@@ -259,6 +285,7 @@ std::unique_ptr<GLContext> GLContext::createOffscreenContext(GLDisplay& display,
  
      RELEASE_LOG_INFO(Compositing, "Could not create Pbuffer context: %s.", lastErrorString());
      return nullptr;
@@ -64,14 +77,14 @@ index 6b748ca..2082cb8 100644
  }
  
  std::unique_ptr<GLContext> GLContext::create(GLDisplay& display, Target target, GLContext* sharingGLContext, GLNativeWindowType window)
-@@ -575,8 +593,15 @@ void GLContext::swapBuffers()
+@@ -575,8 +602,15 @@ void GLContext::swapBuffers()
      if (m_surface == EGL_NO_SURFACE)
          return;
  
 -    if (auto display = m_display.get())
 +    if (auto display = m_display.get()) {
 +#if defined(PS5_HOMEBREW)
-+        if (ps5_glslim_frame_end) {
++        if (ps5_glslim_frame_end && !(ps5_mesa_active && ps5_mesa_active())) {
 +            ps5_glslim_frame_end(display->eglDisplay(), m_surface);
 +            return;
 +        }
@@ -133,7 +146,7 @@ index f4510ce..fa1d740 100644
      GLuint m_vertexShader;
      GLuint m_fragmentShader;
 diff --git a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
-index 9cc95ad..bc10fdb 100644
+index 9cc95ad..ac3ff66 100644
 --- a/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
 +++ b/Source/WebCore/platform/graphics/texmap/TextureMapperShaderProgram.cpp
 @@ -28,6 +28,11 @@
@@ -148,19 +161,29 @@ index 9cc95ad..bc10fdb 100644
  namespace WebCore {
  
  static inline bool compositingLogEnabled()
-@@ -689,6 +694,11 @@ static const char* fragmentTemplateCommon =
+@@ -687,8 +692,21 @@ static const char* fragmentTemplateCommon =
+     );
+ // clang-format on
  
++#if defined(PS5_HOMEBREW)
++extern "C" int ps5_mesa_active(void) __attribute__((weak));
++#endif
++
  Ref<TextureMapperShaderProgram> TextureMapperShaderProgram::create(TextureMapperShaderProgram::Options options)
  {
 +#if defined(PS5_HOMEBREW)
-+    if (auto program = createFromBinaries(options))
-+        return program.releaseNonNull();
++    // Mesa (src/ps5/mesa) compiles the GLSL below; only GLSlim needs Sony's
++    // binaries.
++    if (!(ps5_mesa_active && ps5_mesa_active())) {
++        if (auto program = createFromBinaries(options))
++            return program.releaseNonNull();
++    }
 +#endif
 +
  #define SET_APPLIER_FROM_OPTIONS(Applier) \
      optionsApplierBuilder.append(\
          (options & TextureMapperShaderProgram::Applier) ? unsafeSpan(ENABLE_APPLIER(Applier)) : unsafeSpan(DISABLE_APPLIER(Applier)))
-@@ -849,6 +859,121 @@ TextureMapperShaderProgram::TextureMapperShaderProgram(const String& vertex, con
+@@ -849,6 +867,121 @@ TextureMapperShaderProgram::TextureMapperShaderProgram(const String& vertex, con
      LOG(Compositing, "Program log: %s\n", getProgramLog(m_id));
  }
  

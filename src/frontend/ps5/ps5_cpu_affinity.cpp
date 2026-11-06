@@ -283,6 +283,13 @@ int __real_pthread_create(pthread_t* thread, const pthread_attr_t* attr, void* (
                           void* arg);
 [[noreturn]] void __real_pthread_exit(void* value);
 
+// The least stack a new thread gets; 0 leaves the creator's choice
+// (ps5_thread_set_min_stack, called by src/ps5/mesa once Mesa starts).
+std::atomic<std::size_t> ps5_thread_min_stack{0};
+void ps5_thread_set_min_stack(std::size_t bytes) {
+  ps5_thread_min_stack.store(bytes, std::memory_order_release);
+}
+
 int __wrap_pthread_create(pthread_t* thread, const pthread_attr_t* attr, void* (*fn)(void*),
                           void* arg) {
   using prosperoweb::frontend::Start;
@@ -303,6 +310,34 @@ int __wrap_pthread_create(pthread_t* thread, const pthread_attr_t* attr, void* (
     }
   } else if (pthread_attr_getstacksize(attr, &size) == 0 && size < kMinStack) {
     pthread_attr_setstacksize(const_cast<pthread_attr_t*>(attr), kMinStack);
+  }
+  struct AttrGuard {
+    pthread_attr_t* attr;
+    ~AttrGuard() {
+      if (attr) {
+        pthread_attr_destroy(attr);
+      }
+    }
+  } guard{own_attr ? &local : nullptr};
+#else
+  // Mesa in the WebProcess (src/ps5/mesa, EVO Player #237): GLSL compiles on
+  // whichever thread draws, and nir_opt_varyings alone takes a ~93 KB frame,
+  // so once Mesa starts every thread gets at least 2 MiB (libkernel's own
+  // stacks, flexible memory; a payload has almost no direct memory).
+  const std::size_t min_stack = ps5_thread_min_stack.load(std::memory_order_acquire);
+  pthread_attr_t local;
+  bool own_attr = false;
+  if (min_stack) {
+    std::size_t size = 0;
+    if (!attr) {
+      if (pthread_attr_init(&local) == 0) {
+        pthread_attr_setstacksize(&local, min_stack);
+        attr = &local;
+        own_attr = true;
+      }
+    } else if (pthread_attr_getstacksize(attr, &size) == 0 && size < min_stack) {
+      pthread_attr_setstacksize(const_cast<pthread_attr_t*>(attr), min_stack);
+    }
   }
   struct AttrGuard {
     pthread_attr_t* attr;
