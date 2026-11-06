@@ -530,10 +530,10 @@ index 4291652..fab6803 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..619d0ba 100644
+index 28ef84d..fe701d3 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,499 @@
+@@ -55,11 +55,523 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -825,8 +825,10 @@ index 28ef84d..619d0ba 100644
 +    // Whole-frame fast path: no CPU diff, no CPU swizzle, no second copy.
 +    // Probing every 8 frames causes stuttering every 130ms during scrolling.
 +    // Default to 64 frames unless "nofixprobe" is specified.
++    // The word "noprobe" never re-measures: once the fast path is on it stays on.
++    static const bool noProbe = ps5_mesa_has_option && ps5_mesa_has_option("noprobe");
 +    const unsigned probeInterval = (ps5_mesa_has_option && ps5_mesa_has_option("nofixprobe")) ? 8u : 64u;
-+    if (m_ps5FastOk && m_ps5WholeMode && (m_ps5ProbeCounter++ % probeInterval) >= 2) {
++    if (m_ps5FastOk && m_ps5WholeMode && (noProbe || (m_ps5ProbeCounter++ % probeInterval) >= 2)) {
 +        auto fastBitmap = ShareableBitmap::create({ size });
 +        if (fastBitmap && fastBitmap->bytesPerRow() == static_cast<unsigned>(size.width()) * 4) {
 +            typedef void (*BlitFn)(int, int, int, int, int, int, int, int, unsigned, unsigned);
@@ -890,6 +892,28 @@ index 28ef84d..619d0ba 100644
 +    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_ps5Pixels.mutableSpan().data());
 +    const MonotonicTime readDone = MonotonicTime::now();
 +    m_ps5Stats.readMs += (readDone - start).milliseconds();
++
++    // The word "glitch": a page is never black. Log a read-back that is, with the path it took.
++    {
++        static const bool glitchWord = ps5_mesa_has_option && ps5_mesa_has_option("glitch");
++        if (glitchWord) {
++            const uint8_t* px = m_ps5Pixels.span().data();
++            const size_t total = static_cast<size_t>(size.width()) * size.height();
++            unsigned dark = 0, samples = 0;
++            for (size_t i = 0; i < total; i += 997) {
++                ++samples;
++                if (px[i * 4] < 12 && px[i * 4 + 1] < 12 && px[i * 4 + 2] < 12)
++                    ++dark;
++            }
++            static unsigned diffFrames, blackDiffFrames;
++            ++diffFrames;
++            if (dark * 10 > samples * 9) {
++                ++blackDiffFrames;
++                if (ps5_mesa_log)
++                    ps5_mesa_log("glitch: BLACK read-back on the diff path (%u of %u samples dark), have previous %d, probe counter %u, whole mode %d; %u black of %u diff-path frames", dark, samples, m_ps5HavePrevious, m_ps5ProbeCounter, m_ps5WholeMode, blackDiffFrames, diffFrames);
++            }
++        }
++    }
 +
 +    // The texture pool's own timer cannot release on the main thread here
 +    // (BitmapTexturePool.cpp, PS5_HOMEBREW): do it on this thread, with the
@@ -1033,7 +1057,7 @@ index 28ef84d..619d0ba 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +828,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +852,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -1045,7 +1069,7 @@ index 28ef84d..619d0ba 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +847,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +871,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -1057,7 +1081,7 @@ index 28ef84d..619d0ba 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +864,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +888,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -1072,7 +1096,7 @@ index 28ef84d..619d0ba 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +890,13 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +914,13 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -1086,7 +1110,7 @@ index 28ef84d..619d0ba 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +905,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +929,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -1094,7 +1118,7 @@ index 28ef84d..619d0ba 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +924,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +948,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
@@ -1107,7 +1131,7 @@ index 28ef84d..619d0ba 100644
      if (!m_target)
          return;
  
-@@ -421,6 +941,9 @@ void AcceleratedSurface::didRenderFrame()
+@@ -421,6 +965,9 @@ void AcceleratedSurface::didRenderFrame()
  
  void AcceleratedSurface::frameDone()
  {
