@@ -23,6 +23,11 @@
 #include "ps5_log.h"
 #include "ps5_runtime_env.h"
 
+// WebKit's UI side (patch 0022): the shortest time between two frame acks to
+// the WebProcess, in ms. With Mesa the host sets it to its idle frame time, so
+// the WebProcess composites only the frames the host will publish.
+extern "C" int ps5_ui_frame_interval_ms __attribute__((weak));
+
 namespace prosperoweb::frontend {
 
 namespace {
@@ -539,6 +544,14 @@ void EvoHost::paint_and_publish() {
     // WebKit renders an animation on the CPU whatever the host takes, so the
     // throttle alone does not stop a page from using a core while it is read.
     view_->run_javascript(idle ? kPauseIdleAnimations : kResumeIdleAnimations);
+    // Mesa: hold the WebProcess to the idle frame rate as well.
+    static const bool mesa = [] {
+      struct stat flag;
+      return stat("/data/prosperoweb/mesa", &flag) == 0;
+    }();
+    if (mesa && &ps5_ui_frame_interval_ms) {
+      ps5_ui_frame_interval_ms = idle ? kIdleFrameMs : 0;
+    }
   }
   if (idle && now - last_publish_ < std::chrono::milliseconds(kIdleFrameMs)) {
     if (!view_->web().dirty_empty()) {

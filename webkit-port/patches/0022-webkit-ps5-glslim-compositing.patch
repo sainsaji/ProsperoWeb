@@ -951,3 +951,51 @@ index 6b675aa..70b8d45 100644
  #endif
      applyProcessCreationParameters(WTF::move(parameters.auxiliaryProcessParameters));
  }
+diff --git a/Source/WebKit/UIProcess/CoordinatedGraphics/DrawingAreaProxyCoordinatedGraphics.cpp b/Source/WebKit/UIProcess/CoordinatedGraphics/DrawingAreaProxyCoordinatedGraphics.cpp
+index 6103e6c..495d75a 100644
+--- a/Source/WebKit/UIProcess/CoordinatedGraphics/DrawingAreaProxyCoordinatedGraphics.cpp
++++ b/Source/WebKit/UIProcess/CoordinatedGraphics/DrawingAreaProxyCoordinatedGraphics.cpp
+@@ -29,6 +29,13 @@
+ #include "DrawingAreaProxyCoordinatedGraphics.h"
+ #include <atomic>
+ 
++#if defined(PS5_HOMEBREW)
++// Set by the shell (evo-host): the shortest time between two frame acks, in ms.
++extern "C" {
++int ps5_ui_frame_interval_ms = 0;
++}
++#endif
++
+ #if defined(PS5_HOMEBREW) && !defined(PS5_TRACE)
+ // ProsperoWeb diagnostics (console run 24: page updates never reached the
+ // screen in the native title): the shell's logger, when linked.
+@@ -241,8 +248,27 @@ void DrawingAreaProxyCoordinatedGraphics::update(uint64_t, UpdateInfo&& updateIn
+ 
+     incorporateUpdate(WTF::move(updateInfo));
+ 
+-    if (!m_isWaitingForDidUpdateGeometry)
+-        send(Messages::DrawingArea::DisplayDidRefresh(MonotonicTime::now()));
++    if (m_isWaitingForDidUpdateGeometry)
++        return;
++#if defined(PS5_HOMEBREW)
++    // The shell's frame interval (ps5_ui_frame_interval_ms, 0 = none): the
++    // ack that lets the WebProcess start its next frame waits until that long
++    // after the previous ack, so it draws no more frames than the shell shows.
++    static MonotonicTime lastAck;
++    const int intervalMs = ps5_ui_frame_interval_ms;
++    const MonotonicTime now = MonotonicTime::now();
++    const Seconds wait = Seconds::fromMilliseconds(intervalMs) - (now - lastAck);
++    if (intervalMs > 0 && wait > 0_s) {
++        lastAck = now + wait;
++        RunLoop::mainSingleton().dispatchAfter(wait, [protectedThis = Ref { *this }] {
++            if (!protectedThis->m_isWaitingForDidUpdateGeometry)
++                protectedThis->send(Messages::DrawingArea::DisplayDidRefresh(MonotonicTime::now()));
++        });
++        return;
++    }
++    lastAck = now;
++#endif
++    send(Messages::DrawingArea::DisplayDidRefresh(MonotonicTime::now()));
+ }
+ 
+ void DrawingAreaProxyCoordinatedGraphics::exitAcceleratedCompositingMode(uint64_t, UpdateInfo&& updateInfo)
