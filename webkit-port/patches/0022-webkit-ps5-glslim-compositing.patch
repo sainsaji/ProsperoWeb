@@ -530,7 +530,7 @@ index 4291652..fab6803 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..d5541a5 100644
+index 28ef84d..619d0ba 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 @@ -55,11 +55,499 @@
@@ -794,13 +794,13 @@ index 28ef84d..d5541a5 100644
 +            snprintf(path, sizeof(path), "/data/prosperoweb/glitch_%u.ppm", dumps);
 +            if (FILE* file = fopen(path, "wb")) {
 +                fprintf(file, "P6\n%d %d\n255\n", width / 4, height / 4);
-+                fwrite(small1.data(), 1, smallSize, file);
++                fwrite(small1.span().data(), 1, smallSize, file);
 +                fclose(file);
 +            }
 +            snprintf(path, sizeof(path), "/data/prosperoweb/glitch_%u_next.ppm", dumps);
 +            if (FILE* file = fopen(path, "wb")) {
 +                fprintf(file, "P6\n%d %d\n255\n", width / 4, height / 4);
-+                fwrite(small0.data(), 1, smallSize, file);
++                fwrite(small0.span().data(), 1, smallSize, file);
 +                fclose(file);
 +            }
 +            ++dumps;
