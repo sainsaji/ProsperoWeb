@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>animtest</title>
+<!-- One animation per page, to find which kind stops under Mesa + Skia GPU.
+     The page type comes from the file name: t_bg.html (moving gradient, a main
+     thread repaint), t_canvas.html (script-drawn canvas), t_shadow.html (pulsing
+     shadow, repaint), t_spin.html (transform, compositor only), t_text.html
+     (a counter that changes text every 100 ms). Copy this file to those names. -->
+<style>
+  body { margin: 0; background: #0d1020; color: #fff; font: 28px sans-serif; }
+  #a { position: absolute; left: 300px; top: 200px; width: 500px; height: 300px; border-radius: 12px; }
+  @keyframes bgmove { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(90,124,255,0); } 50% { box-shadow: 0 0 40px 20px rgba(90,124,255,.9); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .bg { background: linear-gradient(90deg, #e33, #3e3, #33e, #e33); background-size: 300% 100%; animation: bgmove 3s linear infinite; }
+  .shadow { background: #223; animation: pulse 1.5s ease-in-out infinite; }
+  .spin { background: linear-gradient(90deg, #e33, #33e); animation: spin 3s linear infinite; }
+</style></head>
+<body>
+<div id="a"></div>
+<script>
+  var kind = (location.pathname.match(/t_(\w+)\.html/) || [0, "bg"])[1];
+  var a = document.getElementById("a");
+  if (kind === "canvas") {
+    a.outerHTML = "<canvas id='a' width='500' height='300' style='position:absolute;left:300px;top:200px'></canvas>";
+    var g = document.getElementById("a").getContext("2d"), t = 0;
+    (function f() { t++; g.fillStyle = "#123"; g.fillRect(0, 0, 500, 300); g.fillStyle = "hsl(" + (t * 4 % 360) + ",80%,60%)"; g.fillRect((t * 5) % 450, 120, 50, 50); requestAnimationFrame(f); })();
+  } else if (kind === "text") {
+    var n = 0; a.style.cssText += ";font-size:80px"; setInterval(function () { a.textContent = "count " + (n++); }, 100);
+  } else a.className = kind;
+</script>
+</body></html>

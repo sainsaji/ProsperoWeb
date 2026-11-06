@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       clang-18 lld-18 llvm-18 cmake ninja-build ruby perl python3 gperf unifdef \
       pkg-config autoconf automake libtool bison flex wget unzip python3-pyelftools \
       python3-venv curl ccache zip file zlib1g-dev imagemagick librsvg2-bin \
-      git ca-certificates xz-utils patch make rsync sudo \
+      git ca-certificates xz-utils patch make rsync sudo build-essential m4 gettext \
     && rm -rf /var/lib/apt/lists/*
 
 # The SDK, installed the way scripts/ci/install-ps5-sdk.sh does it in CI.

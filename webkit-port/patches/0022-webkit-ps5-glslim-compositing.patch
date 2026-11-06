@@ -1107,43 +1107,24 @@ index de183ec..3d7ff5c 100644
      auto& glDisplay = PlatformDisplay::sharedDisplay().glDisplay();
      if (GLFence::isSupported(glDisplay)) {
          grContext->submit(GrSyncCpu::kNo);
-diff --git a/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp b/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
-index 6b3597b..1e2de0b 100644
---- a/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
-+++ b/Source/WebCore/platform/graphics/egl/BitmapTexture.cpp
-@@ -93,6 +93,10 @@ static const GLenum s_pixelDataType = GL_UNSIGNED_BYTE;
- #define GL_DEPTH24_STENCIL8 0x88F0
- #endif
+diff --git a/Source/WebCore/platform/graphics/skia/ImageBufferSkiaAcceleratedBackend.cpp b/Source/WebCore/platform/graphics/skia/ImageBufferSkiaAcceleratedBackend.cpp
+index 43fc0cf..d94b4fb 100644
+--- a/Source/WebCore/platform/graphics/skia/ImageBufferSkiaAcceleratedBackend.cpp
++++ b/Source/WebCore/platform/graphics/skia/ImageBufferSkiaAcceleratedBackend.cpp
+@@ -104,6 +104,13 @@ std::unique_ptr<ImageBufferSkiaAcceleratedBackend> ImageBufferSkiaAcceleratedBac
+     if (backendSize.isEmpty())
+         return nullptr;
  
 +#if defined(PS5_HOMEBREW)
-+extern "C" void ps5_mesa_log(const char* fmt, ...) __attribute__((weak));
++    // A canvas drawn on the GPU in the page's main thread flickered and never
++    // updated under Mesa (EVO #237, animtest t_canvas): canvases stay on the
++    // CPU, tiles and the rest paint on the GPU.
++    if (parameters.purpose == RenderingPurpose::Canvas)
++        return nullptr;
 +#endif
-+
- namespace WebCore {
- 
- void BitmapTexture::determineRenderTargetAndBinding()
-@@ -465,7 +469,21 @@ void BitmapTexture::copyFromExternalTexture(GLuint sourceTextureID, const IntRec
-         glGetIntegerv(m_binding, &boundTextureOnUnit0);
- 
-     glBindTexture(m_renderTarget, id());
-+#if defined(PS5_HOMEBREW)
-+    // Diagnostics (EVO #237): a partial tile update that copies nothing.
-+    GLenum ps5FboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-+    while (glGetError() != GL_NO_ERROR) { }
-+#endif
-     glCopyTexSubImage2D(m_renderTarget, 0, targetRect.x(), targetRect.y(), sourceOffset.width(), sourceOffset.height(), targetRect.width(), targetRect.height());
-+#if defined(PS5_HOMEBREW)
-+    {
-+        static unsigned ps5Copies;
-+        GLenum ps5Error = glGetError();
-+        if ((ps5FboStatus != GL_FRAMEBUFFER_COMPLETE || ps5Error != GL_NO_ERROR || !(ps5Copies % 2000)) && ps5_mesa_log && ps5Copies < 20000)
-+            ps5_mesa_log("copy %u: fbo %#x, error %#x, dest %d,%d %dx%d from %d,%d, texture %ux%u (src %u dst %u, target %#x)", ps5Copies, ps5FboStatus, ps5Error, targetRect.x(), targetRect.y(), targetRect.width(), targetRect.height(), sourceOffset.width(), sourceOffset.height(), m_size.width(), m_size.height(), sourceTextureID, id(), static_cast<unsigned>(m_renderTarget));
-+        ps5Copies++;
-+    }
-+#endif
- 
-     if (static_cast<GLenum>(boundActiveTexture) != GL_TEXTURE0)
-         glBindTexture(m_renderTarget, boundTextureOnUnit0);
+     // We always want to accelerate the canvas when Accelerated2DCanvas setting is true, even if skia CPU is enabled.
+     if (parameters.purpose != RenderingPurpose::Canvas && !ProcessCapabilities::canUseAcceleratedBuffers())
+         return nullptr;
 diff --git a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp b/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
 index be1e387..40ea3f7 100644
 --- a/Source/WebCore/platform/graphics/texmap/coordinated/CoordinatedBackingStoreTile.cpp
