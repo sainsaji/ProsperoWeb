@@ -540,7 +540,13 @@ void EvoHost::resize(int width, int height, int scale) {
 }
 
 bool EvoHost::throttled(std::chrono::steady_clock::time_point now) const {
-  if (loading_ || fullscreen_ || force_full_) {
+  // Animations run at full rate by default. /data/prosperoweb/idle_throttle
+  // brings back the idle mode (animations paused, 10 frames/s) to save CPU.
+  static const bool enabled = [] {
+    struct stat flag;
+    return stat("/data/prosperoweb/idle_throttle", &flag) == 0;
+  }();
+  if (!enabled || loading_ || fullscreen_ || force_full_) {
     return false;
   }
   return now - last_activity_ >= std::chrono::milliseconds(kIdleAfterMs);
