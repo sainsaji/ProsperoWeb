@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #include <fcntl.h>
@@ -385,8 +386,89 @@ void EvoHost::frame() {
     handle(pkt);
   }
   WkWebView::poll_all();
+  bench_tick();
   if (visible_) {
     paint_and_publish();
+  }
+}
+
+namespace {
+void touch_cpu_now(int n) {
+  if (FILE* f = std::fopen("/data/prosperoweb/cpu_now", "w")) {
+    std::fprintf(f, "%d\n", n);
+    std::fclose(f);
+  }
+}
+}  // namespace
+
+void EvoHost::bench_tick() {
+  using clock = std::chrono::steady_clock;
+  const auto now = clock::now();
+  if (bench_phase_ == 0) {
+    if (now - bench_poll_ < std::chrono::milliseconds(500)) {
+      return;
+    }
+    bench_poll_ = now;
+    char text[256] = {};
+    const int fd = open("/data/prosperoweb/bench_go", O_RDONLY);
+    if (fd < 0) {
+      return;
+    }
+    const ssize_t n = read(fd, text, sizeof text - 1);
+    close(fd);
+    unlink("/data/prosperoweb/bench_go");
+    text[n > 0 ? n : 0] = 0;
+    auto value = [&](const char* key, double fallback) {
+      const char* at = std::strstr(text, key);
+      return at ? std::atof(at + std::strlen(key)) : fallback;
+    };
+    bench_speed_ = value("speed=", 800);
+    bench_secs_ = value("secs=", 30);
+    bench_warm_ = value("warm=", 3);
+    bench_t0_ = now;
+    bench_phase_ = 1;
+    log_printf("bench: warm-up %.0f s, then %.0f s of wheel scrolling at %.0f UI px/s (%dx%d view, scale %d)",
+               bench_warm_, bench_secs_, bench_speed_, width_, height_, scale_);
+    view_->run_javascript("window.__bench&&__bench.arm()");
+    return;
+  }
+  const double t = std::chrono::duration<double>(now - bench_t0_).count();
+  note_activity();
+  if (bench_phase_ == 1) {
+    if (t < bench_warm_) {
+      return;
+    }
+    touch_cpu_now(1);
+    bench_frames0_ = frames_sent_;
+    bench_wheels_ = 0;
+    bench_carry_ = 0;
+    bench_t0_ = now;
+    bench_next_ = now;
+    bench_phase_ = 2;
+    view_->run_javascript("window.__bench&&__bench.start()");
+    log_printf("bench: scrolling");
+    return;
+  }
+  if (t >= bench_secs_) {
+    view_->run_javascript("window.__bench&&__bench.stop()");
+    touch_cpu_now(2);
+    log_printf("bench: done, %llu wheel events, %llu frames sent to EVO in %.1f s (%.1f fps)",
+               static_cast<unsigned long long>(bench_wheels_),
+               static_cast<unsigned long long>(frames_sent_ - bench_frames0_), t,
+               static_cast<double>(frames_sent_ - bench_frames0_) / t);
+    bench_phase_ = 0;
+    return;
+  }
+  const double dir = t < bench_secs_ / 2 ? 1.0 : -1.0;
+  while (bench_next_ <= now) {
+    bench_next_ += std::chrono::microseconds(16667);
+    bench_carry_ += dir * bench_speed_ / 60.0;
+    const int dy = static_cast<int>(bench_carry_);
+    if (dy != 0) {
+      bench_carry_ -= dy;
+      view_->scroll(width_ / 2, height_ / 2, 0, dy * scale_);
+      bench_wheels_++;
+    }
   }
 }
 

@@ -84,6 +84,19 @@ class EvoHost final : public shell::EngineViewClient {
   void paint_and_publish();
   void begin_exit(const char* why);
 
+  // Scroll benchmark (EVO #237). Dropping /data/prosperoweb/bench_go with
+  // "speed=800 secs=30 warm=3" starts it on the page that is open: after the
+  // warm-up the host sends wheel events (the path a pad scroll takes) at
+  // `speed` UI pixels a second, 60 a second, down for half the time and up for
+  // the other half; the page's __bench object (assets bench pages) counts its
+  // own frames, and every process reports its CPU for exactly that window
+  // (/data/prosperoweb/cpu_now is touched at both ends).
+  void bench_tick();
+  int bench_phase_ = 0;  // 0 off, 1 warm-up, 2 scrolling
+  double bench_speed_ = 800, bench_secs_ = 30, bench_warm_ = 3, bench_carry_ = 0;
+  std::chrono::steady_clock::time_point bench_poll_{}, bench_t0_{}, bench_next_{};
+  std::uint64_t bench_frames0_ = 0, bench_wheels_ = 0;
+
   static void spawn_progress(const char* event, void* self);
   // EVO's GPU broker endpoint went to a WebProcess (spawn_glue): tell EVO.
   static void gpu_client(int cookie, int pid, void* self);

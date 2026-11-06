@@ -14,6 +14,7 @@
 #include <sys/param.h>
 #include <sys/cpuset.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/user.h>
@@ -220,9 +221,26 @@ void start_cpu_monitor() {
   auto* monitor = new Monitor();  // lives as long as the process
   monitor->report(/*first=*/true);
   std::thread([monitor] {
+    // /data/prosperoweb/cpu_now: a report whenever the file's mtime changes
+    // (the benchmark touches it at the start and end of a run, so every
+    // process reports exactly the window in between).
+    auto mtime = [] {
+      struct stat st;
+      return stat("/data/prosperoweb/cpu_now", &st) == 0
+                 ? static_cast<long long>(st.st_mtim.tv_sec) * 1000000000LL + st.st_mtim.tv_nsec
+                 : 0LL;
+    };
+    long long seen = mtime();
+    auto next = std::chrono::steady_clock::now() + std::chrono::seconds(kIntervalSeconds);
     while (true) {
-      std::this_thread::sleep_for(std::chrono::seconds(kIntervalSeconds));
-      monitor->report(/*first=*/false);
+      std::this_thread::sleep_for(std::chrono::milliseconds(250));
+      const long long m = mtime();
+      const auto now = std::chrono::steady_clock::now();
+      if (m != seen || now >= next) {
+        seen = m;
+        next = now + std::chrono::seconds(kIntervalSeconds);
+        monitor->report(/*first=*/false);
+      }
     }
   }).detach();
 }

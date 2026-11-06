@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProsperoWeb scroll bench</title>
+<!--
+  Offline scroll benchmark (EVO #237). Open it in the Web section, then drop
+  /data/prosperoweb/bench_go ("speed=800 secs=30 warm=3") on the console: the
+  host scrolls it with wheel events and every process reports its CPU for the
+  window. Nothing on the page animates, so what is measured is painting and
+  compositing while scrolling.
+    bench.html#article   long text page: headings, paragraphs, floated images,
+                         tables, lists, quotes with rounded boxes and shadows
+    bench.html#cards     store-like grid: gradient and shadowed rounded cards,
+                         icons, badges, translucent overlays
+  Text and colours come from a seeded generator, so every run draws the same.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0d1020; color: #d8dcef; font: 18px/1.55 "Noto Sans", sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; gap: 18px; align-items: center;
+    padding: 14px 28px; background: #151a33; border-bottom: 1px solid #2a3158;
+    box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+  header b { font-size: 22px; color: #fff; }
+  header span { color: #8fa0e0; }
+  main.article { max-width: 1100px; margin: 0 auto; padding: 24px 28px 600px; }
+  main.article h1 { font-size: 40px; margin: 12px 0 24px; }
+  main.article h2 { font-size: 28px; margin: 40px 0 12px; border-bottom: 1px solid #2a3158; padding-bottom: 6px; }
+  main.article p { margin: 0 0 14px; text-align: justify; }
+  main.article a { color: #7fb2ff; }
+  main.article figure { float: right; width: 300px; margin: 6px 0 14px 22px; padding: 8px;
+    background: #151a33; border: 1px solid #2a3158; border-radius: 10px; box-shadow: 0 6px 16px rgba(0,0,0,.45); }
+  main.article figure.l { float: left; margin: 6px 22px 14px 0; }
+  main.article figure div { height: 180px; border-radius: 6px; }
+  main.article figcaption { font-size: 14px; color: #9aa6d8; padding-top: 6px; }
+  main.article table { border-collapse: collapse; margin: 14px 0 22px; width: 100%; font-size: 16px; }
+  main.article td, main.article th { border: 1px solid #2a3158; padding: 6px 10px; text-align: left; }
+  main.article th { background: #1a2040; }
+  main.article blockquote { clear: both; margin: 18px 0; padding: 14px 20px; border-left: 5px solid #5a7cff;
+    background: linear-gradient(90deg,#1a2248,#10142b); border-radius: 0 12px 12px 0; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+  main.article ul { margin: 0 0 14px 22px; }
+  main.grid { padding: 24px 28px 600px; }
+  main.grid h2 { font-size: 26px; margin: 28px 0 14px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+  .card { position: relative; height: 230px; border-radius: 16px; overflow: hidden; padding: 14px;
+    border: 1px solid rgba(255,255,255,.12); box-shadow: 0 8px 22px rgba(0,0,0,.5); }
+  .card .ic { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+  .card .t { position: absolute; left: 14px; bottom: 40px; font-size: 20px; font-weight: 600; color: #fff; }
+  .card .s { position: absolute; left: 14px; bottom: 14px; font-size: 14px; color: #c8d0f0; }
+  .card .bd { position: absolute; right: 12px; top: 12px; padding: 3px 10px; border-radius: 999px;
+    background: rgba(0,0,0,.45); font-size: 13px; }
+  .card .gl { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,.35)); }
+  #__ov { position: fixed; left: 24px; top: 90px; z-index: 99; padding: 14px 20px; border-radius: 12px;
+    background: rgba(0,0,0,.82); color: #fff; font: 600 26px/1.4 monospace; white-space: pre; display: none; }
+</style></head>
+<body>
+<header><b>ProsperoWeb bench</b><span id="mode"></span></header>
+<main id="m"></main>
+<div id="__ov"></div>
+<script>
+(function () {
+  var seed = 12345;
+  function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+  var W = ("the console frame render tile layer scroll paint texture memory budget queue buffer surface page engine shader "
+    + "cache thread latency present decode pipeline compositor damage region viewport animation gradient shadow border "
+    + "radius opacity clip transform raster glyph atlas font hinting subpixel text image vector path stroke fill blend "
+    + "sample filter mipmap upload readback copy flush fence barrier descriptor binding vertex fragment uniform").split(" ");
+  function words(n) { var o = []; for (var i = 0; i < n; i++) o.push(pick(W)); var s = o.join(" "); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function hsl(h, s, l) { return "hsl(" + Math.round(h) + "," + s + "%," + l + "%)"; }
+  function grad() { var h = rnd() * 360; return "linear-gradient(" + Math.round(rnd() * 360) + "deg," + hsl(h, 70, 45) + "," + hsl(h + 60, 70, 30) + ")"; }
+  function rgrad() { var h = rnd() * 360; return "radial-gradient(circle at " + Math.round(rnd() * 100) + "% " + Math.round(rnd() * 100) + "%," + hsl(h, 80, 55) + "," + hsl(h + 80, 60, 22) + ")"; }
+  var m = document.getElementById("m"), kind = (location.hash || "#article").slice(1);
+  document.getElementById("mode").textContent = kind;
+  var h = [];
+  if (kind === "cards") {
+    m.className = "grid";
+    for (var s = 0; s < 40; s++) {
+      h.push("<h2>" + words(3) + "</h2><div class='row'>");
+      for (var c = 0; c < 12; c++) {
+        h.push("<div class='card' style='background:" + (c % 2 ? grad() : rgrad()) + "'><div class='gl'></div>"
+          + "<div class='ic' style='background:" + grad() + "'></div><div class='bd'>" + Math.floor(rnd() * 99) + " dl</div>"
+          + "<div class='t'>" + words(2) + "</div><div class='s'>" + words(3) + "</div></div>");
+      }
+      h.push("</div>");
+    }
+  } else {
+    m.className = "article";
+    h.push("<h1>" + words(4) + "</h1>");
+    for (var s2 = 0; s2 < 90; s2++) {
+      h.push("<h2>" + words(3) + "</h2>");
+      h.push("<figure class='" + (s2 % 2 ? "l" : "") + "'><div style='background:" + (s2 % 3 ? grad() : rgrad()) + "'></div><figcaption>" + words(6) + "</figcaption></figure>");
+      for (var p = 0; p < 3; p++) {
+        h.push("<p>" + words(60 + Math.floor(rnd() * 40)) + ", <a href='#'>" + words(2) + "</a> " + words(40) + ". " + words(30) + ".</p>");
+      }
+      if (s2 % 4 === 0) {
+        h.push("<blockquote>" + words(26) + "</blockquote>");
+        h.push("<table><tr><th>" + words(1) + "</th><th>" + words(1) + "</th><th>" + words(1) + "</th></tr>");
+        for (var r = 0; r < 5; r++) h.push("<tr><td>" + words(2) + "</td><td>" + Math.floor(rnd() * 9999) + "</td><td>" + words(3) + "</td></tr>");
+        h.push("</table>");
+      }
+      if (s2 % 3 === 0) { h.push("<ul>"); for (var l = 0; l < 5; l++) h.push("<li>" + words(8) + "</li>"); h.push("</ul>"); }
+    }
+  }
+  m.innerHTML = h.join("");
+
+  // The host calls arm() before the warm-up, start() when the scroll begins and
+  // stop() when it ends; the page counts its own frames meanwhile.
+  var run = null, ov = document.getElementById("__ov");
+  window.__bench = {
+    arm: function () { window.scrollTo(0, 0); ov.style.display = "none"; },
+    start: function () {
+      run = { t0: performance.now(), last: performance.now(), gaps: [], y0: window.scrollY, travel: 0, lastY: window.scrollY, frames: 0 };
+      (function tick(ts) {
+        if (!run) return;
+        var g = ts - run.last; run.last = ts; run.gaps.push(g); run.frames++;
+        run.travel += Math.abs(window.scrollY - run.lastY); run.lastY = window.scrollY;
+        requestAnimationFrame(tick);
+      })(performance.now());
+    },
+    stop: function () {
+      if (!run) return;
+      var r = run; run = null;
+      var secs = (performance.now() - r.t0) / 1000;
+      var g = r.gaps.slice(1).sort(function (a, b) { return a - b; });
+      var q = function (f) { return g.length ? g[Math.min(g.length - 1, Math.floor(g.length * f))] : 0; };
+      var late = g.filter(function (x) { return x > 50; }).length;
+      var txt = "page frames " + (r.frames / secs).toFixed(1) + " fps   scrolled " + (r.travel / secs).toFixed(0) + " px/s\n"
+        + "frame gap p50 " + q(0.5).toFixed(0) + " ms  p95 " + q(0.95).toFixed(0) + " ms  worst " + (g.length ? g[g.length - 1] : 0).toFixed(0) + " ms\n"
+        + "frames over 50 ms: " + late;
+      ov.textContent = "BENCH " + kind + "\n" + txt; ov.style.display = "block";
+      document.title = "BENCH " + kind + " | " + txt.replace(/\n/g, " | ");
+      console.log("BENCH " + kind + " | " + txt.replace(/\n/g, " | "));
+    }
+  };
+})();
+</script>
+</body></html>
