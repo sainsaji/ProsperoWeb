@@ -380,10 +380,10 @@ index 4291652..6dc620b 100644
  
      void frameDone();
 diff --git a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-index 28ef84d..5682ff3 100644
+index 28ef84d..dcaed7c 100644
 --- a/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
 +++ b/Source/WebKit/WebProcess/WebPage/CoordinatedGraphics/AcceleratedSurfacePlayStation.cpp
-@@ -55,11 +55,387 @@
+@@ -55,11 +55,389 @@
  #include <wtf/UniStdExtras.h>
  #endif
  
@@ -665,10 +665,12 @@ index 28ef84d..5682ff3 100644
 +    const MonotonicTime diffDone = MonotonicTime::now();
 +    m_ps5Stats.diffMs += (diffDone - readDone).milliseconds();
 +    if (m_ps5FastOk && diff) {
-+        double changedArea = 0;
++        // The bounds, not the sum: more than 32 small rects are merged into
++        // their bounds before sending, so that is what the frame costs.
++        IntRect changedBounds;
 +        for (const auto& rect : rects)
-+            changedArea += rect.width() * static_cast<double>(rect.height());
-+        const bool mostly = changedArea > 0.5 * size.width() * size.height();
++            changedBounds.unite(rect);
++        const bool mostly = changedBounds.width() * static_cast<double>(changedBounds.height()) > 0.5 * size.width() * size.height();
 +        if (mostly != m_ps5WholeMode)
 +            m_ps5ProbeCounter = 2;
 +        m_ps5WholeMode = mostly;
@@ -771,7 +773,7 @@ index 28ef84d..5682ff3 100644
  static inline bool isColorOpaque(AcceleratedSurface::ColorComponents color)
  {
      return color[3] == WebCore::AlphaTraits<float>::opaque;
-@@ -340,6 +716,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
+@@ -340,6 +718,11 @@ void AcceleratedSurface::releaseUnusedBuffersTimerFired()
  
  void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  {
@@ -783,7 +785,7 @@ index 28ef84d..5682ff3 100644
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
          return;
-@@ -354,6 +735,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
+@@ -354,6 +737,11 @@ void AcceleratedSurface::didCreateCompositingRunLoop(RunLoop& runLoop)
  void AcceleratedSurface::willDestroyCompositingRunLoop()
  {
      m_frameCompleteHandler = nullptr;
@@ -795,7 +797,7 @@ index 28ef84d..5682ff3 100644
  
  #if USE(WPE_RENDERER)
      if (m_swapChain.type() == SwapChain::Type::WPEBackend)
-@@ -366,6 +752,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
+@@ -366,6 +754,14 @@ void AcceleratedSurface::willDestroyCompositingRunLoop()
  void AcceleratedSurface::willDestroyGLContext()
  {
      m_swapChain.reset();
@@ -810,7 +812,7 @@ index 28ef84d..5682ff3 100644
  }
  
  uint64_t AcceleratedSurface::surfaceID() const
-@@ -384,6 +778,13 @@ uint64_t AcceleratedSurface::window() const
+@@ -384,6 +780,13 @@ uint64_t AcceleratedSurface::window() const
  
  void AcceleratedSurface::willRenderFrame(const IntSize& size)
  {
@@ -824,7 +826,7 @@ index 28ef84d..5682ff3 100644
      bool sizeDidChange = m_swapChain.resize(size);
  
      m_target = m_swapChain.nextTarget();
-@@ -392,6 +793,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
+@@ -392,6 +795,7 @@ void AcceleratedSurface::willRenderFrame(const IntSize& size)
  
      if (sizeDidChange)
          glViewport(0, 0, size.width(), size.height());
@@ -832,7 +834,7 @@ index 28ef84d..5682ff3 100644
  }
  
  void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reasons)
-@@ -410,6 +812,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
+@@ -410,6 +814,12 @@ void AcceleratedSurface::clear(const OptionSet<WebCore::CompositionReason>& reas
  
  void AcceleratedSurface::didRenderFrame()
  {
